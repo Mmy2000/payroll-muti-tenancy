@@ -24,7 +24,7 @@
         </div>
         <div>
           <label class="form-label" for="f-frequency">{% translate "How often" %}</label>
-          <select id="f-frequency" name="frequency" class="form-input" data-native>
+          <select id="f-frequency" name="frequency" class="form-input">
             {% for value, label in frequencies %}<option value="{{ value }}" {% if value == "monthly" %}selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>
           <p class="mt-1.5 text-xs text-slate-500">{% translate "A monthly item for someone paid weekly is shared between their weeks by days." %}</p>

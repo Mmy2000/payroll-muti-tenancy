@@ -30,7 +30,7 @@
       </div>
       <div>
         <label class="form-label" for="c-{{ calendar.frequency }}-items">{% translate "Monthly pay items" %}</label>
-        <select id="c-{{ calendar.frequency }}-items" name="monthly_items" class="form-input" data-native>
+        <select id="c-{{ calendar.frequency }}-items" name="monthly_items" class="form-input">
           {% for value, label in monthly_rules %}<option value="{{ value }}" {% if calendar.monthly_items == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
         <p class="mt-1.5 text-xs text-slate-500">{% translate "How an item given monthly is paid to these employees. Loan installments are always taken whole, in the period containing the 1st of their month." %}</p>
       </div>

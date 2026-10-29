@@ -4,11 +4,11 @@
         data-endpoint="{% url 'attendance-day-list' %}" data-method="POST" data-success="{% translate 'Saved.' %}" novalidate>
     <input type="hidden" name="employee_id" value="{{ employee.pk }}">
     <input type="hidden" name="work_date" value="{{ work_date|date:'Y-m-d' }}">
-    <select name="kind" class="form-input h-9 w-auto py-1 text-sm" data-native aria-label="{% translate 'What happened' %}">
+    <select name="kind" class="form-input w-36 text-sm" aria-label="{% translate 'What happened' %}">
       {% for value, label in kinds %}<option value="{{ value }}" {% if value == result|entry_kind %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
-    <input type="time" name="check_in" data-empty="null" class="form-input h-9 w-28 py-1 text-sm" value="{{ result.check_in|time:'H:i' }}" aria-label="{% translate 'Came' %}">
-    <input type="time" name="check_out" data-empty="null" class="form-input h-9 w-28 py-1 text-sm" value="{{ result.check_out|time:'H:i' }}" aria-label="{% translate 'Left' %}">
+    <input type="time" name="check_in" data-empty="null" class="form-input h-9 w-32 py-1 text-sm" value="{{ result.check_in|time:'H:i' }}" aria-label="{% translate 'Came' %}">
+    <input type="time" name="check_out" data-empty="null" class="form-input h-9 w-32 py-1 text-sm" value="{{ result.check_out|time:'H:i' }}" aria-label="{% translate 'Left' %}">
     <button type="submit" class="btn btn-secondary h-9 px-2.5" aria-label="{% translate 'Save' %}" title="{% translate 'Save' %}">{% icon "check" "size-4" %}</button>
   </form>
   {% if result.source == "manual" %}

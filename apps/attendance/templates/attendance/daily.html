@@ -47,7 +47,7 @@
     <input type="hidden" name="work_date" value="{{ day|date:'Y-m-d' }}">
     <input type="hidden" name="shift_times" value="true">
     <span class="text-sm text-slate-600">{% translate "For the ticked employees:" %}</span>
-    <select name="kind" class="form-input w-auto" aria-label="{% translate 'What happened' %}" data-native>
+    <select name="kind" class="form-input w-64" aria-label="{% translate 'What happened' %}">
       <option value="worked">{% translate "Present, on their shift's times" %}</option>
       <option value="absent">{% translate "Absent" %}</option>
       <option value="excused">{% translate "Excused absence" %}</option>

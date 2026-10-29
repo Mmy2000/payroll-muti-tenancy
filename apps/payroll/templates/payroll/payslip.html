@@ -71,7 +71,7 @@
       <div><label class="form-label" for="m-amount">{% translate "Amount" %}</label>
         <input id="m-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal" required><p class="form-error" data-error-for="amount"></p></div>
       <div><label class="form-label" for="m-addition">{% translate "Kind" %}</label>
-        <select id="m-addition" name="addition" class="form-input" data-native>
+        <select id="m-addition" name="addition" class="form-input">
           <option value="true">{% translate "Addition" %}</option><option value="false">{% translate "Deduction" %}</option></select></div>
       <label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" name="taxable" checked> {% translate "Counted in taxable pay" %}</label>
       <div class="sm:text-end"><button type="submit" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "Add the line" %}</button></div>
