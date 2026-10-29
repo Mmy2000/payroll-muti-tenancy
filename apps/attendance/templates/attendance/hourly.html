@@ -8,11 +8,14 @@
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Hourly leave" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "A few hours away within a work day. Approved hours are not deducted, up to each employee's monthly allowance." %}</p>
   </div>
-  {% if can_request %}<a href="{% url 'hourly-leave-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New hourly leave" %}</a>{% endif %}
+  {% if can_request %}<div class="flex gap-2">
+    <a href="{% url 'hourly-leave-for-group' %}" class="btn btn-secondary">{% icon "users" "size-4" %}{% translate "For a group" %}</a>
+    <a href="{% url 'hourly-leave-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New hourly leave" %}</a>
+  </div>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
-<div class="mb-4 flex flex-wrap gap-1">{% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}"{% if tab.active %} aria-current="true"{% endif %}>{{ tab.label }}</a>{% endfor %}</div>
+{% include "components/list_tabs.html" %}
 <section class="card overflow-hidden">
   {% include "components/list_filters.html" %}
   {% if page.object_list %}

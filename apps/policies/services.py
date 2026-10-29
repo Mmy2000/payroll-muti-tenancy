@@ -15,6 +15,7 @@ from django.db import IntegrityError, transaction
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from apps.core import locks
 from apps.core.errors import NotFound, ValidationError
 
 from .domain.bands import Band, band_problems
@@ -160,9 +161,9 @@ def save_tax_table(data: TaxTableInput, *, table_id: int | None = None,
 
 
 def delete_tax_table(table_id: int, *, actor=None) -> None:
-    # TODO(phase 4): refuse once a posted payroll used this table.
     if actor is not None:
         actor.require("policies.tax.manage")
+    locks.ensure_unpaid("policies.TaxTable", table_id)
     _get(TaxTable, table_id).delete()
 
 
@@ -207,9 +208,9 @@ def save_insurance_rate(data: InsuranceRateInput, *, rate_id: int | None = None,
 
 
 def delete_insurance_rate(rate_id: int, *, actor=None) -> None:
-    # TODO(phase 4): refuse once a posted payroll used these rates.
     if actor is not None:
         actor.require("policies.insurance.manage")
+    locks.ensure_unpaid("policies.InsuranceRate", rate_id)
     _get(InsuranceRate, rate_id).delete()
 
 

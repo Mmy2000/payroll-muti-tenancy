@@ -1,0 +1,45 @@
+{% extends "layouts/bulk_form.html" %}
+{% load i18n ui %}
+{% block fields %}
+<div>
+  <label class="form-label" for="f-from">{% translate "From" %}</label>
+  <input id="f-from" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+  <p class="form-error" data-error-for="effective_from"></p>
+</div>
+<div class="sm:col-span-2">
+  <label class="form-label" for="f-until">{% translate "Until (optional)" %}</label>
+  <input id="f-until" type="date" name="until" class="form-input" data-empty="null">
+  <p class="mt-1.5 text-xs text-slate-500">{% translate "Empty: from then on. A last day: the day after, each goes back to the hours they had." %}</p>
+  <p class="form-error" data-error-for="until"></p>
+</div>
+<div>
+  <label class="form-label" for="f-start">{% translate "Starts at" %}</label>
+  <input id="f-start" type="time" name="starts_at" class="form-input" required>
+  <p class="form-error" data-error-for="starts_at"></p>
+</div>
+<div>
+  <label class="form-label" for="f-end">{% translate "Ends at" %}</label>
+  <input id="f-end" type="time" name="ends_at" class="form-input" required>
+  <p class="form-error" data-error-for="ends_at"></p>
+</div>
+<div></div>
+<div class="sm:col-span-3">
+  <label class="flex items-center gap-3">
+    <input type="checkbox" name="change_days_off" class="size-4 rounded border-slate-300 accent-brand-600">
+    <span class="text-sm text-slate-700">{% translate "Also set the weekly days off (otherwise each keeps their own)" %}</span>
+  </label>
+  <div class="mt-3 flex flex-wrap gap-2" data-number>
+    {% for value, label in weekdays %}
+    <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm has-checked:border-brand-400 has-checked:bg-brand-50">
+      <input type="checkbox" data-multi="days_off" value="{{ value }}" class="accent-brand-600">{{ label }}
+    </label>
+    {% endfor %}
+  </div>
+  <p class="form-error" data-error-for="days_off"></p>
+</div>
+<div class="sm:col-span-3">
+  <label class="form-label" for="f-note">{% translate "Note" %}</label>
+  <input id="f-note" name="note" class="form-input" maxlength="300" placeholder="{% translate 'e.g. Ramadan hours' %}">
+</div>
+<p class="text-sm text-slate-500 sm:col-span-3">{% translate "Earlier days keep their hours, and days an approved payroll covers can't change. Lateness and overtime policies stay as each employee has them." %}</p>
+{% endblock %}

@@ -5,9 +5,13 @@ from apps.platform.tenants.features import PAY, Feature, register_feature
 
 register_permissions(_("Incentives and penalties"), [
     ("adjustments.incentive.view", _("View incentives")),
-    ("adjustments.incentive.manage", _("Give and cancel incentives, and their types")),
+    ("adjustments.incentive.manage", _("Give incentives and edit drafts, and their types")),
+    ("adjustments.incentive.approve",
+     _("Approve incentives, and reopen, cancel or correct approved ones")),
     ("adjustments.penalty.view", _("View penalties")),
-    ("adjustments.penalty.manage", _("Give and cancel penalties, and their types")),
+    ("adjustments.penalty.manage", _("Give penalties and edit drafts, and their types")),
+    ("adjustments.penalty.approve",
+     _("Approve penalties, and reopen, cancel or correct approved ones")),
 ])
 
 register_feature(Feature(

@@ -1,0 +1,32 @@
+{% load i18n %}{# Who a bulk change is for (apps.employees.targets.Group): include with the context of apps.employees.web.targets.group_choices. #}
+<fieldset class="sm:col-span-3">
+  <legend class="form-label">{% translate "For" %}</legend>
+  <div class="flex flex-wrap gap-2">
+    {% for value, label in group_kinds %}
+    <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm has-checked:border-brand-400 has-checked:bg-brand-50">
+      <input type="radio" name="group_kind" value="{{ value }}" class="accent-brand-600" {% if forloop.first %}checked{% endif %}>{{ label }}
+    </label>
+    {% endfor %}
+  </div>
+  <p class="form-error" data-error-for="group_kind"></p>
+</fieldset>
+<div class="sm:col-span-3" data-show-when="group_kind=employees">
+  <label class="form-label" for="g-employees">{% translate "Employees" %}</label>
+  <select id="g-employees" name="employee_ids" class="form-input" multiple data-placeholder="{% translate 'Choose employees' %}">
+    {% for e in group_employees %}<option value="{{ e.pk }}">{{ e.code }} · {{ e.name }}</option>{% endfor %}
+  </select>
+  <p class="form-error" data-error-for="employee_ids"></p>
+</div>
+<div class="sm:col-span-3" data-show-when="group_kind=department" hidden>
+  <label class="form-label" for="g-department">{% translate "Department" %}</label>
+  <select id="g-department" name="group_id" class="form-input">
+    {% for d in group_departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}
+  </select>
+</div>
+<div class="sm:col-span-3" data-show-when="group_kind=branch" hidden>
+  <label class="form-label" for="g-branch">{% translate "Branch" %}</label>
+  <select id="g-branch" name="group_id" class="form-input">
+    {% for b in group_branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}
+  </select>
+</div>
+<p class="form-error sm:col-span-3" data-error-for="group_id"></p>

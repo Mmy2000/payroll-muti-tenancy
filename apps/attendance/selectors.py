@@ -4,13 +4,13 @@ run in Python. The daily sheet, an employee's month and payroll all read attenda
 
 from __future__ import annotations
 
-import bisect
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 
 from django.db.models import Q, Sum
 from django.utils import timezone
 
+from apps.core.history import Timeline
 from apps.employees.models import WorkSchedule
 from apps.policies.models import PublicHoliday
 
@@ -20,17 +20,8 @@ from .domain.leave import days_between
 from .domain.workday import work_date_of
 from .models import AttendanceDay, HourlyLeave, LeaveRequest, Punch, RequestStatus
 
-
-class ScheduleHistory:
-    """An employee's schedule rows, to find the one in effect on a day."""
-
-    def __init__(self, rows):
-        self.rows = sorted(rows, key=lambda r: (r.effective_from, r.pk))
-        self.starts = [r.effective_from for r in self.rows]
-
-    def on(self, day: date) -> WorkSchedule | None:
-        index = bisect.bisect_right(self.starts, day) - 1
-        return self.rows[index] if index >= 0 else None
+# An employee's schedule rows, to find the one in effect on a day.
+ScheduleHistory = Timeline
 
 
 def _shift(row: WorkSchedule | None) -> Shift | None:

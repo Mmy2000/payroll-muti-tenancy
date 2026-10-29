@@ -1,5 +1,5 @@
 {% extends "layouts/app.html" %}
-{% load i18n static ui %}
+{% load i18n static ui audit %}
 {% block title %}{% if role %}{% translate "Edit role" %}{% else %}{% translate "New role" %}{% endif %}{% endblock %}
 {% block head %}<script type="module" src="{% static 'iam/js/forms.js' %}"></script>{% endblock %}
 {% block page_header %}
@@ -7,7 +7,7 @@
   <a href="{% url 'roles' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Roles" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if role %}{{ role.label }}{% else %}{% translate "New role" %}{% endif %}</h1>
-    <span class="ms-auto">{% include "audit/_history_link.html" with table="iam_role" row=role.pk %}</span>
+    <span class="ms-auto">{% history_link role %}</span>
   </div>
 </div>
 {% endblock %}

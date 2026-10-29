@@ -18,8 +18,9 @@ from django.utils.translation import gettext as _
 from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
 from apps.core.months import add_months, months
 from apps.employees.services import get_employee
+from apps.notifications import events
 
-from .domain.installments import split
+from .domain.installments import CENT, split
 from .models import InstallmentStatus, Loan, LoanInstallment, LoanStatus
 
 VIEW, MANAGE = "loans.loan.view", "loans.loan.manage"
@@ -47,6 +48,9 @@ def _check(data: LoanInput, employee) -> None:
     if not 1 <= data.installments <= MAX_INSTALLMENTS:
         errors["installments"] = [_("From 1 to %(count)s installments.")
                                   % {"count": MAX_INSTALLMENTS}]
+    elif data.amount > 0 and data.amount < CENT * data.installments:
+        # PayRole (Loans/views.py GHC12a): every installment is at least a piastre.
+        errors["amount"] = [_("Too small for this many installments.")]
     if data.first_month.replace(day=1) < data.granted_on.replace(day=1):
         errors["first_month"] = [_("Must not be before the month the loan is given.")]
     if data.granted_on < employee.hired_on or (employee.left_on
@@ -73,6 +77,7 @@ def grant_loan(data: LoanInput, *, actor=None) -> Loan:
             for number, (month, amount) in enumerate(
                 zip(months(data.first_month, data.installments),
                     split(data.amount, data.installments), strict=True), start=1)])
+        events.loan_granted(loan, data.installments, by=actor)
     return loan
 
 
@@ -102,8 +107,8 @@ def cancel_loan(loan_id: int, *, actor=None) -> Loan:
 
 
 def postpone_installment(installment_id: int, *, actor=None) -> Loan:
-    """Move a due installment, and every later due one, a month on."""
-    # TODO(phase 4): refuse when a posted payroll covers the installment's month.
+    """Move a due installment, and every later due one, a month on. A paid installment can't be
+    postponed (payroll paid it)."""
     with transaction.atomic():
         loan_id = LoanInstallment.objects.filter(pk=installment_id).values_list(
             "loan_id", flat=True).first()
@@ -119,3 +124,19 @@ def postpone_installment(installment_id: int, *, actor=None) -> Loan:
             row.due_month = add_months(row.due_month, 1)
             row.save(update_fields=["due_month", "updated_at"])
         return loan
+
+
+def settle_installments(installment_ids, *, paid: bool) -> None:
+    """Payroll approved (paid) or reversed (not paid) these installments. A loan whose
+    installments are all paid is repaid; one with a due installment again is being repaid."""
+    if not installment_ids:
+        return
+    rows = LoanInstallment.objects.filter(pk__in=list(installment_ids))
+    loan_ids = set(rows.values_list("loan_id", flat=True))
+    rows.update(status=InstallmentStatus.PAID if paid else InstallmentStatus.DUE)
+    for loan in Loan.objects.filter(pk__in=loan_ids).select_for_update():
+        due = loan.installments.filter(status=InstallmentStatus.DUE).exists()
+        status = LoanStatus.ACTIVE if due else LoanStatus.SETTLED
+        if loan.status != status and loan.status != LoanStatus.CANCELLED:
+            loan.status = status
+            loan.save(update_fields=["status", "updated_at"])

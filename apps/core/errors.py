@@ -7,6 +7,7 @@ from __future__ import annotations
 class AppError(Exception):
     code = "ERROR"
     status = 400
+    details = None  # extra JSON for the envelope's "details", when a subclass has some
 
     def __init__(self, message: str = "", *, code: str | None = None,
                  fields: dict[str, list[str]] | None = None):

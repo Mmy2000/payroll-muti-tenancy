@@ -1,0 +1,12 @@
+{% load i18n ui %}{# The card's facts (apps.evaluations.services.card): include with facts=, in a <dl>. #}
+<dt>{% translate "Date of birth" %}</dt><dd><span class="num">{{ facts.birth_date|date:"Y-m-d"|default:"—" }}</span></dd>
+<dt>{% translate "Hired on" %}</dt><dd><span class="num">{{ facts.hired_on|date:"Y-m-d" }}</span></dd>
+<dt>{% translate "Insured from" %}</dt><dd><span class="num">{{ facts.insured_from|date:"Y-m-d"|default:"—" }}</span></dd>
+{% if facts.pay %}
+<dt>{% translate "Starting salary" %}</dt><dd><span class="num">{{ facts.pay.starting_salary|num:2 }}</span></dd>
+<dt>{% translate "Insured salary" %}</dt><dd><span class="num">{{ facts.pay.insured_salary|num:2|default:"—" }}</span></dd>
+<dt>{% translate "Yearly base pay" %}</dt><dd><span class="num">{{ facts.pay.yearly_base|num:2 }}</span></dd>
+<dt>{% translate "Allowances in the year" %}</dt><dd><span class="num">{{ facts.pay.allowances|num:2 }}</span></dd>
+<dt>{% translate "Total for the year" %}</dt><dd><span class="num font-semibold">{{ facts.pay.total|num:2 }}</span></dd>
+<dt>{% translate "Day's wage" %}</dt><dd><span class="num">{{ facts.pay.daily|num:2 }}</span></dd>
+{% endif %}

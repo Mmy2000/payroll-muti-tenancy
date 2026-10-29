@@ -43,7 +43,6 @@ class BandedKind:
     hours_label: object
     hours_field: str
     bands_help: object
-    table: str
 
 
 LATENESS = BandedKind(
@@ -54,8 +53,7 @@ LATENESS = BandedKind(
     _("Being this many minutes late or less is not deducted."), "grace_minutes",
     _("Hours deducted"), "deduct_hours",
     _("Minutes late from–to, and the hours of pay deducted. Without bands, the exact time "
-      "missed is deducted."),
-    "policies_latenesspolicy")
+      "missed is deducted."))
 OVERTIME = BandedKind(
     OvertimePolicy, "overtime", _("Overtime policies"),
     _("How extra time is paid: minutes worked over fall in a band that says how many hours "
@@ -64,8 +62,7 @@ OVERTIME = BandedKind(
     _("Staying this many minutes after the shift or less is not overtime."),
     "starts_after_minutes", _("Hours paid"), "paid_hours",
     _("Minutes over from–to, and the hours paid. Without bands, the time actually worked over "
-      "is paid."),
-    "policies_overtimepolicy")
+      "is paid."))
 
 
 def _banded_list(request, kind: BandedKind):

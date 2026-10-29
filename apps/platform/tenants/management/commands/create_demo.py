@@ -62,6 +62,11 @@ class Command(BaseCommand):
                 demo.seed_employees(demo.PEOPLE if slug == "demo" else demo.PEOPLE[:2])
                 with timezone.override(timezones.zone(timezones.tenant_zone_name(tenant.id))):
                     demo.seed_attendance()
+                    demo.seed_pay_entries()
+                    demo.seed_payroll()
+                    demo.seed_evaluations()
+                if slug == "demo":
+                    demo.seed_integrations(tenant, PASSWORD)
 
         base = f"{settings.TENANT_BASE_DOMAIN}{settings.SITE_PORT}"
         rows = [("Platform admin", f"http://admin.{base}/", PLATFORM_ADMIN)]
@@ -69,6 +74,7 @@ class Command(BaseCommand):
         names = {slug: name for slug, name, *_rest in CLIENTS}
         rows += [(f"{names[client]} ({role})", f"http://{client}.{base}/", username)
                  for client, username, _name, role, _scope in MEMBERS]
+        rows.append(("Demo (mobile app)", f"http://demo.{base}/api/v1/", "ahmed"))
         self.stdout.write("")
         self.stdout.write(self.style.SUCCESS(f"Password for every login: {PASSWORD}"))
         for who, url, login in rows:

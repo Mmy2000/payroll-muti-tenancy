@@ -1,0 +1,52 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui static %}
+{% block title %}{% translate "WhatsApp" %}{% endblock %}
+{% block head %}<script type="module" src="{% static 'messaging/js/whatsapp.js' %}"></script>{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "WhatsApp" %}</h1>
+  <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "Payslips are sent from the company's own WhatsApp number: link it once by scanning a QR code with the phone (WhatsApp → Linked devices)." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <section class="card" data-whatsapp-link data-endpoint="{% url 'whatsapp-link' %}"
+           data-text-linked="{% translate 'Linked' %}" data-text-waiting="{% translate 'Scan the code with the phone' %}"
+           data-text-not-linked="{% translate 'Not linked' %}" data-text-broken="{% translate 'Disconnected: link it again' %}">
+    <div class="card-body space-y-4">
+      <h2 class="text-base font-semibold text-slate-900">{% translate "The number" %}</h2>
+      {% if not ready %}<p class="rounded-lg border border-amber-200 bg-amber-50/70 px-3.5 py-3 text-sm text-amber-900">{% translate "WhatsApp is not set up on this platform yet: ask support." %}</p>{% endif %}
+      <p class="text-sm text-slate-700"><span data-link-status>{{ link.get_status_display }}</span>{% if link.phone %} · <span class="num" data-link-phone>{{ link.phone }}</span>{% else %} <span class="num" data-link-phone></span>{% endif %}</p>
+      <img data-link-qr class="hidden size-56 rounded-lg border border-slate-200 bg-white p-2" alt="{% translate 'QR code to scan' %}">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn btn-primary" data-link-start>{% icon "qr-code" "size-4" %}{% if link.status == "linked" %}{% translate "Link again" %}{% else %}{% translate "Link the number" %}{% endif %}</button>
+        {% if link.session_id %}<form data-api-form data-method="DELETE" data-endpoint="{% url 'whatsapp-link' %}" data-success="{% translate 'Unlinked.' %}">
+          <button type="submit" class="btn btn-secondary">{% icon "x" "size-4" %}{% translate "Unlink" %}</button></form>{% endif %}
+      </div>
+      <p class="form-error" data-link-error></p>
+      {% if link.status == "linked" %}
+      <form class="flex flex-wrap items-start gap-2 border-t border-slate-100 pt-4" data-api-form data-method="POST" data-endpoint="{% url 'whatsapp-test' %}" data-success="{% translate 'Test message on its way.' %}" novalidate>
+        <div><input name="phone" class="form-input num" placeholder="010…" aria-label="{% translate 'Mobile number' %}"><p class="form-error" data-error-for="phone"></p></div>
+        <button type="submit" class="btn btn-secondary">{% icon "send" "size-4" %}{% translate "Send a test" %}</button>
+        <div class="hidden w-full rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      </form>
+      {% endif %}
+    </div>
+  </section>
+
+  <form class="card" data-api-form data-method="PUT" data-endpoint="{% url 'whatsapp-wording' %}" data-success="{% translate 'Saved.' %}" novalidate>
+    <div class="card-body space-y-4">
+      <h2 class="text-base font-semibold text-slate-900">{% translate "The message with each payslip" %}</h2>
+      <div><textarea name="payslip_message" rows="6" class="form-input" dir="auto">{{ link.payslip_message }}</textarea>
+        <p class="mt-1.5 text-xs text-slate-500">{% translate "Replaced in each message:" %} {% for p in placeholders %}<span class="num">{{ p }}</span>{% if not forloop.last %} · {% endif %}{% endfor %} ({% translate "name, code, period start and end, net pay, company" %})</p>
+        <p class="form-error" data-error-for="payslip_message"></p></div>
+      <div><label class="form-label" for="w-gap">{% translate "Seconds between two payslips" %}</label>
+        <input id="w-gap" name="gap_seconds" class="form-input num w-32 text-start" inputmode="numeric" value="{{ link.gap_seconds }}">
+        <p class="mt-1.5 text-xs text-slate-500">{% translate "WhatsApp may block a number that sends many messages at once." %}</p>
+        <p class="form-error" data-error-for="gap_seconds"></p></div>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

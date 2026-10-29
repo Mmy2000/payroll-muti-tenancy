@@ -1,5 +1,5 @@
-"""The platform admin's screens for clients, plans and features (Django admin on platform hosts,
-until the console of phase 8). Only platform staff reach them; a client's users never do."""
+"""The raw Django admin for clients, plans and features, on platform hosts, for emergencies:
+platform staff work in the console (apps/platform/console). A client's users never reach it."""
 
 from django import forms
 from django.contrib import admin

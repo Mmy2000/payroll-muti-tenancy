@@ -100,6 +100,8 @@ SYSTEM_ROLE_NAMES = {
     "owner": (_("Owner"), _("Full access to everything, including users and roles.")),
     "manager": (_("Manager"), _("Day-to-day operations in every module.")),
     "viewer": (_("Viewer"), _("Read-only access.")),
+    "employee": (_("Employee (app)"), _("An employee's own login to the mobile app: their "
+                                         "attendance, leave and notifications only.")),
 }
 
 

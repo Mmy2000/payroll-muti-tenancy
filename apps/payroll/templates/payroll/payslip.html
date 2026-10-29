@@ -1,0 +1,91 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Payslip" %} · {{ slip.employee.name }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'payroll-run' run.pk %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% if run.number %}<span class="num">{{ run.number }}</span>{% else %}{% translate "Draft run" %}{% endif %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ slip.employee.name }} · <span class="num">{{ slip.net|num:2 }}</span></h1>
+    {% include "payroll/_status.html" %}
+    <a class="btn btn-secondary ms-auto text-xs" href="{% url 'payslip-pdf' run.pk slip.pk %}">{% icon "printer" "size-4" %}{% translate "Payslip (PDF)" %}</a>
+  </div>
+  <p class="mt-1 text-sm text-slate-500"><span class="num">{{ slip.employee.code }}</span> · <span class="num">{{ run.period.start|date:"Y-m-d" }} → {{ run.period.end|date:"Y-m-d" }}</span> · {{ run.period.get_frequency_display }}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if issues %}
+<section class="mb-6 space-y-2">
+  {% for issue in issues %}
+  <div class="flex items-start gap-2 rounded-lg border px-3.5 py-2.5 text-sm {% if issue.severity == 'blocking' %}border-red-200 bg-red-50/70 text-red-700{% else %}border-amber-200 bg-amber-50/70 text-amber-800{% endif %}">
+    {% if issue.severity == "blocking" %}{% icon "circle-alert" "size-5 shrink-0" %}{% else %}{% icon "triangle-alert" "size-5 shrink-0" %}{% endif %}
+    <p>{{ issue.text }}</p>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  {% translate "Earnings" as t_earnings %}{% include "payroll/_lines.html" with lines=earnings title=t_earnings %}
+  {% translate "Deductions" as t_deductions %}{% include "payroll/_lines.html" with lines=deductions title=t_deductions %}
+</div>
+
+<section class="card card-body mt-6">
+  <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div><dt class="text-xs text-slate-500">{% translate "Earnings" %}</dt><dd class="num text-lg font-semibold text-slate-900">{{ slip.earnings|num:2 }}</dd></div>
+    <div><dt class="text-xs text-slate-500">{% translate "Deductions" %}</dt><dd class="num text-lg font-semibold text-slate-900">{{ slip.deductions|num:2 }}</dd></div>
+    <div><dt class="text-xs text-slate-500">{% translate "Net pay" %}</dt><dd class="num text-lg font-semibold text-slate-900">{{ slip.net|num:2 }}</dd></div>
+    <div><dt class="text-xs text-slate-500">{% translate "Employer costs" %}</dt><dd class="num text-lg font-semibold text-slate-500">{{ slip.employer_cost|num:2 }}</dd></div>
+  </dl>
+</section>
+
+{% if employer %}
+<div class="mt-6">{% translate "Paid by the employer (not deducted from pay)" as t_employer %}{% include "payroll/_lines.html" with lines=employer title=t_employer %}</div>
+{% endif %}
+
+{% if can_calculate or manual_lines %}
+<section class="card mt-6">
+  <div class="card-body">
+    <h2 class="font-medium text-slate-900">{% translate "Lines added by hand" %}</h2>
+    <p class="mt-1 text-xs text-slate-500">{% translate "A correction or a one-off payment. Kept when the run is recalculated." %}</p>
+    {% if manual_lines %}
+    <ul class="mt-3 divide-y divide-slate-100 text-sm">
+      {% for line in manual_lines %}
+      <li class="flex items-center gap-3 py-2">
+        <span class="flex-1">{{ line.label }}</span>
+        <span class="num {% if not line.addition %}text-red-700{% endif %}">{% if not line.addition %}−{% endif %}{{ line.amount|num:2 }}</span>
+        {% if can_calculate %}
+        <form data-api-form data-method="DELETE" data-endpoint="{% url 'manual-line-detail' line.pk %}" data-success="{% translate 'Deleted.' %}">
+          <button type="submit" class="btn btn-ghost h-8 px-2 text-xs text-red-700" title="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if can_calculate %}
+    <form class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4" data-api-form data-method="POST" data-endpoint="{% url 'payroll-run-lines' run.pk %}" data-success="{% translate 'Saved.' %}" novalidate>
+      <input type="hidden" name="employee_id" value="{{ slip.employee_id }}">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 sm:col-span-4" data-form-error role="alert"></div>
+      <div class="sm:col-span-2"><label class="form-label" for="m-label">{% translate "For" %}</label>
+        <input id="m-label" name="label" class="form-input" maxlength="200" required><p class="form-error" data-error-for="label"></p></div>
+      <div><label class="form-label" for="m-amount">{% translate "Amount" %}</label>
+        <input id="m-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal" required><p class="form-error" data-error-for="amount"></p></div>
+      <div><label class="form-label" for="m-addition">{% translate "Kind" %}</label>
+        <select id="m-addition" name="addition" class="form-input" data-native>
+          <option value="true">{% translate "Addition" %}</option><option value="false">{% translate "Deduction" %}</option></select></div>
+      <label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" name="taxable" checked> {% translate "Counted in taxable pay" %}</label>
+      <div class="sm:text-end"><button type="submit" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "Add the line" %}</button></div>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+<details class="card mt-6">
+  <summary class="card-body cursor-pointer text-sm font-medium text-slate-900">{% translate "What this payslip was calculated from" %}</summary>
+  <div class="border-t border-slate-100 px-5 pb-5">
+    <p class="mt-3 text-xs text-slate-500">{% translate "The pay record, schedules, policies, rates and days used, kept with the payslip. An approved payslip is never recalculated from today's data." %}</p>
+    <pre class="mt-3 max-h-96 overflow-auto rounded-lg bg-slate-50 p-3 text-xs text-slate-700" dir="ltr">{{ snapshot }}</pre>
+  </div>
+</details>
+{% endblock %}

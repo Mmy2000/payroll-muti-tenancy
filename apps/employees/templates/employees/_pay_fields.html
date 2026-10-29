@@ -1,16 +1,23 @@
 {% load i18n %}{# Pay fields. Include with prefix="pay." (new employee) or prefix="" (a change), pay=current values or None, id= a unique id prefix. #}
 <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
-  <div class="sm:col-span-2">
-    <label class="form-label" for="{{ id }}-basis">{% translate "Paid" %}</label>
-    <select id="{{ id }}-basis" name="{{ prefix }}basis" class="form-input">
-      {% for value, label in bases %}<option value="{{ value }}" {% if pay.basis == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  <div>
+    <label class="form-label" for="{{ id }}-wage">{% translate "Pay counted as" %}</label>
+    <select id="{{ id }}-wage" name="{{ prefix }}wage_type" class="form-input">
+      {% for value, label in wage_types %}<option value="{{ value }}" {% if pay.wage_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
-    <p class="form-error" data-error-for="{{ prefix }}basis"></p>
+    <p class="form-error" data-error-for="{{ prefix }}wage_type"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-frequency">{% translate "Paid" %}</label>
+    <select id="{{ id }}-frequency" name="{{ prefix }}pay_frequency" class="form-input">
+      {% for value, label in frequencies %}<option value="{{ value }}" {% if pay.pay_frequency == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="{{ prefix }}pay_frequency"></p>
   </div>
   <div class="sm:col-span-2">
     <label class="form-label" for="{{ id }}-salary">{% translate "Salary or wage" %}</label>
     <input id="{{ id }}-salary" name="{{ prefix }}salary" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.salary|default_if_none:'' }}" required>
-    <p class="mt-1.5 text-xs text-slate-500">{% translate "The month's salary, the week's wage or the day's wage." %}</p>
+    <p class="mt-1.5 text-xs text-slate-500">{% translate "A fixed salary is for one pay period (a month, two weeks, a week); a wage is for one day or one hour." %}</p>
     <p class="form-error" data-error-for="{{ prefix }}salary"></p>
   </div>
   <div>

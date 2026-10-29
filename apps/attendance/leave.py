@@ -15,9 +15,11 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils.translation import gettext as _
 
+from apps.core import locks
 from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.core.history import in_effect
 from apps.employees.services import get_employee
+from apps.notifications import events
 
 from . import approvals
 from .domain.leave import Balance, leave_days
@@ -146,6 +148,7 @@ def _check_request(data: LeaveRequestInput, employee, leave_type) -> int:
         errors["start_date"] = [_("Another request already covers some of these days.")]
     if errors:
         raise _invalid(errors)
+    locks.ensure_open(employee.pk, data.start_date, data.end_date)
     days = leave_days(data.start_date, data.end_date, working_day_test(employee))
     if days == 0:
         raise _invalid({"end_date": [_("These are all days off or holidays: no leave is "
@@ -153,9 +156,10 @@ def _check_request(data: LeaveRequestInput, employee, leave_type) -> int:
     return days
 
 
-def request_leave(data: LeaveRequestInput, *, approve: bool = False,
-                  actor=None) -> LeaveRequest:
-    """A new request; `approve` also approves it at once (for members who may)."""
+def request_leave(data: LeaveRequestInput, *, approve: bool = False, actor=None,
+                  by=None) -> LeaveRequest:
+    """A new request; `approve` also approves it at once (for members who may). `by`: who
+    asked, when the caller is trusted (the mobile app: the employee's own login)."""
     with transaction.atomic():
         employee = get_employee(data.employee_id, actor, REQUEST, lock=True)
         if actor is not None:
@@ -171,11 +175,15 @@ def request_leave(data: LeaveRequestInput, *, approve: bool = False,
         if approve:
             approvals.decide(request, approvals.APPROVE, actor=actor,
                              before_approve=_check_balance)
+            events.leave_entered_approved(request, by=by or actor)
+        else:
+            events.leave_requested(request, by=by or actor)
     return request
 
 
-def decide_leave(request_id: int, move: str, *, note: str = "", actor=None) -> LeaveRequest:
-    # TODO(phase 4): refuse to cancel approved leave once a posted payroll covers its days.
+def decide_leave(request_id: int, move: str, *, note: str = "", actor=None,
+                 by=None) -> LeaveRequest:
+    """Approve, reject or cancel; refused when an approved payroll covers the leave's days."""
     with transaction.atomic():
         employee_id = LeaveRequest.objects.filter(pk=request_id).values_list(
             "employee_id", flat=True).first()
@@ -187,5 +195,7 @@ def decide_leave(request_id: int, move: str, *, note: str = "", actor=None) -> L
             actor.require(APPROVE, branch=employee.branch_id)
         request = (LeaveRequest.objects.select_for_update(of=("self",))
                    .select_related("employee", "leave_type").get(pk=request_id))
-        return approvals.decide(request, move, actor=actor, note=note,
-                                before_approve=_check_balance)
+        locks.ensure_open(employee.pk, request.start_date, request.end_date)
+        approvals.decide(request, move, actor=actor, note=note, before_approve=_check_balance)
+        events.leave_decided(request, move, by=by or actor)
+        return request

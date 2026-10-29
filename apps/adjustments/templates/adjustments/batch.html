@@ -1,0 +1,192 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui audit %}
+{% block title %}{{ batch.adjustment_type.name }} · {{ batch.date|date:"Y-m-d" }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <div class="flex items-center gap-3">
+    <a href="{% url page_kind.plural %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ page_kind.title }}</a>
+    <span class="ms-auto">{% history_link batch %}</span>
+  </div>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ batch.adjustment_type.name }} · <span class="num">{{ batch.date|date:"Y-m-d" }}</span></h1>
+    {% include "adjustments/_status.html" %}
+  </div>
+  <p class="mt-1 text-sm text-slate-500">
+    {% if batch.target_name %}{{ batch.target_name }} · {% endif %}{% blocktranslate trimmed count n=rows|length %}{{ n }} employee{% plural %}{{ n }} employees{% endblocktranslate %}
+    · {% blocktranslate trimmed with n=batch.revision %}revision {{ n }}{% endblocktranslate %}{% if batch.change_reason %} — <span class="text-slate-700">{{ batch.change_reason }}</span>{% endif %}
+  </p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  {% if batch.corrects %}
+  <div class="rounded-lg border border-brand-200 bg-brand-50/60 px-4 py-3 text-sm text-brand-900">
+    {% translate "This corrects" %} <a class="font-medium underline" href="{% url page_kind.kind|add:'-batch' batch.corrects_id %}">{{ batch.corrects.adjustment_type.name }} · <span class="num">{{ batch.corrects.date|date:"Y-m-d" }}</span></a>:
+    {% translate "each row pays (or takes back) the difference, in the payroll of its date." %}
+  </div>
+  {% endif %}
+  {% if paid %}
+  <div class="rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">{% translate "An approved payroll has paid this batch. It is never changed: a correction settles any difference in a later payroll." %}</div>
+  {% elif batch.status == "approved" %}
+  <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">{% translate "Approved: the next payroll of its date pays it. Until then it can be reopened or cancelled, with a reason." %}</div>
+  {% elif batch.status == "draft" %}
+  <div class="rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-900">{% translate "A draft: payroll ignores it until it is approved." %}</div>
+  {% endif %}
+
+  <section class="card">
+    <div class="card-body grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+      <div><p class="text-slate-500">{% translate "Counted as" %}</p><p class="font-medium text-slate-900">{{ batch.get_method_display }}{% if not batch.corrects %} · <span class="num">{{ batch.quantity|num:2 }}</span>{% endif %}</p></div>
+      <div><p class="text-slate-500">{% translate "Total" %}</p><p class="num font-medium text-slate-900">{{ total|num:2 }}</p></div>
+      <div class="col-span-2"><p class="text-slate-500">{% translate "Reason" %}</p><p class="text-slate-900">{{ batch.reason|default:"—" }}</p></div>
+      {% if batch.approved_at %}<div class="col-span-2"><p class="text-slate-500">{% translate "Approved" %}</p><p class="text-slate-900">{{ batch.approved_by.display_name|default:"—" }} · <span class="num">{{ batch.approved_at|date:"SHORT_DATETIME_FORMAT" }}</span></p></div>{% endif %}
+    </div>
+  </section>
+
+  {% if can_approve or can_delete or can_reopen %}
+  <section class="card">
+    <div class="card-body flex flex-wrap items-start gap-4">
+      {% if can_approve %}
+      <form data-api-form data-method="POST" data-endpoint="{% url page_kind.kind|add:'-batch-approve' batch.pk %}" data-success="{% translate 'Approved.' %}">
+        <button type="submit" class="btn btn-primary">{% icon "badge-check" "size-4" %}{% translate "Approve" %}</button>
+      </form>
+      {% endif %}
+      {% if can_delete %}
+      <form data-api-form data-method="DELETE" data-endpoint="{% url page_kind.kind|add:'-batch-detail' batch.pk %}" data-redirect="{% url page_kind.plural %}" data-success="{% translate 'Draft deleted.' %}">
+        <button type="submit" class="btn btn-secondary">{% icon "trash-2" "size-4" %}{% translate "Delete the draft" %}</button>
+      </form>
+      {% endif %}
+      {% if can_reopen %}
+      <form class="flex flex-wrap items-start gap-2" data-api-form data-method="POST" data-endpoint="{% url page_kind.kind|add:'-batch-reopen' batch.pk %}" data-success="{% translate 'Reopened as a draft.' %}">
+        <div><input name="reason" class="form-input w-64" maxlength="300" placeholder="{% translate 'Why it is reopened' %}" aria-label="{% translate 'Why it is reopened' %}"><p class="form-error" data-error-for="reason"></p></div>
+        <button type="submit" class="btn btn-secondary">{% icon "undo-2" "size-4" %}{% translate "Reopen to edit" %}</button>
+      </form>
+      <form class="flex flex-wrap items-start gap-2" data-api-form data-method="POST" data-endpoint="{% url page_kind.kind|add:'-batch-cancel' batch.pk %}" data-success="{% translate 'Cancelled.' %}">
+        <div><input name="reason" class="form-input w-64" maxlength="300" placeholder="{% translate 'Why it is cancelled' %}" aria-label="{% translate 'Why it is cancelled' %}"><p class="form-error" data-error-for="reason"></p></div>
+        <button type="submit" class="btn btn-secondary text-red-700">{% icon "x" "size-4" %}{% translate "Cancel the batch" %}</button>
+      </form>
+      {% endif %}
+      <div class="hidden w-full rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table" data-report>
+        <thead><tr><th>{% translate "Employee" %}</th><th class="text-end">{% translate "Quantity" %}</th><th class="text-end">{% translate "Amount" %}</th>
+          {% if batch.status == "approved" and not batch.corrects %}<th class="text-end">{% translate "After corrections" %}</th>{% endif %}<th>{% translate "Paid" %}</th>{% if can_edit %}<th class="min-w-[16rem]"></th>{% endif %}</tr></thead>
+        <tbody>
+        {% for row in rows %}
+          <tr>
+            <td class="font-medium text-slate-900"><span class="num text-slate-500">#{{ row.employee.code }}</span> {{ row.employee.name }}</td>
+            <td class="text-end"><span class="num">{{ row.quantity|num:2 }}</span></td>
+            <td class="text-end"><span class="num font-medium {% if row.amount < 0 %}text-red-700{% endif %}">{{ row.amount|num:2 }}</span></td>
+            {% if batch.status == "approved" and not batch.corrects %}<td class="text-end"><span class="num">{{ row.effective|num:2 }}</span></td>{% endif %}
+            <td>{% if row.paid %}<span class="badge badge-success">{% translate "Paid" %}</span>{% else %}<span class="text-xs text-slate-400">—</span>{% endif %}</td>
+            {% if can_edit %}<td>
+              <div class="flex items-start justify-end gap-1">
+                <form class="flex items-start gap-1" data-api-form data-method="PATCH" data-endpoint="{% url page_kind.kind|add:'-detail' row.pk %}" data-success="{% translate 'Saved.' %}">
+                  <div><input name="quantity" class="form-input num h-8 w-24 text-end" inputmode="decimal" value="{{ row.quantity|stringformat:'s' }}" aria-label="{% translate 'Quantity' %}"><p class="form-error" data-error-for="quantity"></p></div>
+                  <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs">{% translate "Save" %}</button>
+                </form>
+                <form data-api-form data-method="DELETE" data-endpoint="{% url page_kind.kind|add:'-detail' row.pk %}" data-success="{% translate 'Removed.' %}">
+                  <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs text-slate-500" aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button>
+                </form>
+              </div>
+            </td>{% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  {% if can_edit %}
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <form class="card" data-api-form data-method="PUT" data-endpoint="{% url page_kind.kind|add:'-batch-detail' batch.pk %}" data-success="{% translate 'Saved.' %}" novalidate>
+      <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <h2 class="text-base font-semibold text-slate-900 sm:col-span-2">{% translate "Change the details" %}</h2>
+        <div><label class="form-label" for="d-type">{% translate "Type" %}</label>
+          <select id="d-type" name="type_id" class="form-input">{% for t in types %}<option value="{{ t.pk }}" {% if t.pk == batch.adjustment_type_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="type_id"></p></div>
+        <div><label class="form-label" for="d-date">{% translate "Date" %}</label>
+          <input id="d-date" type="date" name="date" class="form-input" value="{{ batch.date|date:'Y-m-d' }}"><p class="form-error" data-error-for="date"></p></div>
+        <div><label class="form-label" for="d-method">{% translate "Counted as" %}</label>
+          <select id="d-method" name="method" class="form-input">{% for m in methods %}<option value="{{ m.key }}" {% if m.key == batch.method %}selected{% endif %}>{{ m.label }} ({{ m.unit }})</option>{% endfor %}</select></div>
+        <div><label class="form-label" for="d-quantity">{% translate "How much" %}</label>
+          <input id="d-quantity" name="quantity" class="form-input num text-start" inputmode="decimal" value="{{ batch.quantity|stringformat:'s' }}">
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "Every employee takes this quantity again." %}</p><p class="form-error" data-error-for="quantity"></p></div>
+        <div class="sm:col-span-2"><label class="form-label" for="d-reason">{% translate "Reason" %}</label>
+          <input id="d-reason" name="reason" class="form-input" maxlength="300" value="{{ batch.reason }}"></div>
+        <div class="sm:col-span-2"><label class="form-label" for="d-why">{% translate "Why it changes (optional)" %}</label>
+          <input id="d-why" name="change_reason" class="form-input" maxlength="300"></div>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 sm:col-span-2" data-form-error role="alert"></div>
+        <div class="sm:col-span-2"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save the details" %}</button></div>
+      </div>
+    </form>
+    <form class="card" data-api-form data-method="POST" data-endpoint="{% url page_kind.kind|add:'-batch-add' batch.pk %}" data-success="{% translate 'Added.' %}" novalidate>
+      <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <h2 class="text-base font-semibold text-slate-900 sm:col-span-2">{% translate "Add employees" %}</h2>
+        {% include "employees/_target_fields.html" %}
+        <div class="sm:col-span-2"><label class="form-label" for="a-why">{% translate "Why (optional)" %}</label>
+          <input id="a-why" name="change_reason" class="form-input" maxlength="300"></div>
+        <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 sm:col-span-2" data-form-error role="alert"></div>
+        <div class="sm:col-span-2"><button type="submit" class="btn btn-secondary">{% icon "user-plus" "size-4" %}{% translate "Add" %}</button></div>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if can_correct %}
+  <form class="card" data-api-form data-shape="nested" data-method="POST" data-endpoint="{% url page_kind.kind|add:'-batch-correct' batch.pk %}"
+        data-redirect="{% url page_kind.plural %}{id}/" data-success="{% translate 'Correction saved.' %}" novalidate>
+    <div class="card-body space-y-4">
+      <div>
+        <h2 class="text-base font-semibold text-slate-900">{% translate "Correct" %}</h2>
+        <p class="mt-1 text-sm text-slate-500">{% translate "Enter what each employee's quantity should have been (0 takes it back). Only the difference is paid or taken back, in the payroll of the date below; the original stays as it was." %}</p>
+      </div>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div><label class="form-label" for="c-date">{% translate "Settled on" %}</label>
+          <input id="c-date" type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}"><p class="form-error" data-error-for="date"></p></div>
+        <div class="sm:col-span-2"><label class="form-label" for="c-reason">{% translate "Why" %}</label>
+          <input id="c-reason" name="reason" class="form-input" maxlength="300" required><p class="form-error" data-error-for="reason"></p></div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "Employee" %}</th><th class="text-end">{% translate "Now" %}</th><th class="w-40">{% translate "Should be" %}</th></tr></thead>
+          <tbody data-rows="rows">
+          {% for row in rows %}
+            <tr data-row>
+              <td>{{ row.employee.name }}<input type="hidden" data-field="row_id" value="{{ row.pk }}"></td>
+              <td class="text-end"><span class="num">{{ row.current_quantity|num:2 }}</span> <span class="text-xs text-slate-500">({{ row.effective|num:2 }})</span></td>
+              <td><input class="form-input num h-8 text-end" inputmode="decimal" data-field="quantity" value="{{ row.current_quantity|stringformat:'s' }}" aria-label="{% translate 'Should be' %}"><p class="form-error" data-row-error></p></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <label class="flex items-center gap-3">
+        <input type="checkbox" name="approve" class="size-4 rounded border-slate-300 accent-brand-600" checked>
+        <span class="text-sm text-slate-700">{% translate "Approve the correction now" %}</span>
+      </label>
+      <p class="form-error" data-error-for="quantities"></p>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      <button type="submit" class="btn btn-primary">{% icon "repeat" "size-4" %}{% translate "Save the correction" %}</button>
+    </div>
+  </form>
+  {% endif %}
+
+  {% if corrections %}
+  <section class="card">
+    <div class="card-body">
+      <h2 class="mb-3 text-base font-semibold text-slate-900">{% translate "Corrections" %}</h2>
+      <ul class="divide-y divide-slate-100 text-sm">
+        {% for c in corrections %}
+        <li class="flex flex-wrap items-center gap-3 py-2"><a class="num font-medium text-brand-700 hover:underline" href="{% url page_kind.kind|add:'-batch' c.pk %}">{{ c.date|date:"Y-m-d" }}</a>{% include "adjustments/_status.html" with batch=c %}<span class="text-slate-600">{{ c.reason }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

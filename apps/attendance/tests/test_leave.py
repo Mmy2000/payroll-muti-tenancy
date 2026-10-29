@@ -117,8 +117,10 @@ def test_hourly_leave_within_the_monthly_allowance(tenant_a, make_employee):
     with tenant_context(tenant_a.id):
         assert not HourlyLeave.objects.filter(work_date=date(2026, 10, 6)).exists()  # rolled back
     assert ask("2026-11-02", "10:00", "11:00").status_code == 201  # a new month
-    same_day = ask("2026-10-05", "15:00", "15:30", approve=False)
-    assert "work_date" in same_day.json()["error"]["fields"]
+    same_day = ask("2026-10-05", "15:00", "15:30", approve=False)  # a second span that day
+    assert same_day.status_code == 201
+    overlapping = ask("2026-10-05", "11:00", "12:00", approve=False)
+    assert "starts_at" in overlapping.json()["error"]["fields"]
 
 
 def test_approved_leave_and_hours_show_on_the_days(tenant_a, make_employee):

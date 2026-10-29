@@ -13,14 +13,23 @@ from decimal import Decimal as D
 
 from django.utils import timezone
 
+from apps.adjustments import services as adjustments
+from apps.adjustments.models import AdjustmentType
 from apps.attendance import hourly, leave
-from apps.attendance.models import LeaveType, Punch, PunchSource
+from apps.attendance.models import LeaveRequest, LeaveType, Punch, PunchSource
 from apps.attendance.selectors import ScheduleHistory
-from apps.compensation.services import PayItemInput, save_pay_item
+from apps.compensation.models import PayItem
+from apps.compensation.services import AssignmentInput, PayItemInput, give_items, save_pay_item
 from apps.employees import services as employees
 from apps.employees.models import Employee
+from apps.employees.targets import BRANCH, DEPARTMENT, EMPLOYEE, Target
+from apps.loans import advances
+from apps.loans import services as loans
+from apps.loans.models import Loan
 from apps.org.models import Branch, Department
 from apps.org.services import DepartmentInput, save_department
+from apps.payroll import services as payroll
+from apps.payroll.models import PayrollRun
 from apps.policies import services as policies
 from apps.policies.domain.bands import Band
 from apps.policies.domain.tax import Bracket
@@ -108,19 +117,24 @@ def seed_employees(people=PEOPLE) -> None:
             employees.end_employment(person.pk, date(2026, 6, 30), "Resigned")
 
 
-def seed_attendance(days: int = 14) -> None:
-    """Two weeks of clock times up to yesterday: mostly on time, some late, an absence, a leave
-    request approved and one waiting, and an hour of hourly leave."""
-    if Punch.objects.exists():
-        return
+def seed_attendance(days: int | None = None) -> None:
+    """Clock times from the 1st of last month (or `days` back) up to yesterday, so both months
+    can be paid: mostly on time, some late, an absence, a leave request approved and one
+    waiting, and an hour of hourly leave. Days that already have clock times are kept."""
     zone = timezone.get_current_timezone()
     today = timezone.localdate()
+    if days is None:
+        days = (today - (today.replace(day=1) - timedelta(days=1)).replace(day=1)).days
     chance = random.Random(7)  # the same demo every time
     people = list(Employee.objects.exclude(left_on__lt=today - timedelta(days=days)))
     for person in people:
         history = ScheduleHistory(person.schedules.all())
+        clocked = {at.astimezone(zone).date()
+                   for at in Punch.objects.filter(employee=person).values_list("at", flat=True)}
         for back in range(days, 0, -1):
             day = today - timedelta(days=back)
+            if day in clocked:
+                continue
             row = history.on(day)
             if row is None or day.weekday() in row.days_off or chance.random() < 0.08:
                 continue  # a day off, or absent
@@ -134,7 +148,7 @@ def seed_attendance(days: int = 14) -> None:
                 Punch.objects.get_or_create(employee=person, at=moment,
                                             defaults={"source": PunchSource.DEVICE})
     annual = LeaveType.objects.filter(uses_annual_balance=True).first()
-    if annual is None or len(people) < 3:
+    if annual is None or len(people) < 3 or LeaveRequest.objects.exists():
         return
     soon = today + timedelta(days=7)
     leave.request_leave(leave.LeaveRequestInput(
@@ -150,3 +164,97 @@ def seed_attendance(days: int = 14) -> None:
     hourly.record_hourly_leave(hourly.HourlyLeaveInput(
         employee_id=people[1].pk, work_date=today - timedelta(days=2), starts_at=time(13),
         ends_at=time(14), reason="Bank errand"), approve=True)
+
+
+def seed_pay_entries() -> None:
+    """This month's allowances for the head office, an incentive, a lateness penalty for a
+    department, an advance and a loan."""
+    if Loan.objects.exists():
+        return
+    today = timezone.localdate()
+    people = list(Employee.objects.exclude(left_on__lt=today).order_by("code"))
+    transport = PayItem.objects.filter(code=1).first()
+    meals = PayItem.objects.filter(code=2).first()
+    head = Branch.objects.filter(code=1).first()
+    sales = Department.objects.filter(code=2).first()
+    if not (people and transport and meals and head):
+        return
+    give_items(AssignmentInput(item_id=transport.pk, target=Target(BRANCH, head.pk),
+                               frequency="period", amount=D(40),
+                               starts_on=today.replace(day=1), note="Daily transport"))
+    if sales and Employee.objects.filter(department=sales).exclude(left_on__lt=today).exists():
+        give_items(AssignmentInput(item_id=meals.pk, target=Target(DEPARTMENT, sales.pk),
+                                   frequency="monthly", amount=D(500),
+                                   starts_on=today.replace(day=1)))
+        adjustments.give(adjustments.AdjustmentInput(
+            type_id=AdjustmentType.objects.get(kind="penalty", code=1).pk,
+            target=Target(DEPARTMENT, sales.pk), date=today, method="hours",
+            quantity=D(2), reason="Late for the stock count"))  # left a draft, to approve
+    adjustments.give(adjustments.AdjustmentInput(
+        type_id=AdjustmentType.objects.get(kind="incentive", code=1).pk,
+        target=Target(EMPLOYEE, people[0].pk), date=today, method="percent", quantity=D(10),
+        reason="Closed the quarter early"), approve=True)
+    advances.give_advance(advances.AdvanceInput(employee_id=people[-1].pk, date=today,
+                                                amount=D(1000), reason="Rent"))
+    loans.grant_loan(loans.LoanInput(employee_id=people[1 if len(people) > 1 else 0].pk,
+                                     granted_on=today, amount=D(6000), installments=6,
+                                     first_month=today, reason="Car repair"))
+
+
+def seed_payroll() -> None:
+    """Last month's run approved and paid; this month's and this week's as drafts to review."""
+    if PayrollRun.objects.exists():
+        return
+    today = timezone.localdate()
+    last_month = today.replace(day=1) - timedelta(days=1)
+    guard = Employee.objects.filter(code=6).first()
+    if guard is not None and guard.left_on is None:  # paid every week, to show weekly runs
+        employees.change_pay(guard.pk, employees.CompensationInput(
+            effective_from=last_month.replace(day=1), salary=D(1300), pay_frequency="weekly",
+            insured_salary=D(5500), note="Paid weekly from now on"))
+    paid = payroll.create_run(payroll.RunInput(frequency="monthly", day=last_month))
+    if paid.payslips.exists() and not paid.payslips.filter(blocking__gt=0).exists():
+        payroll.approve_run(paid.pk)
+        payroll.record_payment(paid.pk, payroll.PaymentInput(
+            paid_on=today.replace(day=1), method="Bank transfer", reference="Demo"))
+    payroll.create_run(payroll.RunInput(frequency="monthly", day=today))
+    payroll.create_run(payroll.RunInput(frequency="weekly", day=today - timedelta(days=7)))
+
+
+def seed_integrations(tenant, password: str) -> None:
+    """The demo client tries the phase 6 integrations: the mobile app (one employee has a login),
+    a fingerprint device (its serial is free to use with a real one), and WhatsApp (the console
+    in development: nothing leaves the machine)."""
+    from apps.devices import services as devices
+    from apps.devices.models import Device
+    from apps.mobile import access
+
+    from . import features
+    from .models import TenantFeature
+
+    for key in ("mobile_app", "zk_devices", "whatsapp"):
+        TenantFeature.objects.update_or_create(tenant=tenant, key=key,
+                                               defaults={"enabled": True})
+    features.forget(tenant.pk)
+    head = Branch.objects.get(code=1)
+    if not Device.objects.exists():
+        devices.save_device(devices.DeviceInput("DEMO-ZK-0001", "Main gate", head.pk))
+    first = Employee.objects.filter(code=1, member__isnull=True).first()
+    if first is not None:
+        access.give_login(first.pk, "ahmed", password)
+
+
+def seed_evaluations() -> None:
+    """Last year's evaluation of the first two employees."""
+    from apps.evaluations import services as evaluations
+    from apps.evaluations.models import Evaluation
+
+    if Evaluation.objects.exists():
+        return
+    year = timezone.localdate().year - 1
+    notes = [("Reliable and on time; trains the new staff.", "Ready to lead the team."),
+             ("Good with customers.", "Needs to keep the stock sheets up to date.")]
+    for person, (first, second) in zip(Employee.objects.order_by("code")[:2], notes,
+                                       strict=False):
+        evaluations.save(evaluations.EvaluationInput(person.pk, year, date(year, 12, 28),
+                                                     note_1=first, note_2=second))

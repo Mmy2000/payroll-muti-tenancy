@@ -55,7 +55,8 @@ class Plan(TimeStampedModel):
     # Defaults for clients on the plan; a client's own value wins. None = no limit (for the
     # request rate: the platform default, TENANT_REQUESTS_PER_MINUTE).
     max_branches = models.PositiveIntegerField(null=True, blank=True)
-    max_users = models.PositiveIntegerField(null=True, blank=True)
+    max_users = models.PositiveIntegerField(null=True, blank=True)  # office users
+    max_app_logins = models.PositiveIntegerField(null=True, blank=True)  # employees' app logins
     requests_per_minute = models.PositiveIntegerField(null=True, blank=True)
     trial_days = models.PositiveIntegerField(null=True, blank=True)  # sets a new client's trial end
     is_active = models.BooleanField(default=True)  # offered for new clients
@@ -127,7 +128,8 @@ class Tenant(TimeStampedModel):
     trial_ends_on = models.DateField(null=True, blank=True)
     # The client's own limits; None = the plan's (and then no limit).
     max_branches = models.PositiveIntegerField(null=True, blank=True)
-    max_users = models.PositiveIntegerField(null=True, blank=True)
+    max_users = models.PositiveIntegerField(null=True, blank=True)  # office users
+    max_app_logins = models.PositiveIntegerField(null=True, blank=True)  # employees' app logins
     # Requests per minute before the workspace answers 429. None = the plan's, then the
     # platform default (TENANT_REQUESTS_PER_MINUTE); 0 = no limit. See tenants.traffic.
     requests_per_minute = models.PositiveIntegerField(null=True, blank=True)
@@ -157,6 +159,11 @@ class Tenant(TimeStampedModel):
     @property
     def user_limit(self) -> int | None:
         return self.max_users if self.max_users is not None else self.plan.max_users
+
+    @property
+    def app_login_limit(self) -> int | None:
+        return (self.max_app_logins if self.max_app_logins is not None
+                else self.plan.max_app_logins)
 
 
 class TenantDomain(TimeStampedModel):

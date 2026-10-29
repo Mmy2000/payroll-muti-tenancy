@@ -1,0 +1,308 @@
+"""Incentives and penalties: the same endpoints twice, once per kind, so each kind has its own
+permissions (`adjustments.incentive.*`, `adjustments.penalty.*`).
+
+    <kind>-types/          the kind's types
+    <kind>-batches/        batches: give (POST), a draft's details (PUT), delete a draft,
+                           and …/add/, …/approve/, …/reopen/, …/cancel/, …/correct/
+    <kind>s/               the rows, one per employee: a draft row's quantity (PATCH), removing
+                           a draft row (DELETE)
+"""
+
+from rest_framework import serializers, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.routers import SimpleRouter
+
+from apps.adjustments import services
+from apps.adjustments.domain.amounts import CHOICES
+from apps.adjustments.models import Adjustment, AdjustmentKind, AdjustmentType
+from apps.adjustments.selectors import visible_batches
+from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
+from apps.employees.api.scoped import EmployeeRowsViewSet
+from apps.employees.api.targets import TargetFields
+
+# --- types ---------------------------------------------------------------------------------
+
+
+class TypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdjustmentType
+        fields = ["id", "kind", "code", "name", "is_active"]
+
+
+class TypeWriteSerializer(serializers.Serializer):
+    code = serializers.IntegerField(min_value=1, max_value=9999)
+    name = serializers.CharField(max_length=120)
+
+
+def _permissions(kind: str, actions: dict) -> dict:
+    return {name: services.permission(kind, level) for name, level in actions.items()}
+
+
+class _TypeViewSet(ActivateMixin, ServiceViewSet):
+    kind = ""
+    serializer_class = TypeSerializer
+    write_serializer_class = TypeWriteSerializer
+
+    def get_queryset(self):
+        return AdjustmentType.objects.filter(kind=self.kind)
+
+    def to_input(self, data):
+        return services.TypeInput(kind=self.kind, **data)
+
+    def save(self, data, pk, actor):
+        return services.save_type(data, type_id=pk, actor=actor)
+
+    def set_active(self, pk, active, actor):
+        return services.set_type_active(pk, active, actor=actor)
+
+
+TYPE_ACTIONS = {"list": "view", "retrieve": "view", "create": "manage", "update": "manage",
+                "activate": "manage", "deactivate": "manage"}
+
+
+class IncentiveTypeViewSet(_TypeViewSet):
+    kind = AdjustmentKind.INCENTIVE
+    required_permissions = _permissions(kind, TYPE_ACTIONS)
+
+
+class PenaltyTypeViewSet(_TypeViewSet):
+    kind = AdjustmentKind.PENALTY
+    required_permissions = _permissions(kind, TYPE_ACTIONS)
+
+
+# --- rows ----------------------------------------------------------------------------------
+
+
+class AdjustmentSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source="employee.name", read_only=True)
+    type_name = serializers.CharField(source="adjustment_type.name", read_only=True)
+    status = serializers.CharField(source="batch.status", read_only=True)
+
+    class Meta:
+        model = Adjustment
+        fields = ["id", "batch", "employee", "employee_name", "adjustment_type", "type_name",
+                  "kind", "date", "method", "quantity", "amount", "reason", "corrects",
+                  "status"]
+
+
+class RowQuantitySerializer(serializers.Serializer):
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    change_reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+
+
+class ChangeReasonSerializer(serializers.Serializer):
+    change_reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+
+
+def _valid(serializer_class, data) -> dict:
+    payload = serializer_class(data=data)
+    payload.is_valid(raise_exception=True)
+    return dict(payload.validated_data)
+
+
+class _RowViewSet(EmployeeRowsViewSet):
+    kind = ""
+    model = Adjustment
+    related = ("employee", "adjustment_type", "batch")
+    serializer_class = AdjustmentSerializer
+    filterset_fields = ["batch", "employee", "adjustment_type"]
+
+    def rows(self):
+        return Adjustment.objects.filter(kind=self.kind)
+
+    def partial_update(self, request, pk=None):
+        self.get_object()
+        data = _valid(RowQuantitySerializer, request.data)
+        row = services.set_row_quantity(int(pk), data["quantity"],
+                                        reason=data["change_reason"], actor=request.actor)
+        return Response(self.get_serializer(row).data)
+
+    def destroy(self, request, pk=None):
+        self.get_object()
+        data = _valid(ChangeReasonSerializer, request.data)
+        services.remove_row(int(pk), reason=data["change_reason"], actor=request.actor)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+ROW_ACTIONS = {"list": "view", "partial_update": "manage", "destroy": "manage"}
+
+
+class IncentiveViewSet(_RowViewSet):
+    kind = AdjustmentKind.INCENTIVE
+    view_permission = services.permission(kind, "view")
+    required_permissions = _permissions(kind, ROW_ACTIONS)
+
+
+class PenaltyViewSet(_RowViewSet):
+    kind = AdjustmentKind.PENALTY
+    view_permission = services.permission(kind, "view")
+    required_permissions = _permissions(kind, ROW_ACTIONS)
+
+
+# --- batches -------------------------------------------------------------------------------
+
+
+class BatchSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    kind = serializers.CharField()
+    status = serializers.CharField()
+    adjustment_type = serializers.IntegerField(source="adjustment_type_id")
+    type_name = serializers.CharField(source="adjustment_type.name")
+    date = serializers.DateField()
+    method = serializers.CharField()
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    reason = serializers.CharField()
+    target_kind = serializers.CharField()
+    target_id = serializers.IntegerField(allow_null=True)
+    corrects = serializers.IntegerField(source="corrects_id", allow_null=True)
+    revision = serializers.IntegerField()
+    change_reason = serializers.CharField()
+    approved_at = serializers.DateTimeField(allow_null=True)
+    rows = serializers.SerializerMethodField()
+
+    def get_rows(self, batch):
+        paid = services.paid_rows(batch)
+        now = services.effective_amounts(batch)
+        return [{**AdjustmentSerializer(row).data, "paid": row.pk in paid,
+                 "effective_amount": str(now[row.pk])}
+                for row in batch.rows.select_related("employee", "adjustment_type", "batch")]
+
+
+class GiveSerializer(TargetFields):
+    type_id = serializers.IntegerField()
+    date = serializers.DateField()
+    method = serializers.ChoiceField(choices=CHOICES)
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+    approve = serializers.BooleanField(default=False)
+
+
+class DetailsSerializer(ChangeReasonSerializer):
+    type_id = serializers.IntegerField()
+    date = serializers.DateField()
+    method = serializers.ChoiceField(choices=CHOICES)
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+
+
+class AddSerializer(TargetFields, ChangeReasonSerializer):
+    pass
+
+
+class ReasonSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+
+
+class CorrectedRowSerializer(serializers.Serializer):
+    row_id = serializers.IntegerField()
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
+class CorrectionSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+    rows = CorrectedRowSerializer(many=True, min_length=1, max_length=2000)
+    approve = serializers.BooleanField(default=False)
+
+
+class _BatchViewSet(viewsets.GenericViewSet):
+    kind = ""
+    serializer_class = BatchSerializer
+
+    def get_queryset(self):
+        batches = visible_batches(self.request.actor, self.kind).select_related(
+            "adjustment_type")
+        state = self.request.query_params.get("status")
+        return batches.filter(status=state) if state else batches
+
+    def _show(self, batch, code=status.HTTP_200_OK):
+        return Response(self.get_serializer(batch).data, status=code)
+
+    def _visible(self, pk) -> int:
+        self.get_object()  # 404 for a batch the member can't see
+        return int(pk)
+
+    def list(self, request):
+        page = self.paginate_queryset(self.get_queryset().order_by("-date", "-id"))
+        return self.get_paginated_response(self.get_serializer(page, many=True).data)
+
+    def retrieve(self, request, pk=None):
+        return self._show(self.get_object())
+
+    def create(self, request):
+        data = _valid(GiveSerializer, request.data)
+        target, approve = TargetFields.target(data), data.pop("approve")
+        if not AdjustmentType.objects.filter(pk=data["type_id"], kind=self.kind).exists():
+            data["type_id"] = 0  # another kind's type: refused as unknown
+        batch = services.give(services.AdjustmentInput(target=target, **data), approve=approve,
+                              actor=request.actor)
+        return self._show(batch, status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        data = _valid(DetailsSerializer, request.data)
+        reason = data.pop("change_reason")
+        batch = services.update_draft(self._visible(pk), services.BatchInput(**data),
+                                      reason=reason, actor=request.actor)
+        return self._show(batch)
+
+    def destroy(self, request, pk=None):
+        services.delete_draft(self._visible(pk), actor=request.actor)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"])
+    def add(self, request, pk=None):
+        data = _valid(AddSerializer, request.data)
+        services.add_to_draft(self._visible(pk), TargetFields.target(data),
+                              reason=data["change_reason"], actor=request.actor)
+        return self._show(self.get_object())
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        return self._show(services.approve(self._visible(pk), actor=request.actor))
+
+    @action(detail=True, methods=["post"])
+    def reopen(self, request, pk=None):
+        data = _valid(ReasonSerializer, request.data)
+        return self._show(services.reopen(self._visible(pk), data["reason"],
+                                          actor=request.actor))
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        data = _valid(ReasonSerializer, request.data)
+        return self._show(services.cancel(self._visible(pk), data["reason"],
+                                          actor=request.actor))
+
+    @action(detail=True, methods=["post"])
+    def correct(self, request, pk=None):
+        data = _valid(CorrectionSerializer, request.data)
+        quantities = {row["row_id"]: row["quantity"] for row in data["rows"]}
+        fix = services.correct(self._visible(pk), services.CorrectionInput(
+            date=data["date"], reason=data["reason"], quantities=quantities),
+            approve=data["approve"], actor=request.actor)
+        return self._show(fix, status.HTTP_201_CREATED)
+
+
+BATCH_ACTIONS = {"list": "view", "retrieve": "view", "create": "manage", "update": "manage",
+                 "destroy": "manage", "add": "manage", "approve": "approve",
+                 "reopen": "approve", "cancel": "approve", "correct": "approve"}
+
+
+class IncentiveBatchViewSet(_BatchViewSet):
+    kind = AdjustmentKind.INCENTIVE
+    required_permissions = _permissions(kind, BATCH_ACTIONS)
+
+
+class PenaltyBatchViewSet(_BatchViewSet):
+    kind = AdjustmentKind.PENALTY
+    required_permissions = _permissions(kind, BATCH_ACTIONS)
+
+
+router = SimpleRouter()
+router.register("incentive-types", IncentiveTypeViewSet, basename="incentive-type")
+router.register("penalty-types", PenaltyTypeViewSet, basename="penalty-type")
+router.register("incentive-batches", IncentiveBatchViewSet, basename="incentive-batch")
+router.register("penalty-batches", PenaltyBatchViewSet, basename="penalty-batch")
+router.register("incentives", IncentiveViewSet, basename="incentive")
+router.register("penalties", PenaltyViewSet, basename="penalty")
+urlpatterns = router.urls

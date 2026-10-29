@@ -1,0 +1,21 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Evaluation" %} #{{ row.number }}{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <a href="{% url 'evaluations' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Evaluations" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ row.employee.name }} · <span class="num">{{ row.year }}</span></h1>
+    <a class="btn btn-secondary ms-auto text-xs" href="{% url 'evaluation-pdf' row.pk %}">{% icon "printer" "size-4" %}{% translate "Card (PDF)" %}</a>
+  </div>
+  <p class="mt-1 text-sm text-slate-500"><span class="num">#{{ row.number }}</span> · <span class="num">{{ row.evaluated_on|date:"Y-m-d" }}</span></p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <section class="card lg:col-span-2"><div class="card-body space-y-3">
+    {% for note in row.notes %}<p class="whitespace-pre-wrap rounded-lg border border-slate-100 p-3 text-sm text-slate-800" dir="auto">{{ note }}</p>{% endfor %}
+  </div></section>
+  <section class="card"><dl class="card-body grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm [&_dt]:text-slate-500">{% include "evaluations/_facts.html" %}</dl></section>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "layouts/bulk_form.html" %}
+{% load i18n ui %}
+{% block fields %}
+<div>
+  <label class="form-label" for="f-day">{% translate "Day" %}</label>
+  <input id="f-day" type="date" name="work_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+  <p class="form-error" data-error-for="work_date"></p>
+</div>
+<div class="sm:col-span-2">
+  <span class="form-label">{% translate "Time spans" %}</span>
+  <div class="space-y-2" data-rows="spans">
+    <div class="flex items-center gap-2" data-row>
+      <input type="time" class="form-input" data-field="starts_at" aria-label="{% translate 'From' %}" required>
+      <span class="text-slate-400">–</span>
+      <input type="time" class="form-input" data-field="ends_at" aria-label="{% translate 'To' %}" required>
+      <button type="button" class="btn btn-ghost px-2" data-remove-row aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button>
+      <p class="form-error" data-row-error></p>
+    </div>
+  </div>
+  <template data-row-template="spans">
+    <div class="flex items-center gap-2" data-row>
+      <input type="time" class="form-input" data-field="starts_at" aria-label="{% translate 'From' %}" required>
+      <span class="text-slate-400">–</span>
+      <input type="time" class="form-input" data-field="ends_at" aria-label="{% translate 'To' %}" required>
+      <button type="button" class="btn btn-ghost px-2" data-remove-row aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button>
+      <p class="form-error" data-row-error></p>
+    </div>
+  </template>
+  <button type="button" class="btn btn-ghost mt-2 text-sm" data-add-row="spans">{% icon "plus" "size-4" %}{% translate "Another span that day" %}</button>
+  <p class="form-error" data-error-for="spans"></p>
+</div>
+<div class="sm:col-span-3">
+  <label class="form-label" for="f-reason">{% translate "Reason" %}</label>
+  <input id="f-reason" name="reason" class="form-input" maxlength="300">
+</div>
+{% if can_approve %}
+<label class="flex items-center gap-3 sm:col-span-3">
+  <input type="checkbox" name="approve" class="size-4 rounded border-slate-300 accent-brand-600" checked>
+  <span class="text-sm text-slate-700">{% translate "Approve them now (each within their own monthly allowance)" %}</span>
+</label>
+{% endif %}
+{% endblock %}

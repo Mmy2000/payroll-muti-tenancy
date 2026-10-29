@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Evaluations" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Evaluations" %}</h1>
+    <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "A yearly evaluation of each employee: up to four notes, and a card to print with their dates and pay." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'evaluation-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New evaluation" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Year" %}</th><th>{% translate "Employee" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Date" %}</th><th>{% translate "Notes" %}</th></tr></thead>
+      <tbody>
+      {% for e in page.object_list %}
+        <tr>
+          <td><a class="num font-medium text-brand-700 hover:underline" href="{% url 'evaluation' e.pk %}">{{ e.number }}</a></td>
+          <td><span class="num">{{ e.year }}</span></td>
+          <td class="font-medium text-slate-900">{{ e.employee.name }}</td>
+          <td>{{ e.employee.branch.name }}</td>
+          <td><span class="num">{{ e.evaluated_on|date:"Y-m-d" }}</span></td>
+          <td class="max-w-md text-sm text-slate-600"><bdi>{{ e.note_1|truncatechars:80 }}</bdi></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "No evaluations yet" as empty_title %}
+    {% translate "Write each employee's yearly evaluation here." as empty_text %}
+    {% include "components/empty_state.html" with icon="clipboard-check" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

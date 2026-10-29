@@ -1,28 +1,44 @@
-"""Incentives and penalties: their types, giving them to an employee, a department or a
-branch, and cancelling them.
+"""Incentives and penalties: their types, and batches given to an employee, a department or a
+branch, through their life:
 
-The kind decides the permission (`adjustments.incentive.*` or `adjustments.penalty.*`), so a
-member may be allowed to give incentives and not penalties. The amount is worked out once, from
-the pay in effect on the day (apps.adjustments.domain.amounts).
+    draft ──approve──▶ approved ──reopen (reason, not paid)──▶ draft
+      │                   ├──cancel (reason, not paid)──▶ cancelled
+      └─delete            └──correct (reason)──▶ a new correction batch (draft or approved)
+
+A draft is edited freely (its details, who is in it, each row's quantity) and is never paid.
+Once approved, nothing is overwritten silently: while no approved payroll has paid it, it may be
+reopened or cancelled with a reason; after that, only a correction pays or takes back the
+difference, in a later payroll. Every change bumps the batch's `revision` with its reason, so the
+audit trail has who, when, what and why.
+
+The kind decides the permission (`adjustments.incentive.*` or `adjustments.penalty.*`):
+`manage` gives and edits drafts, `approve` approves, reopens, cancels and corrects. The amount is
+worked out from the pay in effect on the row's date (apps.adjustments.domain.amounts).
 """
 
 from __future__ import annotations
 
-import uuid
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
 from django.db import transaction
+from django.db.models import Sum
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.core.errors import Conflict, NotFound, ValidationError
+from apps.core import locks
+from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
 from apps.core.history import in_effect
 from apps.employees.services import visible_employees
 from apps.employees.targets import Target, resolve
+from apps.notifications import events
 
-from .domain.amounts import METHODS, Pay
-from .models import Adjustment, AdjustmentKind, AdjustmentStatus, AdjustmentType
+from .domain.amounts import METHODS
+from .models import Adjustment, AdjustmentBatch, AdjustmentKind, AdjustmentType, BatchStatus
+
+SOURCE = "adjustments.Adjustment"  # what payroll records as paid (apps/core/locks.py)
+ZERO = Decimal(0)
 
 
 def permission(kind: str, action: str) -> str:
@@ -96,7 +112,24 @@ def seed_types(**_values) -> None:
         AdjustmentType.objects.create(kind=kind, code=code, name=name)
 
 
-# --- giving --------------------------------------------------------------------------------
+# --- reading -------------------------------------------------------------------------------
+
+
+def paid_rows(batch: AdjustmentBatch) -> set[int]:
+    """The rows of `batch` an approved payroll has paid."""
+    return {pk for pk in batch.rows.values_list("pk", flat=True)
+            if locks.source_locked(SOURCE, pk)}
+
+
+def effective_amounts(batch: AdjustmentBatch) -> dict[int, Decimal]:
+    """{row id: what it pays once its approved corrections are counted}."""
+    corrected = dict(Adjustment.objects.filter(
+        corrects__batch=batch, batch__status=BatchStatus.APPROVED)
+        .values("corrects_id").annotate(total=Sum("amount")).values_list("corrects_id", "total"))
+    return {row.pk: row.amount + corrected.get(row.pk, ZERO) for row in batch.rows.all()}
+
+
+# --- the details of a batch ------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -109,50 +142,304 @@ class AdjustmentInput:
     reason: str = ""
 
 
-def give(data: AdjustmentInput, *, actor=None) -> list[Adjustment]:
-    """One entry per employee the target means on the day, sharing a batch."""
-    found = AdjustmentType.objects.filter(pk=data.type_id, is_active=True).first()
+@dataclass(frozen=True)
+class BatchInput:
+    """A draft's details: changing them works every row out again."""
+
+    type_id: int
+    date: date
+    method: str
+    quantity: Decimal
+    reason: str = ""
+
+
+def _checked(type_id: int, method_key: str, quantity: Decimal, *, kind: str | None = None):
+    found = AdjustmentType.objects.filter(pk=type_id, is_active=True).first()
     errors = {}
-    if found is None:
+    if found is None or (kind is not None and found.kind != kind):
         errors["type_id"] = [_("Choose an active type.")]
-    method = METHODS.get(data.method)
+    method = METHODS.get(method_key)
     if method is None:
         errors["method"] = [_("Choose how the amount is counted.")]
-    if data.quantity <= 0:
+    if quantity <= 0:
         errors["quantity"] = [_("Must be greater than zero.")]
     if errors:
         raise _invalid(errors)
+    return found, method
+
+
+def _amount(employee, method, quantity: Decimal, day: date) -> Decimal:
+    pay = in_effect(employee.pay_history.all(), day)
+    if pay is None:
+        raise _invalid({"date": [_("%(name)s has no pay on that day.") % {"name": employee.name}]})
+    return method.amount(quantity, pay.terms)
+
+
+def _row(batch: AdjustmentBatch, employee, method, quantity: Decimal, actor) -> Adjustment:
+    locks.ensure_open(employee.pk, batch.date)
+    return Adjustment(batch=batch, employee=employee, adjustment_type=batch.adjustment_type,
+                      kind=batch.kind, date=batch.date, method=method.key, quantity=quantity,
+                      amount=_amount(employee, method, quantity, batch.date),
+                      reason=batch.reason, created_by=getattr(actor, "user", None))
+
+
+def _locked(batch_id: int, actor, action: str) -> AdjustmentBatch:
+    """The batch, locked, if the actor may `action` it: the kind's permission, and every one of
+    its employees in their branches."""
+    batch = AdjustmentBatch.objects.select_for_update().filter(pk=batch_id).first()
+    if batch is None:
+        raise NotFound(_("Not found."))
+    if actor is not None:
+        code = permission(batch.kind, action)
+        actor.require(code)
+        if batch.rows.exclude(employee__in=visible_employees(actor, code)).exists():
+            raise NotFound(_("Not found."))
+    return batch
+
+
+def _require(batch: AdjustmentBatch, *statuses: str) -> None:
+    if batch.status not in statuses:
+        raise Conflict(_("This batch is %(status)s.")
+                       % {"status": batch.get_status_display().lower()},
+                       code="ADJUSTMENTS_STATE")
+
+
+def _require_editable(batch: AdjustmentBatch) -> None:
+    _require(batch, BatchStatus.DRAFT)
+    if batch.corrects_id is not None:
+        raise DomainError(_("A correction is worked out from its batch: delete it and correct "
+                            "again."), code="ADJUSTMENTS_CORRECTION")
+
+
+def _touch(batch: AdjustmentBatch, reason: str, actor, *fields: str) -> None:
+    """Record a change: one more revision, its reason, who made it (the audit trail keeps
+    each)."""
+    batch.revision += 1
+    batch.change_reason = reason.strip()
+    batch.updated_by = getattr(actor, "user", None)
+    batch.save(update_fields=["revision", "change_reason", "updated_by", "updated_at", *fields])
+
+
+def _need_reason(reason: str) -> None:
+    if not reason.strip():
+        raise _invalid({"reason": [_("Say why.")]})
+
+
+def _ensure_unpaid(batch: AdjustmentBatch) -> None:
+    if paid_rows(batch):
+        raise DomainError(_("An approved payroll already paid this batch: correct it instead, "
+                            "and the difference is settled in the next payroll."),
+                          code="ADJUSTMENTS_PAID")
+
+
+# --- giving and drafts -----------------------------------------------------------------------
+
+
+def give(data: AdjustmentInput, *, approve: bool = False, actor=None) -> AdjustmentBatch:
+    """A batch with one row per employee the target means on the day: a draft, or approved at
+    once (with the approve permission)."""
+    found, method = _checked(data.type_id, data.method, data.quantity)
     manage = permission(found.kind, "manage")
     if actor is not None:
         actor.require(manage)
-    batch = uuid.uuid4()
+        if approve:
+            actor.require(permission(found.kind, "approve"))
     with transaction.atomic():
-        made = []
-        for employee in resolve(data.target, on=data.date, actor=actor, permission=manage):
-            pay = in_effect(employee.pay_history.all(), data.date)
-            amount = method.amount(data.quantity, Pay(pay.basis, pay.salary, pay.hours_per_day))
-            made.append(Adjustment(
-                employee=employee, adjustment_type=found, kind=found.kind, date=data.date,
-                method=method.key, quantity=data.quantity, amount=amount,
-                reason=data.reason.strip(), batch=batch, created_by=getattr(actor, "user", None)))
-        return Adjustment.objects.bulk_create(made)
+        batch = AdjustmentBatch.objects.create(
+            kind=found.kind, adjustment_type=found, date=data.date, method=method.key,
+            quantity=data.quantity, reason=data.reason.strip(), target_kind=data.target.kind,
+            target_id=data.target.id, created_by=getattr(actor, "user", None))
+        people = resolve(data.target, on=data.date, actor=actor, permission=manage)
+        Adjustment.objects.bulk_create([_row(batch, e, method, data.quantity, actor)
+                                        for e in people])
+        if approve:
+            _approve(batch, actor)
+    return batch
 
 
-def cancel(adjustment_id: int, *, whole_batch: bool = False, actor=None) -> int:
-    """Cancel an entry, or every entry given with it. Returns how many were cancelled."""
-    # TODO(phase 4): refuse once a posted payroll covers the entry's date.
+def update_draft(batch_id: int, data: BatchInput, *, reason: str = "",
+                 actor=None) -> AdjustmentBatch:
+    """New details for a draft; every row takes the new quantity, worked out again."""
     with transaction.atomic():
-        entry = Adjustment.objects.filter(pk=adjustment_id).first()
-        if entry is None:
-            raise NotFound(_("Not found."))
-        manage = permission(entry.kind, "manage")
-        rows = (Adjustment.objects.filter(batch=entry.batch) if whole_batch
-                else Adjustment.objects.filter(pk=entry.pk))
-        if actor is not None:
-            actor.require(manage)
-            rows = rows.filter(employee__in=visible_employees(actor, manage))
-        rows = rows.select_for_update()
-        if not rows.filter(status=AdjustmentStatus.ACTIVE).exists():
-            raise Conflict(_("Already cancelled."), code="ADJUSTMENTS_STATE")
-        return rows.filter(status=AdjustmentStatus.ACTIVE).update(
-            status=AdjustmentStatus.CANCELLED, updated_by=getattr(actor, "user", None))
+        batch = _locked(batch_id, actor, "manage")
+        _require_editable(batch)
+        found, method = _checked(data.type_id, data.method, data.quantity, kind=batch.kind)
+        batch.adjustment_type, batch.date, batch.method = found, data.date, method.key
+        batch.quantity, batch.reason = data.quantity, data.reason.strip()
+        _touch(batch, reason, actor, "adjustment_type", "date", "method", "quantity", "reason")
+        for row in batch.rows.select_related("employee"):
+            locks.ensure_open(row.employee_id, batch.date)
+            row.adjustment_type, row.date, row.method = found, batch.date, method.key
+            row.quantity, row.reason = data.quantity, batch.reason
+            row.amount = _amount(row.employee, method, data.quantity, batch.date)
+            row.updated_by = getattr(actor, "user", None)
+            row.save()
+    return batch
+
+
+def add_to_draft(batch_id: int, target: Target, *, reason: str = "",
+                 actor=None) -> list[Adjustment]:
+    """More employees in a draft (an employee, a department or a branch); those already in it
+    are left as they are."""
+    with transaction.atomic():
+        batch = _locked(batch_id, actor, "manage")
+        _require_editable(batch)
+        method = METHODS[batch.method]
+        present = set(batch.rows.values_list("employee_id", flat=True))
+        people = [e for e in resolve(target, on=batch.date, actor=actor,
+                                     permission=permission(batch.kind, "manage"))
+                  if e.pk not in present]
+        if not people:
+            message = _("They are all in this batch already.")
+            raise ValidationError(message, fields={"target_id": [message]})
+        made = Adjustment.objects.bulk_create([_row(batch, e, method, batch.quantity, actor)
+                                               for e in people])
+        _touch(batch, reason, actor)
+    return made
+
+
+def _locked_row(row_id: int, actor) -> tuple[AdjustmentBatch, Adjustment]:
+    batch_id = Adjustment.objects.filter(pk=row_id).values_list("batch_id", flat=True).first()
+    if batch_id is None:
+        raise NotFound(_("Not found."))
+    batch = _locked(batch_id, actor, "manage")
+    _require_editable(batch)
+    return batch, batch.rows.select_related("employee").get(pk=row_id)
+
+
+def set_row_quantity(row_id: int, quantity: Decimal, *, reason: str = "",
+                     actor=None) -> Adjustment:
+    """One employee's quantity in a draft (the others keep the batch's)."""
+    if quantity <= 0:
+        raise _invalid({"quantity": [_("Must be greater than zero.")]})
+    with transaction.atomic():
+        batch, row = _locked_row(row_id, actor)
+        row.quantity = quantity
+        row.amount = _amount(row.employee, METHODS[row.method], quantity, row.date)
+        row.updated_by = getattr(actor, "user", None)
+        row.save(update_fields=["quantity", "amount", "updated_by", "updated_at"])
+        _touch(batch, reason, actor)
+    return row
+
+
+def remove_row(row_id: int, *, reason: str = "", actor=None) -> None:
+    with transaction.atomic():
+        batch, row = _locked_row(row_id, actor)
+        if batch.rows.count() == 1:
+            raise DomainError(_("This is the batch's only employee: delete the draft instead."),
+                              code="ADJUSTMENTS_LAST_ROW")
+        row.delete()
+        _touch(batch, reason, actor)
+
+
+def delete_draft(batch_id: int, *, actor=None) -> None:
+    with transaction.atomic():
+        batch = _locked(batch_id, actor, "manage")
+        _require(batch, BatchStatus.DRAFT)
+        batch.delete()
+
+
+# --- approval, and changing an approved batch ----------------------------------------------
+
+
+def _approve(batch: AdjustmentBatch, actor) -> None:
+    for employee_id in batch.rows.values_list("employee_id", flat=True):
+        locks.ensure_open(employee_id, batch.date)
+    batch.status, batch.approved_at = BatchStatus.APPROVED, timezone.now()
+    batch.approved_by = getattr(actor, "user", None)
+    _touch(batch, "", actor, "status", "approved_at", "approved_by")
+    events.adjustment_approved(batch, by=actor)
+
+
+def approve(batch_id: int, *, actor=None) -> AdjustmentBatch:
+    with transaction.atomic():
+        batch = _locked(batch_id, actor, "approve")
+        _require(batch, BatchStatus.DRAFT)
+        if not batch.rows.exists():
+            raise DomainError(_("Nobody is in this batch."), code="ADJUSTMENTS_EMPTY")
+        _approve(batch, actor)
+    return batch
+
+
+def reopen(batch_id: int, reason: str, *, actor=None) -> AdjustmentBatch:
+    """Back to a draft, to be edited and approved again; refused once paid."""
+    _need_reason(reason)
+    with transaction.atomic():
+        batch = _locked(batch_id, actor, "approve")
+        _require(batch, BatchStatus.APPROVED)
+        _ensure_unpaid(batch)
+        if batch.corrections.exclude(status=BatchStatus.CANCELLED).exists():
+            raise DomainError(_("This batch has corrections: correct it again instead."),
+                              code="ADJUSTMENTS_CORRECTED")
+        batch.status, batch.approved_at, batch.approved_by = BatchStatus.DRAFT, None, None
+        _touch(batch, reason, actor, "status", "approved_at", "approved_by")
+    return batch
+
+
+def cancel(batch_id: int, reason: str, *, actor=None) -> AdjustmentBatch:
+    """Take back an approved batch no payroll has paid; it stays on record, cancelled."""
+    _need_reason(reason)
+    with transaction.atomic():
+        batch = _locked(batch_id, actor, "approve")
+        _require(batch, BatchStatus.APPROVED)
+        _ensure_unpaid(batch)
+        if batch.corrections.exclude(status=BatchStatus.CANCELLED).exists():
+            raise DomainError(_("This batch has corrections: correct it again instead."),
+                              code="ADJUSTMENTS_CORRECTED")
+        batch.status = BatchStatus.CANCELLED
+        _touch(batch, reason, actor, "status")
+    return batch
+
+
+@dataclass(frozen=True)
+class CorrectionInput:
+    date: date  # the day the difference counts (an open payroll period)
+    reason: str
+    quantities: dict[int, Decimal]  # {row id: what it should have been; 0 takes it back}
+
+
+def correct(batch_id: int, data: CorrectionInput, *, approve: bool = False,
+            actor=None) -> AdjustmentBatch:
+    """A correction batch for an approved one: for each row whose quantity should have been
+    different, the difference between what it should pay and what it pays now (with earlier
+    approved corrections). The original rows are never changed."""
+    _need_reason(data.reason)
+    with transaction.atomic():
+        batch = _locked(batch_id, actor, "approve")
+        _require(batch, BatchStatus.APPROVED)
+        if batch.corrects_id is not None:
+            raise DomainError(_("Correct the original batch, not a correction."),
+                              code="ADJUSTMENTS_CORRECTION")
+        if batch.corrections.filter(status=BatchStatus.DRAFT).exists():
+            raise Conflict(_("A correction of this batch is still a draft: approve or delete "
+                             "it first."), code="ADJUSTMENTS_DRAFT_CORRECTION")
+        rows = {row.pk: row for row in batch.rows.select_related("employee")}
+        errors = {f"quantities.{pk}": [_("Not a row of this batch.")]
+                  for pk in data.quantities if pk not in rows}
+        errors.update({f"quantities.{pk}": [_("Must not be negative.")]
+                       for pk, quantity in data.quantities.items() if quantity < 0})
+        if errors:
+            raise _invalid(errors)
+        method, now = METHODS[batch.method], effective_amounts(batch)
+        changes = []
+        for pk, quantity in data.quantities.items():
+            row = rows[pk]
+            should = _amount(row.employee, method, quantity, row.date) if quantity else ZERO
+            if should != now[pk]:
+                changes.append((row, quantity, should - now[pk]))
+        if not changes:
+            raise _invalid({"quantities": [_("Nothing changes.")]})
+        fix = AdjustmentBatch.objects.create(
+            kind=batch.kind, adjustment_type=batch.adjustment_type, date=data.date,
+            method=batch.method, quantity=ZERO, reason=data.reason.strip(), corrects=batch,
+            change_reason=data.reason.strip(), created_by=getattr(actor, "user", None))
+        for row, quantity, difference in changes:
+            locks.ensure_open(row.employee_id, data.date)
+            Adjustment.objects.create(
+                batch=fix, employee=row.employee, adjustment_type=batch.adjustment_type,
+                kind=batch.kind, date=data.date, method=batch.method, quantity=quantity,
+                amount=difference, reason=data.reason.strip(), corrects=row,
+                created_by=getattr(actor, "user", None))
+        if approve:
+            _approve(fix, actor)
+    return fix

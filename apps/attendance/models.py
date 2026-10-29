@@ -29,11 +29,22 @@ class PunchSource(models.TextChoices):
     API = "api", _("External system")
 
 
+class PunchDirection(models.IntegerChoices):  # the mobile app's "status"
+    IN = 0, _("In")
+    OUT = 1, _("Out")
+
+
 class Punch(TenantScopedModel):
     employee = models.ForeignKey("employees.Employee", on_delete=models.PROTECT,
                                  related_name="punches")
     at = models.DateTimeField()
     source = models.CharField(max_length=8, choices=PunchSource.choices)
+    # What the employee said it was (the mobile app); a device's key is not trusted: the day's
+    # first and last punches are its in and out either way.
+    direction = models.PositiveSmallIntegerField(choices=PunchDirection.choices, null=True,
+                                                 blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     class Meta:
         ordering = ["at"]
@@ -56,8 +67,9 @@ class DayKind(models.TextChoices):
 
 class AttendanceDay(TenantScopedModel):
     """A manager's word on one work day. `worked` carries the times; the other kinds none.
-    `excused` is a paid absence approved after the fact; `day_off` swaps a working day for a
-    rest day."""
+    `excused` is an absence accepted after the fact: not penalized, not paid (paid days away are
+    leave of a paid type). `day_off` makes a working day a rest day; if the employee clocks in
+    anyway, the day is worked on a rest day."""
 
     employee = models.ForeignKey("employees.Employee", on_delete=models.PROTECT,
                                  related_name="attendance_days")

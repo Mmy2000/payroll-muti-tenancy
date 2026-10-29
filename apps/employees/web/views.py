@@ -14,15 +14,16 @@ from apps.core.history import in_effect
 from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
 from apps.employees import imports, services
-from apps.employees.domain.rates import daily_rate, hourly_rate
 from apps.employees.models import (
     Gender,
     MaritalStatus,
     MilitaryStatus,
-    PayBasis,
+    PayFrequency,
+    WageType,
     Weekday,
 )
 from apps.employees.services import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
+from apps.employees.web.targets import group_page
 from apps.iam.authz import permission_required
 from apps.org.models import Branch, Department
 from apps.policies.models import LatenessPolicy, OvertimePolicy
@@ -73,7 +74,8 @@ def _choices(request) -> dict:
         "overtime_policies": (OvertimePolicy.objects.filter(is_active=True)
                               if actor.can("policies.overtime.view") else []),
         "genders": Gender.choices, "marital_statuses": MaritalStatus.choices,
-        "military_statuses": MilitaryStatus.choices, "bases": PayBasis.choices,
+        "military_statuses": MilitaryStatus.choices, "wage_types": WageType.choices,
+        "frequencies": PayFrequency.choices,
         "week": [(day.value, day.label) for day in WEEK],
     }
 
@@ -112,6 +114,8 @@ def employee(request, pk):
     context = {
         **_choices(request), "employee": person, "today": today,
         "can_manage": actor.can(MANAGE, branch=person.branch_id),
+        "can_app_login": actor.can("mobile.signin") and actor.can("admin.users.manage")
+        and actor.can(MANAGE, branch=person.branch_id),
         "can_see_pay": actor.can(SALARY_READ, branch=person.branch_id),
         "can_change_pay": actor.can(SALARY_MANAGE, branch=person.branch_id),
         "can_see_attendance": actor.can("attendance.day.view", branch=person.branch_id),
@@ -122,8 +126,7 @@ def employee(request, pk):
     if context["can_see_pay"]:
         history = list(person.pay_history.order_by("-effective_from", "-id"))
         for row in history:
-            row.daily = daily_rate(row.basis, row.salary)
-            row.hourly = hourly_rate(row.basis, row.salary, row.hours_per_day)
+            row.daily, row.hourly = row.terms.daily, row.terms.hourly
         current = next((row for row in history if row.effective_from <= today), None)
         context.update(pay_history=history, pay=current)
     return render(request, "employees/employee.html", context)
@@ -145,3 +148,16 @@ def employee_import(request):
 @permission_required("employees.employee.import")
 def employee_import_template(request):
     return template_download(imports.EmployeeImport(), "employees.xlsx")
+
+
+@permission_required(MANAGE)
+def hours_group(request):
+    return render(request, "employees/hours_group.html", group_page(
+        request, MANAGE, title=_("Working hours for a group"),
+        intro=_("New working hours for several employees from a date, for good or until a last "
+                "day. Each keeps their days off and policies unless you change the days off "
+                "too. Preview, then save."),
+        back_url=reverse("employees"), back_label=_("Employees"),
+        endpoint=reverse("group-hours-list"), done_url=reverse("employees"),
+        done_message=_("New hours saved for {count} employees."), detail_label=_("Hours"),
+        weekdays=[(day.value, day.label) for day in WEEK]))

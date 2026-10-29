@@ -9,7 +9,7 @@
   <p class="mt-1 text-sm text-slate-500">{{ record.what }} — {% translate "every change, who made it and when." %}</p>
   {% else %}
   <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Activity" %}</h1>
-  <p class="mt-1 text-sm text-slate-500">{% translate "Every change to prices, customers and suppliers, pieces, users, roles, cash boxes and settings: who made it, when, and what it was before." %}</p>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Every change to employees, pay and hours, attendance and leave, loans, incentives and penalties, payroll, users, roles and settings: who made it, when, and what it was before." %}</p>
   {% endif %}
 </div>
 {% endblock %}
@@ -66,7 +66,7 @@
   {% endif %}
   {% else %}
     {% translate "No changes recorded" as empty_title %}
-    {% translate "Changes to master data appear here as they happen." as empty_text %}
+    {% translate "Changes appear here as they happen." as empty_text %}
     {% include "components/empty_state.html" with icon="history" title=empty_title text=empty_text %}
   {% endif %}
 </section>

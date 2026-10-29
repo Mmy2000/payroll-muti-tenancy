@@ -1,12 +1,12 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui %}
+{% load i18n ui audit %}
 {% block title %}{% if rate %}{% translate "Edit insurance rates" %}{% else %}{% translate "New insurance rates" %}{% endif %}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'insurance-rates' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Social insurance" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if rate %}{% translate "Edit insurance rates" %}{% else %}{% translate "New insurance rates" %}{% endif %}</h1>
-    {% if rate %}<span class="ms-auto">{% include "audit/_history_link.html" with table="policies_insurancerate" row=rate.pk %}</span>{% endif %}
+    {% if rate %}<span class="ms-auto">{% history_link rate %}</span>{% endif %}
   </div>
 </div>
 {% endblock %}

@@ -8,11 +8,61 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 
+msgid "%"
+msgstr "%"
+
+msgid "%(absent)s absent · %(leave)s on leave"
+msgstr "%(absent)s غائب · %(leave)s في إجازة"
+
+msgid "%(age)s ago"
+msgstr "منذ %(age)s"
+
 msgid "%(count)s employees imported."
 msgstr "تم استيراد %(count)s موظف."
 
+msgid "%(count)s employees."
+msgstr "%(count)s موظف."
+
+msgid ""
+"%(count)s payslip has a problem to solve before the run can be approved."
+msgid_plural ""
+"%(count)s payslips have problems to solve before the run can be approved."
+msgstr[0] "توجد مشكلة في %(count)s من القسائم يجب حلها قبل اعتماد المسير."
+msgstr[1] "توجد مشكلة في %(count)s من القسائم يجب حلها قبل اعتماد المسير."
+msgstr[2] "توجد مشكلة في %(count)s من القسائم يجب حلها قبل اعتماد المسير."
+msgstr[3] "توجد مشكلة في %(count)s من القسائم يجب حلها قبل اعتماد المسير."
+msgstr[4] "توجد مشكلة في %(count)s من القسائم يجب حلها قبل اعتماد المسير."
+msgstr[5] "توجد مشكلة في %(count)s من القسائم يجب حلها قبل اعتماد المسير."
+
+msgid "%(count)s payslips have problems to solve before approval."
+msgstr "توجد مشكلات في %(count)s من قسائم الرواتب يجب حلها قبل الاعتماد."
+
+msgid "%(count)s problem"
+msgid_plural "%(count)s problems"
+msgstr[0] "%(count)s مشكلة"
+msgstr[1] "%(count)s مشكلة"
+msgstr[2] "%(count)s مشكلة"
+msgstr[3] "%(count)s مشكلة"
+msgstr[4] "%(count)s مشكلة"
+msgstr[5] "%(count)s مشكلة"
+
+msgid "%(count)s punches."
+msgstr "%(count)s بصمة."
+
+msgid "%(count)s rows have problems; nothing was saved."
+msgstr "توجد مشكلات في %(count)s من الصفوف؛ لم يُحفظ شيء."
+
 msgid "%(count)s rows imported."
 msgstr "تم استيراد %(count)s صف."
+
+msgid "%(count)s warning"
+msgid_plural "%(count)s warnings"
+msgstr[0] "%(count)s تنبيه"
+msgstr[1] "%(count)s تنبيه"
+msgstr[2] "%(count)s تنبيه"
+msgstr[3] "%(count)s تنبيه"
+msgstr[4] "%(count)s تنبيه"
+msgstr[5] "%(count)s تنبيه"
 
 msgid "%(counter)s document"
 msgid_plural "%(counter)s documents"
@@ -50,17 +100,238 @@ msgstr[3] "%(counter)s مستخدمين"
 msgstr[4] "%(counter)s مستخدمًا"
 msgstr[5] "%(counter)s مستخدم"
 
+msgid "%(days)s days from %(start)s to %(end)s"
+msgstr "%(days)s يوم من %(start)s الى %(end)s"
+
+msgid ""
+"%(days)s days have a check-in without a check-out: no time was deducted for "
+"them."
+msgstr "%(days)s أيام بها حضور بدون انصراف: لم يُخصم عنها وقت."
+
+msgid "%(feature)s follows the plan again for %(name)s."
+msgstr "%(feature)s يتبع الباقة مرة أخرى لدى %(name)s."
+
+msgid "%(feature)s in %(plan)s"
+msgstr "%(feature)s في %(plan)s"
+
+msgid "%(feature)s is no longer included in %(plan)s."
+msgstr "لم تعد %(feature)s ضمن باقة %(plan)s."
+
+msgid "%(feature)s is now included in %(plan)s."
+msgstr "أصبحت %(feature)s ضمن باقة %(plan)s."
+
+msgid "%(feature)s is off for %(name)s."
+msgstr "تم إيقاف %(feature)s لدى %(name)s."
+
+msgid "%(feature)s is on for %(name)s."
+msgstr "تم تفعيل %(feature)s لدى %(name)s."
+
+msgid "%(ms)s ms on average"
+msgstr "%(ms)s مللي ثانية في المتوسط"
+
+msgid "%(ms)s ms or longer"
+msgstr "%(ms)s مللي ثانية أو أكثر"
+
+msgid "%(n)s client"
+msgid_plural "%(n)s clients"
+msgstr[0] "لا عملاء"
+msgstr[1] "عميل واحد"
+msgstr[2] "عميلان"
+msgstr[3] "%(n)s عملاء"
+msgstr[4] "%(n)s عميلاً"
+msgstr[5] "%(n)s عميل"
+
+msgid ""
+"%(n)s client is on this plan. It moves to the plan you choose, with that "
+"plan's features and limits (its own settings stay)."
+msgid_plural ""
+"%(n)s clients are on this plan. They move to the plan you choose, with that "
+"plan's features and limits (their own settings stay)."
+msgstr[0] "لا عملاء على هذه الباقة."
+msgstr[1] ""
+"عميل واحد على هذه الباقة. سينتقل إلى الباقة التي تختارها بخصائصها وحدودها "
+"(إعداداته الخاصة تبقى)."
+msgstr[2] ""
+"عميلان على هذه الباقة. سينتقلان إلى الباقة التي تختارها بخصائصها وحدودها "
+"(إعداداتهما الخاصة تبقى)."
+msgstr[3] ""
+"%(n)s عملاء على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها "
+"وحدودها (إعداداتهم الخاصة تبقى)."
+msgstr[4] ""
+"%(n)s عميلاً على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها "
+"وحدودها (إعداداتهم الخاصة تبقى)."
+msgstr[5] ""
+"%(n)s عميل على هذه الباقة. سينتقلون إلى الباقة التي تختارها بخصائصها وحدودها"
+" (إعداداتهم الخاصة تبقى)."
+
+msgid "%(n)s department"
+msgid_plural "%(n)s departments"
+msgstr[0] "%(n)s قسم"
+msgstr[1] "%(n)s قسم"
+msgstr[2] "%(n)s قسم"
+msgstr[3] "%(n)s قسم"
+msgstr[4] "%(n)s قسم"
+msgstr[5] "%(n)s قسم"
+
+msgid "%(n)s employee"
+msgid_plural "%(n)s employees"
+msgstr[0] "%(n)s موظف"
+msgstr[1] "%(n)s موظف"
+msgstr[2] "%(n)s موظف"
+msgstr[3] "%(n)s موظف"
+msgstr[4] "%(n)s موظف"
+msgstr[5] "%(n)s موظف"
+
+msgid "%(n)s employee working"
+msgid_plural "%(n)s employees working"
+msgstr[0] "%(n)s موظف يعمل"
+msgstr[1] "%(n)s موظف يعمل"
+msgstr[2] "%(n)s موظف يعمل"
+msgstr[3] "%(n)s موظف يعمل"
+msgstr[4] "%(n)s موظف يعمل"
+msgstr[5] "%(n)s موظف يعمل"
+
+msgid "%(n)s new in the last 30 days"
+msgstr "%(n)s جديد في آخر 30 يومًا"
+
+msgid "%(n)s punch in the last 30 days, from devices, the app and by hand"
+msgid_plural ""
+"%(n)s punches in the last 30 days, from devices, the app and by hand"
+msgstr[0] "%(n)s بصمة في آخر 30 يومًا، من الأجهزة والتطبيق ويدويًا"
+msgstr[1] "%(n)s بصمة في آخر 30 يومًا، من الأجهزة والتطبيق ويدويًا"
+msgstr[2] "%(n)s بصمة في آخر 30 يومًا، من الأجهزة والتطبيق ويدويًا"
+msgstr[3] "%(n)s بصمة في آخر 30 يومًا، من الأجهزة والتطبيق ويدويًا"
+msgstr[4] "%(n)s بصمة في آخر 30 يومًا، من الأجهزة والتطبيق ويدويًا"
+msgstr[5] "%(n)s بصمة في آخر 30 يومًا، من الأجهزة والتطبيق ويدويًا"
+
+msgid "%(n)s refused"
+msgstr "%(n)s مرفوض"
+
+msgid "%(n)s requests"
+msgstr "%(n)s طلب"
+
+msgid "%(n)s retrying"
+msgid_plural "%(n)s retrying"
+msgstr[0] "%(n)s تُعاد"
+msgstr[1] "واحدة تُعاد"
+msgstr[2] "اثنتان تُعادان"
+msgstr[3] "%(n)s تُعاد"
+msgstr[4] "%(n)s تُعاد"
+msgstr[5] "%(n)s تُعاد"
+
+msgid "%(n)s s of server time"
+msgstr "%(n)s ثانية من وقت الخادم"
+
+msgid "%(n)s scheduled"
+msgid_plural "%(n)s scheduled"
+msgstr[0] "%(n)s مجدولة"
+msgstr[1] "واحدة مجدولة"
+msgstr[2] "اثنتان مجدولتان"
+msgstr[3] "%(n)s مجدولة"
+msgstr[4] "%(n)s مجدولة"
+msgstr[5] "%(n)s مجدولة"
+
+msgid "%(n)s server errors"
+msgstr "%(n)s خطأ في الخادم"
+
+msgid "%(n)s suspended"
+msgstr "%(n)s موقوف"
+
+msgid "%(n)s unread"
+msgid_plural "%(n)s unread"
+msgstr[0] "%(n)s غير مقروء"
+msgstr[1] "%(n)s غير مقروء"
+msgstr[2] "%(n)s غير مقروء"
+msgstr[3] "%(n)s غير مقروء"
+msgstr[4] "%(n)s غير مقروء"
+msgstr[5] "%(n)s غير مقروء"
+
+msgid "%(n)s user"
+msgid_plural "%(n)s users"
+msgstr[0] "%(n)s مستخدم"
+msgstr[1] "%(n)s مستخدم"
+msgstr[2] "%(n)s مستخدم"
+msgstr[3] "%(n)s مستخدم"
+msgstr[4] "%(n)s مستخدم"
+msgstr[5] "%(n)s مستخدم"
+
+msgid "%(name)s already has %(item)s over some of these days."
+msgstr "%(name)s لديه %(item)s بالفعل في بعض هذه الأيام."
+
+msgid "%(name)s has no pay on that day."
+msgstr "لا يوجد أجر مسجل لـ %(name)s في ذلك اليوم."
+
 msgid "%(name)s has no working hours on that day."
 msgstr "%(name)s ليس له مواعيد عمل في ذلك اليوم."
+
+msgid "%(name)s is disabled."
+msgstr "تم إيقاف %(name)s."
+
+msgid "%(name)s is enabled."
+msgstr "تم تفعيل %(name)s."
+
+msgid "%(name)s is now %(status)s."
+msgstr "أصبحت حالة %(name)s: %(status)s."
+
+msgid "%(name)s is ready."
+msgstr "%(name)s جاهز للعمل."
 
 msgid "%(name)s was not employed on that day."
 msgstr "%(name)s لم يكن على رأس العمل في ذلك اليوم."
 
+msgid "%(name)s withdrew their leave request"
+msgstr "%(name)s سحب طلب الاجازة"
+
+msgid "%(name)s, correction of %(day)s"
+msgstr "%(name)s، تصحيح ليوم %(day)s"
+
+msgid "%(time)s ago"
+msgstr "منذ %(time)s"
+
 msgid "'%(slug)s' is reserved."
 msgstr "الاسم «%(slug)s» محجوز."
 
+msgid "'To' must not be less than 'from'."
+msgstr "يجب ألا يقل «إلى» عن «من»."
+
 msgid "(hidden)"
 msgstr "(مخفي)"
+
+msgid ""
+"1 pays calendar months. 26 pays from the 26th to the 25th of the next month."
+msgstr ""
+"1 يعني الشهور الميلادية. 26 يعني من يوم 26 إلى يوم 25 من الشهر التالي."
+
+msgid "A branch"
+msgstr "فرع"
+
+msgid ""
+"A change applies from the client's next request and is kept in the activity "
+"log."
+msgstr "يسري التغيير من الطلب التالي للعميل ويُسجَّل في سجل النشاط."
+
+msgid "A client can still be given or denied one on its own page."
+msgstr "يمكن منح العميل خاصية أو منعها عنه من صفحته."
+
+msgid ""
+"A correction is worked out from its batch: delete it and correct again."
+msgstr "التصحيح يُحسب من دفعته الأصلية: احذفه ثم صحّح من جديد."
+
+msgid ""
+"A correction of this batch is still a draft: approve or delete it first."
+msgstr "يوجد تصحيح لهذه الدفعة ما زال مسودة: اعتمده أو احذفه أولًا."
+
+msgid "A correction or a one-off payment. Kept when the run is recalculated."
+msgstr "تصحيح أو مبلغ لمرة واحدة. يبقى عند إعادة حساب المسير."
+
+msgid "A daily or hourly wage is counted from attendance, which is off."
+msgstr "الأجر اليومي أو بالساعة يُحسب من الحضور، والحضور غير مفعّل."
+
+msgid "A department"
+msgstr "قسم"
+
+msgid "A draft: payroll ignores it until it is approved."
+msgstr "مسودة: لا يحتسبها المسير حتى تُعتمد."
 
 msgid "A few hours away within a day, up to a monthly allowance."
 msgstr "ساعات قليلة خلال اليوم، في حدود رصيد شهري."
@@ -72,11 +343,73 @@ msgstr ""
 "ساعات قليلة خلال يوم العمل. الساعات المعتمدة لا تُخصم، في حدود الرصيد الشهري"
 " لكل موظف."
 
+msgid ""
+"A fixed salary is for one pay period (a month, two weeks, a week); a wage is"
+" for one day or one hour."
+msgstr ""
+"الراتب الثابت عن فترة صرف واحدة (شهر أو أسبوعين أو أسبوع)؛ والأجر عن يوم "
+"واحد أو ساعة واحدة."
+
+msgid "A leave request was entered for you, waiting for approval"
+msgstr "تم تسجيل طلب اجازة لك وفي انتظار الموافقة"
+
+msgid "A loan was recorded"
+msgstr "تم تسجيل سلفة"
+
+msgid ""
+"A monthly item for someone paid weekly is shared between their weeks by "
+"days."
+msgstr "البند الشهري لمن يُصرف له أسبوعيًا يُوزع على أسابيعه بعدد الأيام."
+
+msgid "A new owner needs a password."
+msgstr "المالك الجديد يحتاج كلمة مرور."
+
+msgid "A one-time item has no end; cancel it instead."
+msgstr "البند لمرة واحدة ليس له نهاية؛ قم بإلغائه بدلًا من ذلك."
+
+msgid "A penalty was recorded for you"
+msgstr "تم تسجيل خصم عليك"
+
 msgid "A platform staff login."
 msgstr "حساب من فريق المنصة."
 
+msgid ""
+"A punch from the app is refused outside the branch's area (its location and "
+"radius)."
+msgstr "تُرفض البصمة من التطبيق خارج نطاق الفرع (موقعه ونصف قطره)."
+
+msgid ""
+"A punch from the app needs the phone's fingerprint check, on the employee's "
+"own phone."
+msgstr ""
+"تحتاج البصمة من التطبيق إلى التحقق ببصمة الهاتف، على هاتف الموظف نفسه."
+
 msgid "A role can apply to every branch or only to some."
 msgstr "يمكن أن يسري الدور على كل الفروع أو على بعضها فقط."
+
+msgid ""
+"A run calculates the payslips of one pay period. It is checked as a draft, "
+"approved, then paid; an approved run can be reversed to correct it."
+msgstr ""
+"المسير يحسب قسائم رواتب فترة صرف واحدة. يُراجع كمسودة، ثم يُعتمد، ثم يُصرف؛ "
+"ويمكن عكس المسير المعتمد لتصحيحه."
+
+msgid "A salary advance was recorded"
+msgstr "تم تسجيل دفعة من المرتب"
+
+msgid "A test message from the payroll system: WhatsApp is linked."
+msgstr "رسالة تجريبية من نظام المرتبات: واتساب مربوط."
+
+msgid "A type can't change kind."
+msgstr "لا يمكن تغيير نوع البند."
+
+msgid "A yearly evaluation of each employee, with notes and a printed card."
+msgstr "تقييم سنوي لكل موظف، مع ملاحظات وبطاقة للطباعة."
+
+msgid ""
+"A yearly evaluation of each employee: up to four notes, and a card to print "
+"with their dates and pay."
+msgstr "تقييم سنوي لكل موظف: حتى أربع ملاحظات، وبطاقة للطباعة بتواريخه وأجره."
 
 msgid "A4 landscape"
 msgstr "A4 عرضي"
@@ -87,6 +420,18 @@ msgstr "A4 طولي"
 msgid "Above that"
 msgstr "ما فوق ذلك"
 
+msgid "Absence"
+msgstr "الغياب"
+
+msgid "Absence penalty"
+msgstr "جزاء الغياب"
+
+msgid "Absence rate"
+msgstr "معامل الغياب"
+
+msgid "Absences only"
+msgstr "الغياب فقط"
+
 msgid "Absent"
 msgstr "غائب"
 
@@ -96,23 +441,38 @@ msgstr "يوم الغياب ×"
 msgid "Accent colour"
 msgstr "اللون المميز"
 
+msgid "Accept its calls"
+msgstr "قبول اتصالاته"
+
+msgid "Access"
+msgstr "الدخول"
+
 msgid "Access denied"
 msgstr "غير مسموح بالدخول"
 
-msgid "Account"
-msgstr "الحساب"
+msgid "Across every client"
+msgstr "على مستوى كل العملاء"
 
-msgid "Account number"
-msgstr "رقم الحساب"
+msgid "Actions"
+msgstr "إجراءات"
 
-msgid "Account role"
-msgstr "صفة الحساب"
+msgid "Activate"
+msgstr "تفعيل"
 
 msgid "Active"
 msgstr "نشط"
 
+msgid "Active clients"
+msgstr "العملاء النشطون"
+
+msgid "Active users"
+msgstr "المستخدمون النشطون"
+
 msgid "Activity"
 msgstr "النشاط"
+
+msgid "Activity, last 14 days"
+msgstr "النشاط، آخر 14 يومًا"
 
 msgid "Actual time"
 msgstr "الوقت الفعلي"
@@ -125,6 +485,19 @@ msgstr "إضافة شريحة"
 
 msgid "Add a bracket"
 msgstr "إضافة شريحة"
+
+msgid "Add a device"
+msgstr "إضافة جهاز"
+
+msgid ""
+"Add a device with the serial number on its label; it starts sending punches "
+"on its next call."
+msgstr ""
+"أضف جهازًا برقمه التسلسلي المكتوب على ملصقه؛ يبدأ إرسال البصمات في اتصاله "
+"التالي."
+
+msgid "Add a domain"
+msgstr "إضافة نطاق"
 
 msgid "Add a holiday"
 msgstr "إضافة إجازة رسمية"
@@ -140,6 +513,12 @@ msgstr "إضافة الموظفين وتعديلهم وتعديل مواعيده
 msgid "Add at least one bracket."
 msgstr "أضف شريحة واحدة على الأقل."
 
+msgid "Add employees"
+msgstr "إضافة موظفين"
+
+msgid "Add the line"
+msgstr "إضافة البند"
+
 msgid ""
 "Add the year's holidays so payroll pays them and attendance doesn't count "
 "them as absences."
@@ -152,17 +531,46 @@ msgstr "أضف فريقك واحدًا تلو الآخر، أو استوردهم
 msgid "added"
 msgstr "أضاف"
 
+msgid "Added to pay"
+msgstr "يُضاف إلى الأجر"
+
+msgid "Added to the pay of the period they're given in, once approved."
+msgstr "تُضاف إلى أجر الفترة التي مُنحت فيها، بعد اعتمادها."
+
+msgid "Added."
+msgstr "تمت الإضافة."
+
 msgid "Addition"
 msgstr "إضافة"
 
 msgid "Address"
 msgstr "العنوان"
 
+msgid "Addresses"
+msgstr "العناوين"
+
 msgid "Administration"
 msgstr "الإدارة"
 
-msgid "Agreed statement"
-msgstr "مطابقة كشف حساب"
+msgid "Advance"
+msgstr "سلفة"
+
+msgid "Advances"
+msgstr "السلف"
+
+msgid "Advances and loans"
+msgstr "السلف والقروض"
+
+msgid "Advances given in the period, and whether payroll has recovered them."
+msgstr "السلف المصروفة في الفترة، وهل استردها المسير."
+
+msgid ""
+"Advances this month would come to %(total)s, more than a month's pay "
+"(%(limit)s)."
+msgstr "سلف هذا الشهر ستصل إلى %(total)s، أكثر من أجر شهر (%(limit)s)."
+
+msgid "After corrections"
+msgstr "بعد التصحيحات"
 
 msgid "All"
 msgstr "الكل"
@@ -170,11 +578,32 @@ msgstr "الكل"
 msgid "All branches"
 msgstr "كل الفروع"
 
+msgid "All but cancelled"
+msgstr "الكل عدا الملغى"
+
+msgid "All but cancelled and rejected"
+msgstr "الكل عدا الملغى والمرفوض"
+
+msgid "All clients"
+msgstr "كل العملاء"
+
+msgid "All clients are busy"
+msgstr "كل العملاء يعملون"
+
 msgid "All departments"
 msgstr "كل الأقسام"
 
+msgid "All items"
+msgstr "كل البنود"
+
 msgid "All pages"
 msgstr "كل الصفحات"
+
+msgid "All read."
+msgstr "تمت قراءة الكل."
+
+msgid "All types"
+msgstr "كل الأنواع"
 
 msgid "All your branches, one set of books"
 msgstr "كل فروعك في دفاتر واحدة"
@@ -188,20 +617,116 @@ msgid ""
 "Allowances and other additions and deductions, fixed or per day worked."
 msgstr "البدلات وغيرها من الإضافات والاستقطاعات، ثابتة أو عن كل يوم عمل."
 
+msgid ""
+"Allowances and other items running in this month. Payroll gives each pay "
+"period its share; a per-day item is paid for each day worked."
+msgstr ""
+"البدلات والبنود الأخرى السارية في هذا الشهر. الرواتب تعطي كل فترة صرف "
+"نصيبها؛ والبند اليومي يُصرف عن كل يوم عمل."
+
 msgid "Allowances and pay items"
 msgstr "البدلات وبنود الراتب"
+
+msgid "Allowances in the year"
+msgstr "بدلات ثانوية خلال السنة"
+
+msgid "Already cancelled."
+msgstr "تم إلغاؤه بالفعل."
+
+msgid "Already entered by hand for that day."
+msgstr "مُدخل يدويًا بالفعل لذلك اليوم."
 
 msgid "Already has a login."
 msgstr "لديه حساب بالفعل."
 
+msgid ""
+"Already in another run of the same days: delete or reverse that run to pay "
+"them here."
+msgstr ""
+"موجودون بالفعل في مسير آخر لنفس الأيام: احذف ذلك المسير أو اعكسه لصرفهم هنا."
+
+msgid "Also set the weekly days off (otherwise each keeps their own)"
+msgstr "حدد أيضًا أيام الراحة الأسبوعية (وإلا يحتفظ كل موظف بأيامه)"
+
+msgid "Always included"
+msgstr "متاح دائماً"
+
+msgid "Amount"
+msgstr "المبلغ"
+
+msgid "amount"
+msgstr "مبلغ"
+
 msgid "Amount per day worked"
 msgstr "مبلغ عن كل يوم عمل"
+
+msgid ""
+"An approved payroll already covers these days. Correct it through the "
+"payroll (reverse it, or adjust in the next run)."
+msgstr ""
+"يوجد مسير رواتب معتمد يغطي هذه الأيام. صحّح من خلال الرواتب (اعكس المسير، أو"
+" عدّل في المسير التالي)."
+
+msgid "An approved payroll already covers this day."
+msgstr "يوجد مسير رواتب معتمد يغطي هذا اليوم."
+
+msgid ""
+"An approved payroll already paid this batch: correct it instead, and the "
+"difference is settled in the next payroll."
+msgstr ""
+"صرف مسير معتمد هذه الدفعة بالفعل: صحّحها بدلًا من ذلك، ويُسوّى الفرق في "
+"المسير التالي."
+
+msgid ""
+"An approved payroll already paid this. Correct it through the payroll "
+"(reverse it, or adjust in the next run)."
+msgstr ""
+"صرف مسير رواتب معتمد هذا بالفعل. صحّح من خلال الرواتب (اعكس المسير، أو عدّل "
+"في المسير التالي)."
+
+msgid ""
+"An approved payroll has paid this batch. It is never changed: a correction "
+"settles any difference in a later payroll."
+msgstr ""
+"صرف مسير معتمد هذه الدفعة. لا تُعدّل أبدًا: التصحيح يسوّي أي فرق في مسير "
+"لاحق."
 
 msgid "An Egyptian national ID has 14 digits."
 msgstr "الرقم القومي المصري مكوّن من 14 رقمًا."
 
+msgid ""
+"An employee's own login to the mobile app: their attendance, leave and "
+"notifications only."
+msgstr "دخول الموظف نفسه إلى تطبيق الهاتف: حضوره وإجازاته وإشعاراته فقط."
+
+msgid "An incentive was given to you"
+msgstr "تم تسجيل حافز لك"
+
+msgid "An off-cycle run deducts no income tax or social insurance."
+msgstr "المسير الاستثنائي لا يخصم ضريبة دخل ولا تأمينات اجتماعية."
+
+msgid ""
+"An off-cycle run pays no salary: only what is dated in its days and not paid"
+" yet (one-time pay items, incentives, penalties, advances) and lines you "
+"add."
+msgstr ""
+"المسير الاستثنائي لا يصرف راتبًا: فقط ما هو مؤرخ في أيامه ولم يُصرف بعد "
+"(بنود لمرة واحدة، حوافز، جزاءات، سلف) والبنود التي تضيفها."
+
+msgid "And %(n)s app login"
+msgid_plural "And %(n)s app logins"
+msgstr[0] "و%(n)s حساب تطبيق"
+msgstr[1] "و%(n)s حساب تطبيق"
+msgstr[2] "و%(n)s حساب تطبيق"
+msgstr[3] "و%(n)s حساب تطبيق"
+msgstr[4] "و%(n)s حساب تطبيق"
+msgstr[5] "و%(n)s حساب تطبيق"
+
 msgid "Annual leave"
 msgstr "إجازة اعتيادية"
+
+msgid "Annual leave balances"
+msgstr "أرصدة الإجازات السنوية"
 
 msgid "Annual leave can't run into the next year; make two requests."
 msgstr "الإجازة الاعتيادية لا تمتد إلى السنة التالية؛ قدّم طلبين."
@@ -211,6 +736,9 @@ msgstr "أيام الإجازة السنوية"
 
 msgid "Annual leave left"
 msgstr "المتبقي من الإجازة الاعتيادية"
+
+msgid "Another device has this name."
+msgstr "يوجد جهاز آخر بهذا الاسم."
 
 msgid "Another employee has this code."
 msgstr "يوجد موظف آخر بهذا الكود."
@@ -236,11 +764,38 @@ msgstr "توجد لائحة أخرى بهذا الاسم."
 msgid "Another request already covers some of these days."
 msgstr "يوجد طلب آخر يشمل بعض هذه الأيام."
 
+msgid "Another run paid some of this meanwhile. Recalculate and try again."
+msgstr "صرف مسير آخر جزءًا من ذلك في هذه الأثناء. أعد الحساب وحاول مرة أخرى."
+
+msgid "Another span that day"
+msgstr "فترة أخرى في نفس اليوم"
+
 msgid "Another table starts on this date."
 msgstr "يوجد جدول آخر يبدأ في هذا التاريخ."
 
+msgid "Another type has this code."
+msgstr "يوجد نوع آخر بهذا الكود."
+
+msgid "Another type has this name."
+msgstr "يوجد نوع آخر بهذا الاسم."
+
+msgid "Answered with “too many requests”"
+msgstr "رُدّ عليها بـ «طلبات كثيرة جدًا»"
+
+msgid "Any day of the period"
+msgstr "أي يوم من الفترة"
+
 msgid "Anyone"
 msgstr "أي شخص"
+
+msgid "App login"
+msgstr "دخول التطبيق"
+
+msgid "App logins"
+msgstr "حسابات التطبيق"
+
+msgid "App version"
+msgstr "إصدار التطبيق"
 
 msgid "Appearance"
 msgstr "المظهر"
@@ -254,8 +809,26 @@ msgstr "تطبيق"
 msgid "Approve"
 msgstr "اعتماد"
 
+msgid "Approve incentives, and reopen, cancel or correct approved ones"
+msgstr "اعتماد الحوافز، وإعادة فتح المعتمدة أو إلغاؤها أو تصحيحها"
+
 msgid "Approve it now"
 msgstr "اعتماده الآن"
+
+msgid "Approve it now (otherwise it stays a draft you can still edit)"
+msgstr "اعتمدها الآن (وإلا تبقى مسودة يمكن تعديلها)"
+
+msgid "Approve payroll runs"
+msgstr "اعتماد مسيرات الرواتب"
+
+msgid "Approve penalties, and reopen, cancel or correct approved ones"
+msgstr "اعتماد الجزاءات، وإعادة فتح المعتمدة أو إلغاؤها أو تصحيحها"
+
+msgid "Approve the correction now"
+msgstr "اعتماد التصحيح الآن"
+
+msgid "Approve them now (each within their own monthly allowance)"
+msgstr "اعتمدها الآن (كلٌّ في حدود رصيده الشهري)"
 
 msgid "Approve, reject and cancel hourly leave"
 msgstr "اعتماد الأذونات ورفضها وإلغاؤها"
@@ -266,14 +839,51 @@ msgstr "اعتماد الإجازات ورفضها وإلغاؤها"
 msgid "Approved"
 msgstr "معتمد"
 
+msgid "Approved and paid"
+msgstr "المعتمدة والمصروفة"
+
+msgid "Approved and paid runs, the last 12 months"
+msgstr "المسيرات المعتمدة والمصروفة، آخر 12 شهرًا"
+
+msgid "Approved at"
+msgstr "تاريخ الاعتماد"
+
+msgid "Approved by"
+msgstr "اعتمدها"
+
+msgid "Approved incentives dated in the period, corrections included."
+msgstr "الحوافز المعتمدة بتاريخ داخل الفترة، شاملة التصحيحات."
+
+msgid "Approved leave was entered for you"
+msgstr "تم تسجيل اجازة معتمدة لك"
+
+msgid "Approved penalties dated in the period, corrections included."
+msgstr "الجزاءات المعتمدة بتاريخ داخل الفترة، شاملة التصحيحات."
+
 msgid "Approved."
 msgstr "تم الاعتماد."
+
+msgid ""
+"Approved: the next payroll of its date pays it. Until then it can be "
+"reopened or cancelled, with a reason."
+msgstr ""
+"معتمدة: يصرفها مسير تاريخها القادم. وحتى ذلك يمكن إعادة فتحها أو إلغاؤها مع "
+"ذكر السبب."
+
+msgid "Archive"
+msgstr "أرشفة"
 
 msgid "Archived"
 msgstr "مؤرشف"
 
+msgid "As a table"
+msgstr "كجدول"
+
 msgid "Ask your workspace owner to give your role the needed permission."
 msgstr "اطلب من مالك الحساب منح دورك الصلاحية المطلوبة."
+
+msgid "Asked: the device answers on its next call."
+msgstr "تم الطلب: يرد الجهاز في اتصاله التالي."
 
 msgid ""
 "At least 10 characters. Share it privately; the user can change it later."
@@ -282,20 +892,66 @@ msgstr "10 أحرف على الأقل. أرسلها للمستخدم بشكل خ
 msgid "At least one day must be a working day."
 msgstr "يجب أن يكون يوم واحد على الأقل يوم عمل."
 
+msgid "At most %(count)s rows at a time."
+msgstr "بحد أقصى %(count)s صف في المرة الواحدة."
+
 msgid "At most %(count)s rows per file."
 msgstr "بحد أقصى %(count)s صف في الملف الواحد."
+
+msgid "Attempts"
+msgstr "المحاولات"
 
 msgid "Attendance"
 msgstr "الحضور والانصراف"
 
+msgid "Attendance and leave"
+msgstr "الحضور والإجازات"
+
+msgid "Attendance bonus"
+msgstr "حافز انتظام"
+
+msgid "Attendance by hand for a group"
+msgstr "حضور يدوي لمجموعة"
+
+msgid "Attendance day by day"
+msgstr "الحضور يومًا بيوم"
+
+msgid "Attendance days follow this clock."
+msgstr "أيام الحضور تتبع هذا التوقيت."
+
+msgid "Attendance entered by hand"
+msgstr "حضور مُدخل يدويًا"
+
 msgid "Attendance import"
 msgstr "استيراد الحضور"
+
+msgid "Attendance totals per employee"
+msgstr "إجمالي الحضور لكل موظف"
+
+msgid ""
+"Attendance, leave, loans, incentives and payroll, always in step, with every"
+" change on record."
+msgstr ""
+"الحضور والإجازات والقروض والحوافز والمرتبات، متطابقة دائمًا، وكل تغيير "
+"مسجَّل."
 
 msgid "Automatic"
 msgstr "تلقائي"
 
+msgid "Availability"
+msgstr "الإتاحة"
+
+msgid "Average"
+msgstr "المتوسط"
+
+msgid "Average response"
+msgstr "متوسط الاستجابة"
+
 msgid "Back to the dashboard"
 msgstr "العودة إلى لوحة التحكم"
+
+msgid "Back to the usual hours"
+msgstr "العودة إلى المواعيد المعتادة"
 
 msgid "Back to top"
 msgstr "اطلع لأعلى الصفحة"
@@ -306,20 +962,26 @@ msgstr "إلغاء مهمة في الخلفية"
 msgid "Background job run again"
 msgstr "إعادة تشغيل مهمة في الخلفية"
 
+msgid "Background jobs"
+msgstr "المهام في الخلفية"
+
+msgid "Bahrain"
+msgstr "البحرين"
+
 msgid "Bands"
 msgstr "الشرائح"
 
-msgid "Bank"
-msgstr "البنك"
+msgid "Bank transfer, cash…"
+msgstr "تحويل بنكي، نقدي…"
 
-msgid "Bank account"
-msgstr "حساب بنكي"
+msgid "Batch"
+msgstr "الدفعة"
 
-msgid "Bank account branch"
-msgstr "فرع الحساب البنكي"
+msgid "Being limited"
+msgstr "يتم تقييده"
 
-msgid "Barcode"
-msgstr "الباركود"
+msgid "Being repaid"
+msgstr "جارٍ السداد"
 
 msgid "Being set up"
 msgstr "قيد الإعداد"
@@ -327,11 +989,14 @@ msgstr "قيد الإعداد"
 msgid "Being this many minutes late or less is not deducted."
 msgstr "التأخير بهذا العدد من الدقائق أو أقل لا يُخصم."
 
+msgid "Between 5 and 600 seconds."
+msgstr "بين 5 و600 ثانية."
+
+msgid "Billed"
+msgstr "الفوترة"
+
 msgid "Birth date"
 msgstr "تاريخ الميلاد"
-
-msgid "Blind count"
-msgstr "مطابقة جرد"
 
 msgid "Blue"
 msgstr "أزرق"
@@ -342,11 +1007,32 @@ msgstr "الشرائح"
 msgid "Branch"
 msgstr "الفرع"
 
+msgid "Branch code"
+msgstr "كود الفرع"
+
+msgid "Branch or department"
+msgstr "الفرع أو القسم"
+
 msgid "Branches"
 msgstr "الفروع"
 
+msgid "Brand"
+msgstr "العلامة التجارية"
+
+msgid "Break in"
+msgstr "عودة من استراحة"
+
+msgid "Break out"
+msgstr "خروج استراحة"
+
+msgid "Breaking the rules"
+msgstr "مخالفة اللوائح"
+
 msgid "Browser"
 msgstr "المتصفح"
+
+msgid "Built in"
+msgstr "أساسي"
 
 msgid "Built-in"
 msgstr "أساسي"
@@ -357,17 +1043,62 @@ msgstr "لا يمكن حذف الأدوار الأساسية."
 msgid "Bundles of permissions you give to users."
 msgstr "مجموعات صلاحيات تمنحها للمستخدمين."
 
-msgid "Buy price / g"
-msgstr "سعر الشراء / جم"
+msgid "Busiest minute: %(n)s"
+msgstr "أعلى دقيقة: %(n)s"
+
+msgid "Busy this week"
+msgstr "نشط هذا الأسبوع"
+
+msgid "By hiring date, the last 24 months"
+msgstr "حسب تاريخ التعيين، آخر 24 شهرًا"
+
+msgid "By server time"
+msgstr "حسب وقت الخادم"
+
+msgid "Calculate"
+msgstr "احسب"
+
+msgid "Calculate payroll runs and add lines to payslips"
+msgstr "حساب مسيرات الرواتب وإضافة بنود إلى القسائم"
+
+msgid "Calculated at"
+msgstr "وقت الحساب"
+
+msgid "Calculated."
+msgstr "تم الحساب."
 
 msgid "Came"
 msgstr "الحضور"
 
+msgid "Came (HH:MM)"
+msgstr "الحضور (HH:MM)"
+
+msgid "Came – left"
+msgstr "الحضور – الانصراف"
+
 msgid "Cancel"
 msgstr "إلغاء"
 
+msgid "Cancel every entry given at the same time"
+msgstr "إلغاء كل البنود الممنوحة معًا في نفس المرة"
+
+msgid "Cancel it instead."
+msgstr "قم بإلغائه بدلًا من ذلك."
+
+msgid "Cancel the batch"
+msgstr "إلغاء الدفعة"
+
+msgid "Cancel the loan"
+msgstr "إلغاء القرض"
+
+msgid "Cancel the whole group"
+msgstr "إلغاء المجموعة كلها"
+
 msgid "Cancelled"
 msgstr "ملغاة"
+
+msgid "Cancelled from the console."
+msgstr "أُلغيت من لوحة المنصة."
 
 msgid "Cancelled ones are not added up."
 msgstr "الملغاة لا تُحسب في الإجمالي."
@@ -378,23 +1109,8 @@ msgstr "تم الإلغاء."
 msgid "Caps Lock is on"
 msgstr "مفتاح الأحرف الكبيرة (Caps Lock) مفعّل"
 
-msgid "Carats"
-msgstr "القيراط"
-
-msgid "Card terminal"
-msgstr "ماكينة الدفع"
-
-msgid "Cash box"
-msgstr "الخزينة"
-
-msgid "Category"
-msgstr "المجموعة"
-
-msgid "Category making charge"
-msgstr "مصنعية الصنف"
-
-msgid "Certificate no."
-msgstr "رقم الشهادة"
+msgid "Card (PDF)"
+msgstr "البطاقة (PDF)"
 
 msgid "Change hours from a date"
 msgstr "تغيير المواعيد من تاريخ"
@@ -405,14 +1121,47 @@ msgstr "تغيير كلمة المرور"
 msgid "Change pay from a date"
 msgstr "تغيير الراتب من تاريخ"
 
+msgid "Change the details"
+msgstr "تعديل البيانات"
+
 msgid "changed"
 msgstr "عدّل"
 
-msgid "Changes to master data appear here as they happen."
-msgstr "تظهر هنا التعديلات على البيانات الأساسية فور حدوثها."
+msgid "Changes (30 days)"
+msgstr "التعديلات (30 يومًا)"
+
+msgid "Changes appear here as they happen."
+msgstr "تظهر التغييرات هنا فور حدوثها."
+
+msgid "Changes saved by all clients"
+msgstr "التعديلات المحفوظة لدى كل العملاء"
+
+msgid "Changes saved each day"
+msgstr "التعديلات المحفوظة كل يوم"
+
+msgid "Check"
+msgstr "الفحص"
+
+msgid "Checked at"
+msgstr "وقت الفحص"
+
+msgid "Checked out"
+msgstr "انصراف"
+
+msgid "Checks"
+msgstr "الملاحظات"
 
 msgid "Children"
 msgstr "عدد الأبناء"
+
+msgid "Choose a day from 1 to 28."
+msgstr "اختر يومًا من 1 إلى 28."
+
+msgid "Choose a pay frequency."
+msgstr "اختر دورية الصرف."
+
+msgid "Choose a regular or an off-cycle run."
+msgstr "اختر مسيرًا عاديًا أو استثنائيًا."
 
 msgid "Choose addition or deduction."
 msgstr "اختر إضافة أو استقطاع."
@@ -426,35 +1175,71 @@ msgstr "اختر قسمًا نشطًا."
 msgid "Choose an active leave type."
 msgstr "اختر نوع إجازة نشطًا."
 
+msgid "Choose an active pay item."
+msgstr "اختر بند راتب نشطًا."
+
 msgid "Choose an active policy."
 msgstr "اختر لائحة نشطة."
+
+msgid "Choose an active type."
+msgstr "اختر نوعًا نشطًا."
+
+msgid "Choose an employee of the device's branch."
+msgstr "اختر موظفًا من فرع الجهاز."
 
 msgid "Choose an Excel file."
 msgstr "اختر ملف إكسل."
 
+msgid "Choose at least one employee."
+msgstr "اختر موظفًا واحدًا على الأقل."
+
 msgid "Choose days of the week."
 msgstr "اختر أيامًا من الأسبوع."
+
+msgid "Choose employees"
+msgstr "اختر الموظفين"
 
 msgid "Choose from the list."
 msgstr "اختر من القائمة."
 
+msgid "Choose how often the employee is paid."
+msgstr "اختر كل كم يُصرف للموظف."
+
+msgid "Choose how often."
+msgstr "اختر التكرار."
+
 msgid "Choose how the amount is counted."
 msgstr "اختر طريقة حساب المبلغ."
 
-msgid "Choose how the employee is paid."
-msgstr "اختر طريقة صرف أجر الموظف."
+msgid "Choose how the pay is counted."
+msgstr "اختر طريقة حساب الأجر."
+
+msgid "Choose incentive or penalty."
+msgstr "اختر حافزًا أو جزاءً."
 
 msgid "Choose what happened that day."
 msgstr "اختر ما حدث في ذلك اليوم."
 
+msgid "Choose what to ask."
+msgstr "اختر الطلب."
+
 msgid "Choose what to print. To get a PDF, pick “Save as PDF” as the printer."
 msgstr "اختر ما تريد طباعته. للحصول على ملف PDF اختر «حفظ كملف PDF» كطابعة."
 
-msgid "Clarity"
-msgstr "النقاء"
+msgid "Choose who the run is for."
+msgstr "اختر لمن المسير."
+
+msgid "Choose who this is for."
+msgstr "اختر لمن هذا."
+
+msgid "Chosen employees"
+msgstr "موظفون محددون"
 
 msgid "Clean up old jobs"
 msgstr "تنظيف المهام القديمة"
+
+msgid "Clean up old notifications"
+msgstr "حذف الإشعارات القديمة"
 
 msgid "Clear"
 msgstr "مسح"
@@ -462,14 +1247,41 @@ msgstr "مسح"
 msgid "client"
 msgstr "العميل"
 
+msgid "Client"
+msgstr "العميل"
+
 msgid "Client created"
 msgstr "إنشاء عميل"
+
+msgid "Client name"
+msgstr "اسم العميل"
+
+msgid "Client page"
+msgstr "صفحة العميل"
+
+msgid "Client since %(date)s"
+msgstr "عميل منذ %(date)s"
+
+msgid "Clients"
+msgstr "العملاء"
+
+msgid "Clients by server load"
+msgstr "العملاء حسب الحمل على الخادم"
+
+msgid "Clients using it"
+msgstr "العملاء المستخدمون"
 
 msgid "Clock times from an Excel file."
 msgstr "أوقات الحضور من ملف إكسل."
 
 msgid "Close menu"
 msgstr "إغلاق القائمة"
+
+msgid "Closed"
+msgstr "مغلقة"
+
+msgid "Closed. The address no longer opens."
+msgstr "مغلق. العنوان لم يعد يعمل."
 
 msgid "Code"
 msgstr "الكود"
@@ -483,50 +1295,105 @@ msgstr "العمود"
 msgid "Columns"
 msgstr "الأعمدة"
 
-msgid "Commission"
-msgstr "العمولة"
-
 msgid "Company"
 msgstr "شركة"
+
+msgid "Company name"
+msgstr "اسم الشركة"
+
+msgid "Company settings"
+msgstr "إعدادات الشركة"
 
 msgid "Company settings changed"
 msgstr "تعديل إعدادات الشركة"
 
+msgid "Compare features"
+msgstr "مقارنة الخصائص"
+
 msgid "Completed"
 msgstr "أدّى الخدمة"
+
+msgid "Console activity"
+msgstr "نشاط لوحة المنصة"
+
+msgid "Contact"
+msgstr "التواصل"
 
 msgid "Contact %(name)s to add it to your workspace."
 msgstr "تواصل مع %(name)s لإضافتها إلى مساحة عملك."
 
+msgid "Contact email"
+msgstr "بريد التواصل"
+
+msgid "Contact person"
+msgstr "مسؤول التواصل"
+
+msgid "Contact phone"
+msgstr "هاتف التواصل"
+
 msgid "Correct"
 msgstr "تصحيح"
 
-msgid "Cost"
-msgstr "التكلفة"
+msgid "Correct the original batch, not a correction."
+msgstr "صحّح الدفعة الأصلية، لا التصحيح."
+
+msgid "Correction"
+msgstr "تصحيح"
+
+msgid "Correction of %(day)s"
+msgstr "تصحيح ليوم %(day)s"
+
+msgid "Correction saved."
+msgstr "تم حفظ التصحيح."
+
+msgid "Corrections"
+msgstr "التصحيحات"
+
+msgid "Corrects"
+msgstr "يصحّح"
 
 msgid "Could not load every page. Try again."
 msgstr "تعذّر تحميل كل الصفحات. حاول مرة أخرى."
 
+msgid "Could not load the notifications."
+msgstr "تعذّر تحميل الإشعارات."
+
 msgid "Could not reach the server. Check your connection and try again."
 msgstr "تعذّر الاتصال بالخادم. تحقق من الاتصال وحاول مرة أخرى."
 
-msgid "Count"
-msgstr "العدد"
+msgid "Count or base"
+msgstr "العدد أو الأساس"
 
 msgid "Counted"
 msgstr "طريقة الحساب"
 
+msgid "Counted as"
+msgstr "يُحسب كـ"
+
+msgid "Counted in taxable pay"
+msgstr "يُحسب ضمن الوعاء الضريبي"
+
+msgid "Counted on"
+msgstr "يُحسب على"
+
+msgid "Country"
+msgstr "الدولة"
+
+msgid "Create the client"
+msgstr "إنشاء العميل"
+
+msgid ""
+"Creates the workspace with its head office, karats, chart of accounts, roles"
+" and owner, ready to sign in."
+msgstr ""
+"يُنشئ مساحة العمل بالفرع الرئيسي والعيارات ودليل الحسابات والأدوار والمالك، "
+"جاهزة لتسجيل الدخول."
+
 msgid "Currency"
 msgstr "العملة"
 
-msgid "Customer details"
-msgstr "بيانات العميل"
-
-msgid "Customer or supplier"
-msgstr "عميل أو مورد"
-
-msgid "Cut"
-msgstr "القطع"
+msgid "Custom"
+msgstr "مخصص"
 
 msgid "Daily attendance"
 msgstr "الحضور اليومي"
@@ -540,8 +1407,18 @@ msgstr "داكن"
 msgid "Dashboard"
 msgstr "لوحة التحكم"
 
+msgid ""
+"Dashboard, employees and departments, branches, payroll runs and payslips, "
+"reports on screen, history, users and roles, company settings."
+msgstr ""
+"لوحة المتابعة، الموظفون والأقسام، الفروع، مسيرات الرواتب وكشوفها، التقارير "
+"على الشاشة، السجل، المستخدمون والأدوار، إعدادات الشركة."
+
 msgid "Date"
 msgstr "التاريخ"
+
+msgid "Date of birth"
+msgstr "تاريخ الميلاد"
 
 msgid "Day"
 msgstr "اليوم"
@@ -549,8 +1426,14 @@ msgstr "اليوم"
 msgid "Day off"
 msgstr "راحة"
 
+msgid "day off"
+msgstr "يوم راحة"
+
 msgid "Day off or holiday"
 msgstr "راحة أو إجازة رسمية"
+
+msgid "Day's wage"
+msgstr "الأجر اليومي"
 
 msgid "Day-to-day operations in every module."
 msgstr "العمليات اليومية في كل الأقسام."
@@ -558,23 +1441,53 @@ msgstr "العمليات اليومية في كل الأقسام."
 msgid "Days"
 msgstr "الأيام"
 
+msgid "days"
+msgstr "أيام"
+
 msgid "Days away: requests, approvals and what's left of the yearly balance."
 msgstr "أيام الغياب المسموح بها: الطلبات والاعتماد والمتبقي من الرصيد السنوي."
+
+msgid "Days not paid"
+msgstr "أيام غير مدفوعة"
+
+msgid "Days of pay"
+msgstr "أيام من الأجر"
 
 msgid "Days off"
 msgstr "أيام الراحة"
 
+msgid "Days off (e.g. fri, sat)"
+msgstr "أيام الراحة (مثل fri, sat)"
+
+msgid "Days paid × day's wage"
+msgstr "الأيام المدفوعة × أجر اليوم"
+
 msgid "Deactivate"
 msgstr "إيقاف"
 
-msgid "Decimals"
-msgstr "الكسور العشرية"
+msgid "Decided at"
+msgstr "وقت القرار"
+
+msgid "Decided by"
+msgstr "صاحب القرار"
+
+msgid "Decision note"
+msgstr "ملاحظة القرار"
 
 msgid "Deducted from the employee's pay."
 msgstr "يُخصم من أجر الموظف."
 
+msgid "Deducted from the pay of the period they're given in, once approved."
+msgstr "تُخصم من أجر الفترة التي وُقّعت فيها، بعد اعتمادها."
+
 msgid "Deduction"
 msgstr "استقطاع"
+
+msgid "Deductions"
+msgstr "الاستقطاعات"
+
+msgid "default"
+msgstr "افتراضي"
 
 msgid "Default"
 msgstr "افتراضية"
@@ -582,11 +1495,32 @@ msgstr "افتراضية"
 msgid "Default branch"
 msgstr "الفرع الافتراضي"
 
+msgid "Default for new clients"
+msgstr "الافتراضية للعملاء الجدد"
+
+msgid "Default language"
+msgstr "اللغة الافتراضية"
+
+msgid "Default limit: %(n)s requests per minute"
+msgstr "الحد الافتراضي: %(n)s طلب في الدقيقة"
+
 msgid "Delete"
 msgstr "حذف"
 
+msgid "Delete %(name)s?"
+msgstr "حذف %(name)s؟"
+
+msgid "Delete plan"
+msgstr "حذف الباقة"
+
+msgid "Delete the draft"
+msgstr "حذف المسودة"
+
 msgid "Delete these rates"
 msgstr "حذف هذه النسب"
+
+msgid "Delete this evaluation"
+msgstr "حذف هذا التقييم"
 
 msgid "Delete this role"
 msgstr "حذف هذا الدور"
@@ -603,6 +1537,9 @@ msgstr "تم الحذف."
 msgid "Department"
 msgstr "القسم"
 
+msgid "Department code"
+msgstr "كود القسم"
+
 msgid "Departments"
 msgstr "الأقسام"
 
@@ -615,20 +1552,68 @@ msgstr "الوصف"
 msgid "Details"
 msgstr "البيانات"
 
+msgid "Device"
+msgstr "الجهاز"
+
+msgid "Devices not calling for a day"
+msgstr "أجهزة لم تتصل منذ يوم"
+
+msgid "Disable"
+msgstr "إيقاف"
+
+msgid "Disable %(name)s?"
+msgstr "إيقاف %(name)s؟"
+
+msgid "Disable this client"
+msgstr "إيقاف هذا العميل"
+
+msgid "Disabled"
+msgstr "موقوف"
+
+msgid "Disabled."
+msgstr "موقوف."
+
+msgid "Disconnected"
+msgstr "غير متصل"
+
+msgid "Disconnected: link it again"
+msgstr "غير متصل: اربطه مرة أخرى"
+
 msgid "Display name"
 msgstr "الاسم الظاهر"
+
+msgid "Distance (m)"
+msgstr "المسافة (م)"
 
 msgid "Divorced"
 msgstr "مطلق"
 
-msgid "Document design"
-msgstr "تصميم المستند"
+msgid "Domain"
+msgstr "النطاق"
 
 msgid "Domain added"
 msgstr "إضافة نطاق"
 
+msgid "Domain added."
+msgstr "تمت إضافة النطاق."
+
 msgid "Domain removed"
 msgstr "حذف نطاق"
+
+msgid "Domain removed."
+msgstr "تم حذف النطاق."
+
+msgid "Done"
+msgstr "تم"
+
+msgid "Download as a PDF file"
+msgstr "تنزيل كملف PDF"
+
+msgid "Download as an Excel file"
+msgstr "تنزيل كملف Excel"
+
+msgid "Download reports as PDF or Excel"
+msgstr "تنزيل التقارير بصيغة PDF أو Excel"
 
 msgid "Download the template"
 msgstr "تحميل النموذج"
@@ -636,17 +1621,98 @@ msgstr "تحميل النموذج"
 msgid "Draft"
 msgstr "مسودة"
 
+msgid "Draft deleted."
+msgstr "تم حذف المسودة."
+
+msgid "Draft run"
+msgstr "مسير مسودة"
+
+msgid "Drafts"
+msgstr "المسودات"
+
+msgid "Drafts only"
+msgstr "المسودات فقط"
+
+msgid "Due"
+msgstr "مستحق"
+
+msgid "Due month"
+msgstr "شهر الاستحقاق"
+
+msgid "Duration"
+msgstr "المدة"
+
+msgid ""
+"E-mails and reminders wait in the queue until one starts. Run it as a "
+"service next to the app:"
+msgstr ""
+"تنتظر الرسائل والتذكيرات في الطابور حتى يبدأ أحدها. شغّله كخدمة بجوار "
+"التطبيق:"
+
+msgid "e.g. hr.example.com, pointed at this server"
+msgstr "مثل hr.example.com، موجّه إلى هذا الخادم"
+
+msgid "e.g. Ramadan hours"
+msgstr "مثلًا: مواعيد رمضان"
+
+msgid "e.g. the fingerprint device was down"
+msgstr "مثلًا: جهاز البصمة كان معطلًا"
+
 msgid "e.g. the law it follows"
 msgstr "مثلًا: القانون المطبَّق"
 
 msgid "e.g. yearly raise"
 msgstr "مثلًا: العلاوة السنوية"
 
+msgid "e.g. © 2026 Your Company. All rights reserved."
+msgstr "مثال: © 2026 شركتك. جميع الحقوق محفوظة."
+
+msgid ""
+"Each client is a separate workspace with its own data, users and address."
+msgstr "كل عميل مساحة عمل مستقلة ببياناتها ومستخدميها وعنوانها."
+
+msgid ""
+"Each employee's days: status, when they came and left, time worked, late, "
+"early and extra. At most 31 days at a time."
+msgstr ""
+"أيام كل موظف: الحالة ووقت الحضور والانصراف ووقت العمل والتأخير والانصراف "
+"المبكر والإضافي. بحد أقصى 31 يومًا في المرة."
+
+msgid "Each limit must be higher than the one before."
+msgstr "يجب أن يكون كل حد أعلى من الحد السابق."
+
+msgid ""
+"each row pays (or takes back) the difference, in the payroll of its date."
+msgstr "كل صف يصرف (أو يسترد) الفرق، في مسير تاريخه."
+
+msgid ""
+"Each shift followed by the mobile app: when it started and ended, how long, "
+"how far and how many positions were sent."
+msgstr ""
+"كل وردية تابعها تطبيق الهاتف: متى بدأت وانتهت ومدتها والمسافة وعدد المواقع "
+"المرسلة."
+
+msgid ""
+"Earlier days keep their hours, and days an approved payroll covers can't "
+"change. Lateness and overtime policies stay as each employee has them."
+msgstr ""
+"الأيام السابقة تحتفظ بمواعيدها، والأيام التي يغطيها مسير معتمد لا تتغير. "
+"تبقى سياسات التأخير والإضافي كما هي لكل موظف."
+
+msgid "Earlier than the time they came: the next morning (a night shift)."
+msgstr "إذا كان قبل وقت الحضور: فهو صباح اليوم التالي (وردية ليلية)."
+
 msgid "Early"
 msgstr "انصراف مبكر"
 
 msgid "Early leave allowed (minutes)"
 msgstr "الانصراف المبكر المسموح (دقائق)"
+
+msgid "Earning"
+msgstr "استحقاق"
+
+msgid "Earnings"
+msgstr "الاستحقاقات"
 
 msgid "Edit"
 msgstr "تعديل"
@@ -678,6 +1744,9 @@ msgstr "تعديل مستخدم"
 msgid "Effective from"
 msgstr "ساري من"
 
+msgid "Egypt"
+msgstr "مصر"
+
 msgid "Email"
 msgstr "البريد الإلكتروني"
 
@@ -687,32 +1756,137 @@ msgstr "زمردي"
 msgid "Employee"
 msgstr "الموظف"
 
+msgid "Employee (app)"
+msgstr "موظف (التطبيق)"
+
 msgid "Employee and employer insurance rates on the insured salary."
 msgstr "نسب تأمينات الموظف وصاحب العمل على الأجر التأميني."
 
+msgid "Employee code"
+msgstr "كود الموظف"
+
+msgid "Employee list"
+msgstr "دليل الموظفين"
+
 msgid "Employee share"
+msgstr "حصة الموظف"
+
+msgid "Employee's share"
 msgstr "حصة الموظف"
 
 msgid "Employees"
 msgstr "الموظفون"
 
+msgid ""
+"Employees already in another run of the same days are left out and listed in"
+" the run."
+msgstr ""
+"الموظفون الموجودون في مسير آخر لنفس الأيام يُستبعدون ويُذكرون في المسير."
+
+msgid "Employees present each day"
+msgstr "الموظفون الحاضرون كل يوم"
+
+msgid "Employees present, the last 14 days"
+msgstr "الموظفون الحاضرون، آخر 14 يومًا"
+
+msgid ""
+"Employees punch, ask for leave and read their notifications in the app."
+msgstr "يبصم الموظفون ويطلبون الإجازات ويقرؤون إشعاراتهم في التطبيق."
+
+msgid "Employees working"
+msgstr "الموظفون العاملون"
+
+msgid ""
+"Employees' own logins to the mobile app, counted apart from users. Empty: no"
+" limit."
+msgstr ""
+"حسابات الموظفين على تطبيق الموبايل، تُحسب منفصلة عن المستخدمين. فارغ: بلا "
+"حد."
+
+msgid "Employees' own logins to the mobile app."
+msgstr "حسابات الموظفين على تطبيق الموبايل."
+
 msgid "Employer"
 msgstr "صاحب العمل"
 
+msgid "Employer cost"
+msgstr "تكلفة على صاحب العمل"
+
+msgid "Employer costs"
+msgstr "تكاليف صاحب العمل"
+
 msgid "Employer share"
+msgstr "حصة صاحب العمل"
+
+msgid "Employer's cost"
+msgstr "تكلفة صاحب العمل"
+
+msgid "Employer's share"
 msgstr "حصة صاحب العمل"
 
 msgid "Employment"
 msgstr "الخدمة"
 
+msgid "Empty uses the platform default. 0 means no limit."
+msgstr "اتركه فارغًا لاستخدام الحد الافتراضي للمنصة. 0 يعني بلا حد."
+
+msgid ""
+"Empty: from then on. A last day: the day after, each goes back to the hours "
+"they had."
+msgstr ""
+"فارغ: من ذلك التاريخ فصاعدًا. آخر يوم: في اليوم التالي يعود كل موظف إلى "
+"مواعيده السابقة."
+
+msgid "Empty: no limit. A client's own limit wins."
+msgstr "فارغ: بلا حد. حد العميل نفسه له الأولوية."
+
+msgid "Empty: the platform default. 0: no limit."
+msgstr "فارغ: الافتراضي للمنصة. 0: بلا حد."
+
+msgid "Enable this client"
+msgstr "تفعيل هذا العميل"
+
+msgid "Enabled"
+msgstr "مفعّل"
+
+msgid "Enabled."
+msgstr "مفعّل."
+
+msgid "End"
+msgstr "إنهاء"
+
 msgid "End employment"
 msgstr "إنهاء الخدمة"
+
+msgid "Ended"
+msgstr "انتهت"
+
+msgid "Ended by"
+msgstr "سبب الانتهاء"
+
+msgid "Ends at"
+msgstr "ينتهي في"
+
+msgid "Enrolled at"
+msgstr "تاريخ التسجيل"
+
+msgid "Enrolled on the branch's devices"
+msgstr "المسجلون على أجهزة الفرع"
 
 msgid "Enter a code from 1."
 msgstr "أدخل كودًا يبدأ من 1."
 
 msgid "Enter a date as YYYY-MM-DD."
 msgstr "أدخل التاريخ بصيغة YYYY-MM-DD."
+
+msgid "Enter a domain like hr.example.com."
+msgstr "أدخل نطاقًا مثل hr.example.com."
+
+msgid "Enter a mobile number."
+msgstr "أدخل رقم موبايل."
+
+msgid "Enter a month as YYYY-MM."
+msgstr "أدخل الشهر بصيغة YYYY-MM."
 
 msgid "Enter a name."
 msgstr "أدخل اسمًا."
@@ -738,6 +1912,12 @@ msgstr "أدخل عددًا صحيحًا."
 msgid "Enter and correct attendance"
 msgstr "إدخال الحضور وتصحيحه"
 
+msgid "Enter at least one time span."
+msgstr "أدخل فترة واحدة على الأقل."
+
+msgid "Enter both the latitude and the longitude, or neither."
+msgstr "أدخل خط العرض وخط الطول معًا، أو اتركهما."
+
 msgid "Enter hourly leave"
 msgstr "إدخال الأذونات"
 
@@ -753,27 +1933,106 @@ msgstr "أدخل تاريخ بدء التغيير."
 msgid "Enter the date."
 msgstr "أدخل التاريخ."
 
+msgid "Enter the days to pull, first day first."
+msgstr "أدخل الأيام المطلوب سحبها، اليوم الأول أولًا."
+
+msgid "Enter the first and last day of the off-cycle run."
+msgstr "أدخل أول وآخر يوم في المسير الاستثنائي."
+
+msgid "Enter the first day of one pay period."
+msgstr "أدخل أول يوم في إحدى فترات الصرف."
+
 msgid "Enter the hiring date."
 msgstr "أدخل تاريخ التعيين."
 
 msgid "Enter the salary."
 msgstr "أدخل الراتب."
 
+msgid "Enter the serial number shown on the device."
+msgstr "أدخل الرقم التسلسلي الظاهر على الجهاز."
+
 msgid "Enter the time they came."
 msgstr "أدخل وقت الحضور."
+
+msgid "Enter the time they left."
+msgstr "أدخل وقت الانصراف."
+
+msgid "Enter the year evaluated."
+msgstr "أدخل سنة التقييم."
+
+msgid ""
+"Enter what each employee's quantity should have been (0 takes it back). Only"
+" the difference is paid or taken back, in the payroll of the date below; the"
+" original stays as it was."
+msgstr ""
+"أدخل ما كان يجب أن تكون عليه كمية كل موظف (0 يستردها). يُصرف الفرق فقط أو "
+"يُسترد، في مسير التاريخ أدناه؛ ويبقى الأصل كما هو."
 
 msgid "Entered by hand"
 msgstr "مُدخل يدويًا"
 
+msgid "Entitled"
+msgstr "المستحق"
+
 msgid ""
-"Every change to prices, customers and suppliers, pieces, users, roles, cash "
-"boxes and settings: who made it, when, and what it was before."
+"Equal installments; any remainder is added to the last. Up to %(count)s."
+msgstr "أقساط متساوية؛ وأي باقٍ يُضاف إلى القسط الأخير. حتى %(count)s قسطًا."
+
+msgid "Errors"
+msgstr "الأخطاء"
+
+msgid "Evaluation"
+msgstr "التقييم"
+
+msgid "Evaluation card"
+msgstr "بطاقة التقييم"
+
+msgid "Evaluations"
+msgstr "التقييمات"
+
+msgid "Every change made from the platform console, and by whom."
+msgstr "كل تغيير تم من لوحة المنصة، ومن قام به."
+
+msgid ""
+"Every change to employees, pay and hours, attendance and leave, loans, "
+"incentives and penalties, payroll, users, roles and settings: who made it, "
+"when, and what it was before."
 msgstr ""
-"كل تعديل على الأسعار والعملاء والموردين والقطع والمستخدمين والأدوار والخزائن"
-" والإعدادات: من قام به، ومتى، وما كانت القيمة قبله."
+"كل تغيير في الموظفين والأجور والمواعيد والحضور والإجازات والقروض والحوافز "
+"والجزاءات والمسيرات والمستخدمين والأدوار والإعدادات: من قام به ومتى وما كانت"
+" القيمة قبله."
 
 msgid "every change, who made it and when."
 msgstr "كل تعديل، ومن قام به ومتى."
+
+msgid "Every client workspace, how much it is used, and what needs a look."
+msgstr "كل مساحات عمل العملاء، ومدى استخدامها، وما يحتاج متابعة."
+
+msgid "Every day"
+msgstr "كل الأيام"
+
+msgid "Every employee takes this quantity again."
+msgstr "يأخذ كل موظف هذه الكمية من جديد."
+
+msgid ""
+"Every employee's card: job, branch, department, hiring date and contact; and"
+" their current pay, for those who may see pay."
+msgstr ""
+"بطاقة كل موظف: الوظيفة والفرع والقسم وتاريخ التعيين وبيانات الاتصال؛ وأجره "
+"الحالي لمن يحق له رؤية الأجور."
+
+msgid "Every month"
+msgstr "كل شهر"
+
+msgid "Every pay period"
+msgstr "كل فترة صرف"
+
+msgid ""
+"Every payslip of the runs ending in the period: what was earned and "
+"deducted, by kind, and the net."
+msgstr ""
+"كل قسائم المسيرات المنتهية في الفترة: المستحقات والاستقطاعات حسب النوع، "
+"والصافي."
 
 msgid ""
 "Every sign-in to this workspace, every wrong password and every sign-out: "
@@ -781,6 +2040,21 @@ msgid ""
 msgstr ""
 "كل دخول إلى مساحة العمل، وكل كلمة مرور خاطئة، وكل خروج: من، ومتى، ومن أي "
 "عنوان، وبأي متصفح."
+
+msgid "Every two weeks"
+msgstr "كل أسبوعين"
+
+msgid "Every week"
+msgstr "كل أسبوع"
+
+msgid "Every WhatsApp message: waiting, sent, or failed and why."
+msgstr "كل رسائل واتساب: المنتظرة والمرسلة والفاشلة وسبب فشلها."
+
+msgid "Everyone"
+msgstr "الجميع"
+
+msgid "Everyone can sign in and work."
+msgstr "يمكن للجميع الدخول والعمل."
 
 msgid "Everything"
 msgstr "الكل"
@@ -794,9 +2068,6 @@ msgstr "ملف إكسل (.xlsx)"
 msgid "Excel import"
 msgstr "استيراد إكسل"
 
-msgid "Exchange rate"
-msgstr "سعر الصرف"
-
 msgid "Excused"
 msgstr "غياب بإذن"
 
@@ -805,9 +2076,6 @@ msgstr "غياب بإذن"
 
 msgid "Exempt"
 msgstr "معفى"
-
-msgid "Expense category"
-msgstr "بند المصروف"
 
 msgid "External system"
 msgstr "نظام خارجي"
@@ -818,6 +2086,18 @@ msgstr "إضافي"
 msgid "Extra (h)"
 msgstr "الإضافي (س)"
 
+msgid "Extra time only"
+msgstr "الإضافي فقط"
+
+msgid "Failed"
+msgstr "فشلت"
+
+msgid "failed in the last 24 hours"
+msgstr "فشلت خلال آخر 24 ساعة"
+
+msgid "Failed jobs and jobs being retried show here."
+msgstr "تظهر هنا المهام الفاشلة والمهام التي تُعاد محاولتها."
+
 msgid "Feature"
 msgstr "الخاصية"
 
@@ -827,14 +2107,14 @@ msgstr "تم تغيير خاصية لعميل"
 msgid "feature set for this client (over its plan)"
 msgstr "ميزة مضبوطة لهذا العميل (بدلاً من باقته)"
 
+msgid "Features"
+msgstr "الخصائص"
+
 msgid "Features in effect"
 msgstr "الميزات المفعّلة فعلياً"
 
 msgid "features set for this client (over its plan)"
 msgstr "ميزات مضبوطة لهذا العميل (بدلاً من باقته)"
-
-msgid "Fee"
-msgstr "العمولة"
 
 msgid "Female"
 msgstr "أنثى"
@@ -842,23 +2122,89 @@ msgstr "أنثى"
 msgid "Filters"
 msgstr "التصفية"
 
-msgid "Fine gold"
-msgstr "الذهب الصافي"
-
-msgid "Fineness"
-msgstr "العيار (نقاوة)"
-
 msgid "Fingerprint device"
 msgstr "جهاز البصمة"
+
+msgid "Fingerprint device punches"
+msgstr "بصمات أجهزة البصمة"
+
+msgid "Fingerprint device user"
+msgstr "مستخدم جهاز البصمة"
+
+msgid "Fingerprint devices"
+msgstr "أجهزة البصمة"
+
+msgid "Fingerprint on the phone"
+msgstr "البصمة على الهاتف"
 
 msgid "First day"
 msgstr "أول يوم"
 
+msgid "First day of one period"
+msgstr "أول يوم في إحدى الفترات"
+
+msgid "First installment in"
+msgstr "أول قسط في"
+
+msgid "Fixed amount"
+msgstr "مبلغ ثابت"
+
 msgid "Fixed amount for the month"
 msgstr "مبلغ ثابت عن الشهر"
 
+msgid "Fixed salary"
+msgstr "راتب ثابت"
+
+msgid "Follow employees' routes and live positions"
+msgstr "متابعة مسارات الموظفين ومواقعهم الحالية"
+
+msgid "Footer links"
+msgstr "روابط التذييل"
+
+msgid "Footer text"
+msgstr "نص التذييل"
+
+msgid "For"
+msgstr "لـ"
+
+msgid "For a group"
+msgstr "لمجموعة"
+
+msgid ""
+"For each employee in the year: the days they are entitled to, taken, waiting"
+" for approval, and left."
+msgstr ""
+"لكل موظف في السنة: الأيام المستحقة والمأخوذة والمنتظرة للاعتماد والمتبقية."
+
+msgid ""
+"For each employee over the period: days present, absent, on leave, off and "
+"on holiday, and the hours worked, late, early and extra."
+msgstr ""
+"لكل موظف خلال الفترة: أيام الحضور والغياب والإجازة والراحة والعطلات، وساعات "
+"العمل والتأخير والانصراف المبكر والإضافي."
+
+msgid ""
+"For each run ending in the period and each branch: how many were paid, "
+"earnings, deductions, net and the employer's cost."
+msgstr ""
+"لكل مسير منتهٍ في الفترة ولكل فرع: عدد من صُرف لهم والمستحقات والاستقطاعات "
+"والصافي وتكلفة صاحب العمل."
+
+msgid ""
+"For each time it is paid, or for each day worked if the item is per day."
+msgstr "عن كل مرة يُصرف فيها، أو عن كل يوم عمل إذا كان البند يوميًا."
+
+msgid "For the %(name)s team: every client, in one place."
+msgstr "لفريق %(name)s: كل العملاء في مكان واحد."
+
+msgid "For the company"
+msgstr "عن الشركة"
+
 msgid "For the ticked employees:"
 msgstr "للموظفين المحددين:"
+
+msgid "Frequency"
+msgstr "الدورية"
 
 msgid "Friday"
 msgstr "الجمعة"
@@ -868,6 +2214,12 @@ msgstr "من"
 
 msgid "From %(day)s"
 msgstr "من %(day)s"
+
+msgid "From (minutes)"
+msgstr "من (دقائق)"
+
+msgid "From 1 to %(count)s installments."
+msgstr "من 1 إلى %(count)s قسطًا."
 
 msgid "From minute"
 msgstr "من دقيقة"
@@ -882,6 +2234,9 @@ msgid ""
 "From the lowest up. Leave the last limit empty for everything above it."
 msgstr "من الأدنى إلى الأعلى. اترك الحد الأخير فارغًا لكل ما يزيد عليه."
 
+msgid "From the plan"
+msgstr "من الباقة"
+
 msgid "Full access"
 msgstr "صلاحيات كاملة"
 
@@ -894,8 +2249,56 @@ msgstr "الاسم الكامل"
 msgid "Gender"
 msgstr "النوع"
 
+msgid "Gender (male / female)"
+msgstr "النوع (male / female)"
+
+msgid "Give a login to the app"
+msgstr "إعطاء دخول للتطبيق"
+
+msgid "Give a pay item"
+msgstr "منح بند راتب"
+
+msgid "Give a penalty"
+msgstr "توقيع جزاء"
+
+msgid "Give an advance"
+msgstr "صرف سلفة"
+
+msgid "Give an incentive"
+msgstr "منح حافز"
+
+msgid "Give and cancel salary advances"
+msgstr "صرف السلف وإلغاؤها"
+
+msgid "Give incentives and edit drafts, and their types"
+msgstr "منح الحوافز وتعديل المسودات وأنواعها"
+
+msgid "Give pay items to employees and cancel them"
+msgstr "منح بنود الراتب للموظفين وإلغاؤها"
+
+msgid "Give penalties and edit drafts, and their types"
+msgstr "توقيع الجزاءات وتعديل المسودات وأنواعها"
+
+msgid "Give the advance"
+msgstr "صرف السلفة"
+
 msgid "Give the member at least one role."
 msgstr "امنح المستخدم دورًا واحدًا على الأقل."
+
+msgid "Given on"
+msgstr "تاريخ المنح"
+
+msgid "Given on %(day)s"
+msgstr "مُنح في %(day)s"
+
+msgid "Given to"
+msgstr "ممنوحة لـ"
+
+msgid "Given to (id)"
+msgstr "ممنوحة لـ (رقم)"
+
+msgid "Given together"
+msgstr "مُنحت معًا"
 
 msgid "Go to a screen…"
 msgstr "انتقل إلى شاشة…"
@@ -906,19 +2309,23 @@ msgstr "انزل لأسفل الصفحة"
 msgid "Gold"
 msgstr "ذهب"
 
-msgid "Gold price"
-msgstr "سعر الذهب"
+msgid "gone"
+msgstr "متوقف"
 
-msgid "Gold price board"
-msgstr "لوحة أسعار الذهب"
-
-msgid ""
-"Gold prices, stock, sales and balances in grams and money, always in step."
-msgstr ""
-"أسعار الذهب والمخزون والمبيعات والأرصدة بالجرام والنقدية، متطابقة دائمًا."
+msgid "GPS tracking"
+msgstr "تتبع الموقع"
 
 msgid "Grace minutes"
 msgstr "دقائق السماح"
+
+msgid "Grant the loan"
+msgstr "منح القرض"
+
+msgid "Grant, postpone and cancel loans"
+msgstr "منح القروض وتأجيلها وإلغاؤها"
+
+msgid "Granted on"
+msgstr "تاريخ المنح"
 
 msgid "Graphite"
 msgstr "جرافيت"
@@ -932,8 +2339,20 @@ msgstr "س"
 msgid "Head office"
 msgstr "الفرع الرئيسي"
 
+msgid "Heaviest screens"
+msgstr "أثقل الشاشات"
+
+msgid "Hidden"
+msgstr "مخفية"
+
+msgid "Hidden plans keep their clients but are not offered for new ones."
+msgstr "الباقات المخفية تحتفظ بعملائها لكنها لا تُعرض للعملاء الجدد."
+
 msgid "Hide password"
 msgstr "إخفاء كلمة المرور"
+
+msgid "Highest insured salary"
+msgstr "أعلى أجر تأميني"
 
 msgid "Hired on"
 msgstr "تاريخ التعيين"
@@ -947,6 +2366,9 @@ msgstr "السجل"
 msgid "Holiday"
 msgstr "إجازة رسمية"
 
+msgid "Holiday rate"
+msgstr "معامل العطلات"
+
 msgid "Holiday work ×"
 msgstr "العمل في الإجازة ×"
 
@@ -956,11 +2378,41 @@ msgstr "الساعة"
 msgid "Hourly leave"
 msgstr "الأذونات"
 
+msgid "Hourly leave a month"
+msgstr "رصيد الإذن الشهري"
+
+msgid "Hourly leave cancelled"
+msgstr "إلغاء إذن"
+
+msgid "Hourly leave entered"
+msgstr "تسجيل إذن"
+
+msgid "Hourly leave for a group"
+msgstr "إذن لمجموعة"
+
+msgid "Hourly leave in the period: the day, the time away and how long."
+msgstr "الأذونات في الفترة: اليوم ووقت الإذن ومدته."
+
 msgid "Hourly leave is for part of a day; use leave for more."
 msgstr "الإذن لجزء من اليوم؛ استخدم الإجازة لما هو أكثر."
 
+msgid "Hourly leave taken"
+msgstr "الأذونات"
+
+msgid "Hourly leave to decide"
+msgstr "أذونات تنتظر القرار"
+
+msgid "Hourly leave was entered for you"
+msgstr "تم تسجيل اذن لك"
+
+msgid "Hourly wage"
+msgstr "أجر بالساعة"
+
 msgid "Hours"
 msgstr "الساعات"
+
+msgid "hours"
+msgstr "ساعات"
 
 msgid "Hours a day"
 msgstr "ساعات اليوم"
@@ -968,8 +2420,33 @@ msgstr "ساعات اليوم"
 msgid "Hours deducted"
 msgstr "الساعات المخصومة"
 
+msgid "Hours for a group"
+msgstr "مواعيد لمجموعة"
+
+msgid "Hours must not be negative."
+msgstr "يجب ألا تكون الساعات سالبة."
+
+msgid "Hours of pay"
+msgstr "ساعات من الأجر"
+
 msgid "Hours paid"
 msgstr "الساعات المدفوعة"
+
+msgid "Hours paid as overtime, the last 12 months"
+msgstr "الساعات المدفوعة كإضافي، آخر 12 شهرًا"
+
+msgid "Hours paid × hour's wage"
+msgstr "الساعات المدفوعة × أجر الساعة"
+
+msgid "How a client's sidebar and page footer look with these settings."
+msgstr "شكل القائمة الجانبية وتذييل الصفحة عند العميل بهذه الإعدادات."
+
+msgid ""
+"How an item given monthly is paid to these employees. Loan installments are "
+"always taken whole, in the period containing the 1st of their month."
+msgstr ""
+"كيف يُصرف البند الشهري لهؤلاء الموظفين. أقساط القروض تُخصم دائمًا كاملة، في "
+"الفترة التي تحتوي أول يوم من شهرها."
 
 msgid ""
 "How extra time is paid: minutes worked over fall in a band that says how "
@@ -984,8 +2461,14 @@ msgid ""
 msgstr ""
 "طريقة خصم التأخير: دقائق التأخير تقع في شريحة تحدد عدد ساعات الأجر المخصومة."
 
-msgid "IBAN"
-msgstr "رقم الآيبان"
+msgid "How much"
+msgstr "القيمة"
+
+msgid "How often"
+msgstr "التكرار"
+
+msgid "Idle a month"
+msgstr "متوقف منذ شهر"
 
 msgid ""
 "If any row has a problem, nothing is imported and every problem is listed, "
@@ -1006,8 +2489,53 @@ msgstr "استيراد الموظفين من إكسل"
 msgid "Import from Excel"
 msgstr "استيراد من إكسل"
 
+msgid "In"
+msgstr "حضور"
+
+msgid "in %(when)s"
+msgstr "بعد %(when)s"
+
+msgid "In attendance"
+msgstr "في الحضور"
+
+msgid "In effect"
+msgstr "سارٍ"
+
+msgid "In the footer of every workspace page"
+msgstr "في تذييل كل صفحة في مساحات العمل"
+
 msgid "Inactive"
 msgstr "موقوف"
+
+msgid "Incentive"
+msgstr "حافز"
+
+msgid "Incentive or penalty"
+msgstr "حافز أو جزاء"
+
+msgid "Incentive or penalty batch"
+msgstr "دفعة حوافز أو جزاءات"
+
+msgid "Incentive or penalty type"
+msgstr "نوع حافز أو جزاء"
+
+msgid "Incentive types"
+msgstr "أنواع الحوافز"
+
+msgid "Incentives"
+msgstr "الحوافز"
+
+msgid "Incentives and penalties"
+msgstr "الحوافز والجزاءات"
+
+msgid "Incentives for an employee, a department or a branch, added to pay."
+msgstr "حوافز لموظف أو قسم أو فرع، تُضاف إلى الأجر."
+
+msgid "Incentives given"
+msgstr "الحوافز الممنوحة"
+
+msgid "Incentives to approve"
+msgstr "حوافز تنتظر الاعتماد"
 
 msgid "Income tax"
 msgstr "ضريبة الدخل"
@@ -1018,8 +2546,26 @@ msgstr "نيلي"
 msgid "Initial password"
 msgstr "كلمة المرور الأولى"
 
+msgid "Installment"
+msgstr "القسط"
+
+msgid "Installment amount"
+msgstr "قيمة القسط"
+
+msgid "Installments"
+msgstr "الأقساط"
+
+msgid "Installments falling due in the period: paid by payroll, or still due."
+msgstr "الأقساط المستحقة في الفترة: ما سدده المسير وما زال مستحقًا."
+
+msgid "Installments were already paid: postpone the rest instead."
+msgstr "تم سداد أقساط بالفعل: أجّل الباقي بدلًا من ذلك."
+
 msgid "Insurance number"
 msgstr "الرقم التأميني"
+
+msgid "Insurance rates"
+msgstr "نسب التأمينات"
 
 msgid "Insured from"
 msgstr "مؤمَّن عليه من"
@@ -1027,32 +2573,86 @@ msgstr "مؤمَّن عليه من"
 msgid "Insured salary"
 msgstr "الأجر التأميني"
 
+msgid "Insured, but no insurance rates are set for this period."
+msgstr "مؤمَّن عليه، لكن لا توجد نسب تأمينات محددة لهذه الفترة."
+
+msgid "It counts in this month's pay."
+msgstr "يُحسب في أجر هذا الشهر."
+
+msgid "Item"
+msgstr "البند"
+
 msgid "Job"
 msgstr "الوظيفة"
+
+msgid "Job cancelled."
+msgstr "أُلغيت المهمة."
 
 msgid "Job title"
 msgstr "الوظيفة"
 
-msgid "Karat"
-msgstr "العيار"
+msgid "Jobs"
+msgstr "المهام"
+
+msgid "Jobs appear here as the app asks for them."
+msgstr "تظهر المهام هنا عندما يطلبها التطبيق."
+
+msgid "Jordan"
+msgstr "الأردن"
+
+msgid "Key pressed"
+msgstr "الزر المضغوط"
 
 msgid "Kind"
 msgstr "النوع"
 
-msgid "Lab"
-msgstr "المعمل"
+msgid "Kuwait"
+msgstr "الكويت"
 
-msgid "Label price"
-msgstr "سعر الملصق"
+msgid "Label"
+msgstr "البيان"
 
-msgid "Label template"
-msgstr "قالب الملصق"
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Last"
+msgstr "آخر نشاط"
+
+msgid "last 24 hours"
+msgstr "آخر 24 ساعة"
+
+msgid "Last 24 hours"
+msgstr "آخر 24 ساعة"
+
+msgid "Last 30 days"
+msgstr "آخر 30 يومًا"
+
+msgid "Last 7 days"
+msgstr "آخر 7 أيام"
+
+msgid "Last activity"
+msgstr "آخر نشاط"
+
+msgid "Last address"
+msgstr "آخر عنوان"
+
+msgid "Last call"
+msgstr "آخر اتصال"
 
 msgid "Last day"
 msgstr "آخر يوم"
 
+msgid "Last hour"
+msgstr "آخر ساعة"
+
+msgid "Last seen"
+msgstr "آخر ظهور"
+
 msgid "Last sign-in"
 msgstr "آخر دخول"
+
+msgid "Last used"
+msgstr "آخر استخدام"
 
 msgid "Last working day"
 msgstr "آخر يوم عمل"
@@ -1063,8 +2663,17 @@ msgstr "تأخير"
 msgid "Late (h)"
 msgstr "التأخير (س)"
 
+msgid "Late arrivals only"
+msgstr "التأخير فقط"
+
 msgid "Lateness"
 msgstr "التأخير"
+
+msgid "Lateness and missing time"
+msgstr "التأخير والوقت الناقص"
+
+msgid "Lateness band"
+msgstr "شريحة تأخير"
 
 msgid "Lateness deductions"
 msgstr "خصومات التأخير"
@@ -1082,11 +2691,50 @@ msgstr "لائحة التأخير"
 msgid "Latest"
 msgstr "الأحدث"
 
+msgid "Latest punches"
+msgstr "آخر البصمات"
+
+msgid "Latitude"
+msgstr "خط العرض"
+
 msgid "Leave"
 msgstr "الإجازات"
 
+msgid "Leave approved"
+msgstr "اعتماد إجازة"
+
+msgid "Leave cancelled"
+msgstr "إلغاء إجازة"
+
+msgid "Leave empty for no limit."
+msgstr "اتركه فارغًا لعدم التقييد."
+
+msgid "Leave empty when adding this workspace to the owner's existing login."
+msgstr "اتركها فارغة عند إضافة مساحة العمل هذه إلى حساب المالك الحالي."
+
 msgid "Leave empty."
 msgstr "اتركها فارغة."
+
+msgid "Leave entered"
+msgstr "تسجيل إجازة"
+
+msgid "Leave rejected"
+msgstr "رفض إجازة"
+
+msgid "Leave request from %(name)s"
+msgstr "طلب اجازة من %(name)s"
+
+msgid "Leave request withdrawn"
+msgstr "سحب طلب إجازة"
+
+msgid "Leave taken"
+msgstr "الإجازات"
+
+msgid "Leave to decide"
+msgstr "إجازة تنتظر القرار"
+
+msgid "Leave type"
+msgstr "نوع الإجازة"
 
 msgid "Leave types"
 msgstr "أنواع الإجازات"
@@ -1094,14 +2742,20 @@ msgstr "أنواع الإجازات"
 msgid "Leave types, requests with approval, and the yearly balance."
 msgstr "أنواع الإجازات، والطلبات مع الاعتماد، والرصيد السنوي."
 
-msgid "Ledger account"
-msgstr "الحساب في الدفاتر"
-
 msgid "Left"
 msgstr "ترك العمل"
 
+msgid "Left (HH:MM)"
+msgstr "الانصراف (HH:MM)"
+
+msgid "Left on"
+msgstr "تاريخ ترك العمل"
+
 msgid "Left on %(day)s."
 msgstr "ترك العمل في %(day)s."
+
+msgid "Left out"
+msgstr "مستبعدون"
 
 msgid "Legal name"
 msgstr "الاسم القانوني"
@@ -1115,11 +2769,92 @@ msgstr "فاتح"
 msgid "Limit"
 msgstr "الحد"
 
+msgid "Limits"
+msgstr "الحدود"
+
+msgid ""
+"Limits are checked when the client adds branches, users or app logins. "
+"Empty: the plan’s limit."
+msgstr ""
+"تُطبق الحدود عندما يضيف العميل فروعًا أو مستخدمين أو حسابات تطبيق. فارغ: حد "
+"الباقة."
+
+msgid "Line"
+msgstr "البند"
+
+msgid "Line under each client's name"
+msgstr "السطر تحت اسم كل عميل"
+
+msgid "Lines added by hand"
+msgstr "بنود مضافة يدويًا"
+
+msgid "Link"
+msgstr "الرابط"
+
+msgid "Link again"
+msgstr "الربط مرة أخرى"
+
+msgid "Link PINs that are employee codes"
+msgstr "ربط الأرقام التي تطابق أكواد الموظفين"
+
+msgid "Link the company's WhatsApp number and set its wording"
+msgstr "ربط رقم واتساب الشركة وكتابة نص رسائله"
+
+msgid "Link the company's WhatsApp number first (Settings → WhatsApp)."
+msgstr "اربط رقم واتساب الشركة أولًا (الإعدادات ← واتساب)."
+
+msgid "Link the number"
+msgstr "ربط الرقم"
+
+msgid "Linked"
+msgstr "مربوط"
+
+msgid "Linked at"
+msgstr "تاريخ الربط"
+
+msgid "Linked."
+msgstr "تم الربط."
+
+msgid "Live"
+msgstr "مباشر"
+
+msgid "Live · updated %(time)s"
+msgstr "مباشر · آخر تحديث %(time)s"
+
 msgid "Loading pages…"
 msgstr "جارٍ تحميل الصفحات…"
 
 msgid "Loading…"
 msgstr "جارٍ التحميل…"
+
+msgid "Loan"
+msgstr "قرض"
+
+msgid "Loan amount"
+msgstr "قيمة القرض"
+
+msgid "Loan installment"
+msgstr "قسط قرض"
+
+msgid "Loan installments"
+msgstr "أقساط القروض"
+
+msgid "Loans"
+msgstr "القروض"
+
+msgid "Loans and what is left"
+msgstr "القروض والمتبقي منها"
+
+msgid ""
+"Loans granted in the period: the amount, what payroll has taken in "
+"installments, and what is left."
+msgstr "القروض الممنوحة في الفترة: قيمتها وما خصمه المسير من أقساط والمتبقي."
+
+msgid "Loans recovered in monthly installments, with postponing."
+msgstr "قروض تُسدد على أقساط شهرية، مع إمكانية التأجيل."
+
+msgid "Loans, advances, incentives and items"
+msgstr "القروض والسلف والحوافز والبنود"
 
 msgid "Log out"
 msgstr "تسجيل الخروج"
@@ -1127,14 +2862,26 @@ msgstr "تسجيل الخروج"
 msgid "Logo"
 msgstr "الشعار"
 
+msgid "Logo for dark backgrounds"
+msgstr "شعار للخلفيات الداكنة"
+
+msgid "Logos"
+msgstr "الشعارات"
+
+msgid "Longitude"
+msgstr "خط الطول"
+
 msgid "Lowercase letters, digits and hyphens."
 msgstr "حروف إنجليزية صغيرة وأرقام وشرطات."
 
+msgid "Lowercase letters, digits and hyphens. Cannot change later."
+msgstr "حروف إنجليزية صغيرة وأرقام وشرطات. لا يمكن تغييره لاحقاً."
+
+msgid "Lowest insured salary"
+msgstr "أدنى أجر تأميني"
+
 msgid "Main"
 msgstr "الرئيسية"
-
-msgid "Making cost / g"
-msgstr "تكلفة المصنعية / جم"
 
 msgid "Male"
 msgstr "ذكر"
@@ -1181,6 +2928,12 @@ msgstr "مدير"
 msgid "Marital status"
 msgstr "الحالة الاجتماعية"
 
+msgid "Mark all as read"
+msgstr "تعليم الكل كمقروء"
+
+msgid "Mark as paid"
+msgstr "تسجيل الصرف"
+
 msgid "Married"
 msgstr "متزوج"
 
@@ -1193,8 +2946,11 @@ msgstr "الحد الأقصى للأجر التأميني"
 msgid "Meaning"
 msgstr "المعنى"
 
-msgid "Metal"
-msgstr "المعدن"
+msgid "Message with each payslip"
+msgstr "الرسالة مع كل قسيمة"
+
+msgid "Method"
+msgstr "الطريقة"
 
 msgid "Migrating"
 msgstr "قيد الترحيل"
@@ -1207,6 +2963,9 @@ msgstr "الحد الأدنى التأميني"
 
 msgid "Minimum insured salary"
 msgstr "الحد الأدنى للأجر التأميني"
+
+msgid "Minutes"
+msgstr "الدقائق"
 
 msgid ""
 "Minutes late from–to, and the hours of pay deducted. Without bands, the "
@@ -1225,23 +2984,53 @@ msgstr ""
 msgid "Missing columns: %(names)s"
 msgstr "أعمدة ناقصة: %(names)s"
 
+msgid "Missing time"
+msgstr "وقت ناقص"
+
 msgid "Mobile app"
 msgstr "تطبيق الموبايل"
 
-msgid "Model classes"
-msgstr "تصنيفات الموديل"
+msgid "Mobile number"
+msgstr "رقم الموبايل"
 
 msgid "Monday"
 msgstr "الاثنين"
 
+msgid "Month"
+msgstr "الشهر"
+
+msgid "Month starts on day"
+msgstr "يبدأ الشهر يوم"
+
 msgid "Monthly"
 msgstr "شهرياً"
 
-msgid "Monthly salary"
-msgstr "الراتب الشهري"
+msgid "Monthly installments"
+msgstr "عدد الأقساط الشهرية"
+
+msgid "Monthly items in weekly pay"
+msgstr "البنود الشهرية في الأجر الأسبوعي"
+
+msgid "Monthly pay items"
+msgstr "بنود الراتب الشهرية"
+
+msgid "Most app logins"
+msgstr "أقصى عدد حسابات تطبيق"
+
+msgid "Most branches"
+msgstr "أقصى عدد فروع"
+
+msgid "Most users"
+msgstr "أقصى عدد مستخدمين"
+
+msgid "Move its clients to"
+msgstr "نقل عملائها إلى"
 
 msgid "Must be before the hiring date."
 msgstr "يجب أن يكون قبل تاريخ التعيين."
+
+msgid "Must be greater than zero."
+msgstr "يجب أن يكون أكبر من صفر."
 
 msgid "Must not be after the day they left."
 msgstr "يجب ألا يكون بعد تاريخ ترك العمل."
@@ -1251,6 +3040,9 @@ msgstr "يجب ألا يكون قبل أول يوم."
 
 msgid "Must not be before the hiring date."
 msgstr "يجب ألا يكون قبل تاريخ التعيين."
+
+msgid "Must not be before the month the loan is given."
+msgstr "يجب ألا يكون قبل شهر منح القرض."
 
 msgid "Must not be in the future."
 msgstr "يجب ألا يكون في المستقبل."
@@ -1264,8 +3056,26 @@ msgstr "يجب ألا يكون سالبًا."
 msgid "Name"
 msgstr "الاسم"
 
+msgid "Name (Arabic)"
+msgstr "الاسم (عربي)"
+
+msgid "Name (English)"
+msgstr "الاسم (إنجليزي)"
+
+msgid "Name on screens and payslips"
+msgstr "الاسم على الشاشات وكشوف الرواتب"
+
 msgid "Name on screens and receipts"
 msgstr "الاسم على الشاشات والإيصالات"
+
+msgid "Name on the device"
+msgstr "الاسم على الجهاز"
+
+msgid "Name, address, domain or contact"
+msgstr "الاسم أو العنوان أو النطاق أو التواصل"
+
+msgid "name, code, period start and end, net pay, company"
+msgstr "الاسم والكود وبداية الفترة ونهايتها وصافي الراتب والشركة"
 
 msgid "Name, code, phone or job"
 msgstr "الاسم أو الكود أو الهاتف أو الوظيفة"
@@ -1273,11 +3083,46 @@ msgstr "الاسم أو الكود أو الهاتف أو الوظيفة"
 msgid "National ID"
 msgstr "الرقم القومي"
 
-msgid "Natural or lab-grown"
-msgstr "طبيعي أو معملي"
+msgid "Near the limit"
+msgstr "قريب من الحد"
+
+msgid "Needs a look"
+msgstr "يحتاج متابعة"
+
+msgid "Needs attention"
+msgstr "يحتاج متابعة"
+
+msgid "Needs:"
+msgstr "يحتاج:"
+
+msgid "Net"
+msgstr "الصافي"
+
+msgid "Net pay"
+msgstr "صافي الراتب"
+
+msgid "Net pay by department"
+msgstr "صافي الرواتب حسب القسم"
+
+msgid "Net pay each month"
+msgstr "صافي الرواتب كل شهر"
+
+msgid "Net pay is negative."
+msgstr "صافي الراتب بالسالب."
+
+msgid "Net pay, last approved"
+msgstr "صافي الرواتب، آخر مسير معتمد"
 
 msgid "New branch"
 msgstr "فرع جديد"
+
+msgid "New client"
+msgstr "عميل جديد"
+
+msgid "New clients on this plan get a trial ending this many days later."
+msgstr ""
+"العملاء الجدد على هذه الباقة يحصلون على فترة تجربة تنتهي بعد هذا العدد من "
+"الأيام."
 
 msgid "New department"
 msgstr "قسم جديد"
@@ -1285,8 +3130,17 @@ msgstr "قسم جديد"
 msgid "New employee"
 msgstr "موظف جديد"
 
+msgid "New evaluation"
+msgstr "تقييم جديد"
+
+msgid "New hires each month"
+msgstr "التعيينات الجديدة كل شهر"
+
 msgid "New hourly leave"
 msgstr "إذن جديد"
+
+msgid "New hours saved for {count} employees."
+msgstr "تم حفظ المواعيد الجديدة لـ {count} موظف."
 
 msgid "New insurance rates"
 msgstr "نسب تأمينات جديدة"
@@ -1297,6 +3151,9 @@ msgstr "لائحة تأخير جديدة"
 msgid "New leave request"
 msgstr "طلب إجازة جديد"
 
+msgid "New loan"
+msgstr "قرض جديد"
+
 msgid "New overtime policy"
 msgstr "لائحة إضافي جديدة"
 
@@ -1305,6 +3162,12 @@ msgstr "كلمة المرور الجديدة"
 
 msgid "New pay item"
 msgstr "بند راتب جديد"
+
+msgid "New payroll run"
+msgstr "مسير رواتب جديد"
+
+msgid "New plan"
+msgstr "باقة جديدة"
 
 msgid "New rates"
 msgstr "نسب جديدة"
@@ -1315,11 +3178,22 @@ msgstr "طلب جديد"
 msgid "New role"
 msgstr "دور جديد"
 
+msgid "New run"
+msgstr "مسير جديد"
+
 msgid "New tax table"
 msgstr "جدول ضريبة جديد"
 
 msgid "New user"
 msgstr "مستخدم جديد"
+
+msgid ""
+"New working hours for several employees from a date, for good or until a "
+"last day. Each keeps their days off and policies unless you change the days "
+"off too. Preview, then save."
+msgstr ""
+"مواعيد عمل جديدة لعدة موظفين من تاريخ، بشكل دائم أو حتى يوم محدد. يحتفظ كل "
+"موظف بأيام راحته وسياساته ما لم تغيّر أيام الراحة أيضًا. عاين ثم احفظ."
 
 msgid "Next"
 msgstr "التالي"
@@ -1339,14 +3213,39 @@ msgstr "لا يوجد فرع نشط بهذا الكود."
 msgid "No active department has this code."
 msgstr "لا يوجد قسم نشط بهذا الكود."
 
+msgid "No advances here"
+msgstr "لا توجد سلف هنا"
+
 msgid "No changes recorded"
 msgstr "لا توجد تعديلات مسجلة"
 
 msgid "No check-out"
 msgstr "بدون انصراف"
 
+msgid "No client is on this plan."
+msgstr "لا يوجد عملاء على هذه الباقة."
+
+msgid "No clients match"
+msgstr "لا يوجد عملاء مطابقون"
+
+msgid "No clients yet"
+msgstr "لا يوجد عملاء بعد"
+
+msgid "No department"
+msgstr "بدون قسم"
+
 msgid "No departments yet"
 msgstr "لا توجد أقسام بعد"
+
+msgid "No devices yet"
+msgstr "لا توجد أجهزة بعد"
+
+msgid ""
+"No employee on this pay frequency is in the run's scope, or they are all in "
+"another run of the same days."
+msgstr ""
+"لا يوجد موظف بهذه الدورية ضمن نطاق المسير، أو أنهم جميعًا في مسير آخر لنفس "
+"الأيام."
 
 msgid "No employee you can manage has this code."
 msgstr "لا يوجد موظف تديره بهذا الكود."
@@ -1360,29 +3259,59 @@ msgstr "لا يوجد موظفون يعملون لديك في هذا اليوم 
 msgid "No employees yet"
 msgstr "لا يوجد موظفون بعد"
 
+msgid "No evaluations yet"
+msgstr "لا توجد تقييمات بعد"
+
 msgid "No features registered yet."
 msgstr "لا توجد ميزات مسجلة بعد."
 
 msgid "No hourly leave here"
 msgstr "لا توجد أذونات هنا"
 
+msgid "No income tax table applies to this period: no tax deducted."
+msgstr "لا يوجد جدول ضريبة دخل لهذه الفترة: لم تُخصم ضريبة."
+
 msgid "No insurance rates yet"
 msgstr "لا توجد نسب تأمينات بعد"
+
+msgid "No jobs"
+msgstr "لا توجد مهام"
 
 msgid "No limit"
 msgstr "بدون حد"
 
+msgid "No loans here"
+msgstr "لا توجد قروض هنا"
+
 msgid "No logo"
 msgstr "لا يوجد شعار"
+
+msgid "no longer on the device"
+msgstr "لم يعد على الجهاز"
+
+msgid "No longer on the device"
+msgstr "لم يعد على الجهاز"
 
 msgid "No matches"
 msgstr "لا توجد نتائج"
 
+msgid "No pay is recorded for this period."
+msgstr "لا يوجد أجر مسجل لهذه الفترة."
+
 msgid "No pay items yet"
 msgstr "لا توجد بنود راتب بعد"
 
+msgid "No payroll runs here"
+msgstr "لا توجد مسيرات رواتب هنا"
+
 msgid "No policies yet"
 msgstr "لا توجد لوائح بعد"
+
+msgid "No price set"
+msgstr "بدون سعر"
+
+msgid "No problems"
+msgstr "لا توجد مشكلات"
 
 msgid "No public holidays yet"
 msgstr "لا توجد إجازات رسمية بعد"
@@ -1390,17 +3319,58 @@ msgstr "لا توجد إجازات رسمية بعد"
 msgid "No requests here"
 msgstr "لا توجد طلبات هنا"
 
+msgid "No requests in this period"
+msgstr "لا توجد طلبات في هذه الفترة"
+
 msgid "No sign-ins found"
 msgstr "لا يوجد سجل دخول"
 
 msgid "No tax tables yet"
 msgstr "لا توجد جداول ضريبة بعد"
 
+msgid "No worker is running"
+msgstr "لا يوجد عامل يعمل"
+
+msgid ""
+"Nobody at this client can sign in or work until you enable it again. The "
+"data is kept."
+msgstr ""
+"لن يتمكن أحد لدى هذا العميل من الدخول أو العمل حتى تفعّله مرة أخرى. البيانات"
+" تبقى محفوظة."
+
+msgid ""
+"Nobody can sign in, and the mobile app and fingerprint devices are refused. "
+"The data is kept."
+msgstr ""
+"لا يمكن لأحد تسجيل الدخول، ويُرفض تطبيق الموبايل وأجهزة البصمة. البيانات "
+"محفوظة."
+
+msgid "Nobody can sign in. The data is kept."
+msgstr "لا يمكن لأحد الدخول. البيانات محفوظة."
+
+msgid "Nobody is in this batch."
+msgstr "لا يوجد أحد في هذه الدفعة."
+
+msgid "Nobody to pay in this run"
+msgstr "لا يوجد من يُصرف له في هذا المسير"
+
+msgid "Nobody to pay in this run."
+msgstr "لا يوجد من يُصرف له في هذا المسير."
+
 msgid "Nobody to show"
 msgstr "لا أحد لعرضه"
 
+msgid "Nobody yet: pull the device's users, or wait for its first punches."
+msgstr "لا أحد بعد: اسحب مستخدمي الجهاز أو انتظر أول بصماته."
+
+msgid "Nobody you manage there is employed on that day."
+msgstr "لا يوجد هناك أحد تديره على رأس العمل في ذلك اليوم."
+
 msgid "None"
 msgstr "لا يوجد"
+
+msgid "none running"
+msgstr "لا يعمل أي منها"
 
 msgid "None: deduct the exact time missed"
 msgstr "بدون: خصم الوقت الضائع كما هو"
@@ -1408,8 +3378,26 @@ msgstr "بدون: خصم الوقت الضائع كما هو"
 msgid "None: no overtime"
 msgstr "بدون: لا يوجد إضافي"
 
+msgid "Normal"
+msgstr "طبيعي"
+
+msgid "Not a row of this batch."
+msgstr "ليس صفًا في هذه الدفعة."
+
+msgid "Not a working day for them (%(what)s)."
+msgstr "ليس يوم عمل لهم (%(what)s)."
+
+msgid "Not a working day for them: the time counts as work on a rest day."
+msgstr "ليس يوم عمل لهم: يُحتسب الوقت عملًا في يوم راحة."
+
 msgid "Not applicable"
 msgstr "لا ينطبق"
+
+msgid "Not calling"
+msgstr "لا يتصل"
+
+msgid "Not deducted from pay"
+msgstr "لا تُخصم من الراتب"
 
 msgid "Not employed"
 msgstr "ليس على رأس العمل"
@@ -1423,14 +3411,62 @@ msgstr "غير متاحة في باقتك"
 msgid "Not insured"
 msgstr "غير مؤمَّن عليه"
 
+msgid "Not linked"
+msgstr "غير مربوط"
+
+msgid "Not open to users yet."
+msgstr "غير متاح للمستخدمين بعد."
+
+msgid "Not started"
+msgstr "لم يبدأ"
+
 msgid "Not yet"
 msgstr "لم يحن بعد"
 
 msgid "Note"
 msgstr "ملاحظة"
 
+msgid "Note 1"
+msgstr "البيان"
+
+msgid "Note 2"
+msgstr "البيان 2"
+
+msgid "Note 3"
+msgstr "البيان 3"
+
+msgid "Note 4"
+msgstr "البيان 4"
+
 msgid "Notes"
 msgstr "ملاحظات"
+
+msgid "Nothing changes."
+msgstr "لا يتغير شيء."
+
+msgid "Nothing given this month"
+msgstr "لم يُمنح شيء هذا الشهر"
+
+msgid "Nothing here"
+msgstr "لا يوجد شيء هنا"
+
+msgid "Nothing in this period."
+msgstr "لا شيء في هذه الفترة."
+
+msgid "Nothing new"
+msgstr "لا جديد"
+
+msgid "Nothing received yet."
+msgstr "لم يصل شيء بعد."
+
+msgid "Nothing saved yet"
+msgstr "لم يُحفظ شيء بعد"
+
+msgid "Nothing sent yet"
+msgstr "لم يُرسل شيء بعد"
+
+msgid "nothing waiting"
+msgstr "لا شيء في الانتظار"
 
 msgid "Nothing was imported: %(counter)s row has a problem."
 msgid_plural "Nothing was imported: %(counter)s rows have problems."
@@ -1441,23 +3477,86 @@ msgstr[3] "لم يُستورد شيء: %(counter)s صفوف بها مشاكل."
 msgstr[4] "لم يُستورد شيء: %(counter)s صفًا به مشاكل."
 msgstr[5] "لم يُستورد شيء: %(counter)s صف به مشاكل."
 
+msgid "Nothing yet"
+msgstr "لا شيء بعد"
+
+msgid "Notifications"
+msgstr "الإشعارات"
+
 msgid "Now"
 msgstr "الحالي"
+
+msgid "Number"
+msgstr "الرقم"
 
 msgid "Number, name or phone"
 msgstr "الرقم أو الاسم أو الهاتف"
 
+msgid "of the limit"
+msgstr "من الحد"
+
 msgid "off"
 msgstr "متوقفة"
+
+msgid "Off"
+msgstr "متوقف"
+
+msgid "Off until this is on:"
+msgstr "متوقفة حتى يتم تشغيل:"
+
+msgid "Off-cycle"
+msgstr "استثنائي"
 
 msgid "off: needs %(names)s"
 msgstr "متوقفة: تحتاج %(names)s"
 
+msgid "Offered"
+msgstr "معروضة"
+
+msgid "Offered for new clients"
+msgstr "معروضة للعملاء الجدد"
+
+msgid "Office users. Empty: no limit. A client's own limit wins."
+msgstr "مستخدمو المكتب. فارغ: بلا حد. الحد الخاص بالعميل له الأولوية."
+
+msgid "Old user code"
+msgstr "كود المستخدم القديم"
+
+msgid "oldest waiting %(age)s"
+msgstr "أقدمها ينتظر منذ %(age)s"
+
+msgid "Oman"
+msgstr "عُمان"
+
 msgid "on"
 msgstr "مفعّلة"
 
+msgid "on %(day)s"
+msgstr "يوم %(day)s"
+
+msgid "On %(day)s"
+msgstr "يوم %(day)s"
+
+msgid "On %(day)s from %(start)s to %(end)s"
+msgstr "يوم %(day)s من %(start)s الى %(end)s"
+
+msgid "On approved leave that day (%(what)s): paid at the holiday rate."
+msgstr "في إجازة معتمدة ذلك اليوم (%(what)s): يُصرف بمعامل العطلات."
+
+msgid "On its way again."
+msgstr "في الطريق مرة أخرى."
+
 msgid "On leave"
 msgstr "في إجازة"
+
+msgid "On leave that day (%(what)s)."
+msgstr "في إجازة ذلك اليوم (%(what)s)."
+
+msgid "Once"
+msgstr "مرة واحدة"
+
+msgid "One employee"
+msgstr "موظف واحد"
 
 msgid "One employee per row, with their pay and working hours."
 msgstr "موظف واحد في كل صف، مع راتبه ومواعيد عمله."
@@ -1466,6 +3565,9 @@ msgid ""
 "One row per employee and day: the employee's code, the date, the time they "
 "came and the time they left."
 msgstr "صف لكل موظف ويوم: كود الموظف والتاريخ ووقت الحضور ووقت الانصراف."
+
+msgid "Online"
+msgstr "متصل"
 
 msgid ""
 "Only %(left)s days of annual leave are left this year; this request needs "
@@ -1477,29 +3579,114 @@ msgstr ""
 msgid "Only a day off or an excused absence can be entered ahead."
 msgstr "لا يمكن إدخال يوم مقدمًا إلا كراحة أو غياب بإذن."
 
+msgid "Only a draft run can be changed."
+msgstr "لا يمكن تعديل إلا المسير المسودة."
+
+msgid "Only a due installment can be postponed."
+msgstr "لا يمكن تأجيل إلا قسط مستحق."
+
+msgid "Only a failed message is sent again."
+msgstr "تُعاد الرسالة الفاشلة فقط."
+
+msgid "Only a waiting job can be cancelled."
+msgstr "يمكن إلغاء المهمة المنتظرة فقط."
+
+msgid "Only a waiting, failed or cancelled job can be run again."
+msgstr "يمكن إعادة تشغيل المهمة المنتظرة أو الفاشلة أو الملغاة فقط."
+
+msgid "Only an advance still to be recovered can be cancelled."
+msgstr "لا يمكن إلغاء إلا سلفة لم تُسترد بعد."
+
+msgid "Only an approved run can be paid."
+msgstr "لا يمكن صرف إلا المسير المعتمد."
+
+msgid ""
+"Only an approved run that isn't paid yet can be reversed; correct a paid one"
+" in a later run."
+msgstr ""
+"لا يمكن عكس إلا المسير المعتمد الذي لم يُصرف بعد؛ صحّح المسير المصروف في "
+"مسير لاحق."
+
 msgid "Only for"
 msgstr "فقط لـ"
+
+msgid "Only the last bracket may have no upper limit."
+msgstr "الشريحة الأخيرة فقط يمكن أن تكون بلا حد أعلى."
+
+msgid "Only the payslips of an approved run are sent."
+msgstr "تُرسل قسائم المسير المعتمد فقط."
+
+msgid "Only until the first installment is paid."
+msgstr "فقط قبل سداد أول قسط."
 
 msgid "Open"
 msgstr "فتح"
 
+msgid "open"
+msgstr "مفتوح"
+
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+msgid "Open the workspace"
+msgstr "فتح مساحة العمل"
 
 msgid "optional"
 msgstr "اختياري"
 
+msgid "Order"
+msgstr "الترتيب"
+
 msgid "Organisation"
 msgstr "المؤسسة"
 
-msgid "Other phone"
-msgstr "هاتف آخر"
+msgid "Other additions"
+msgstr "إضافات أخرى"
+
+msgid "Other deductions"
+msgstr "استقطاعات أخرى"
 
 msgid "Other rates start on this date."
 msgstr "توجد نسب أخرى تبدأ في هذا التاريخ."
 
+msgid "Other times for one employee"
+msgstr "مواعيد مختلفة لموظف"
+
+msgid "Out"
+msgstr "انصراف"
+
+msgid ""
+"Over the limit, the workspace answers “too many requests” until the next "
+"minute starts. Normal work stays far below it; a script or a stuck screen "
+"does not."
+msgstr ""
+"بعد تجاوز الحد، ترد مساحة العمل بـ «طلبات كثيرة جدًا» حتى تبدأ الدقيقة "
+"التالية. الاستخدام العادي يظل أقل منه بكثير، أما سكربت أو شاشة عالقة فلا."
+
+msgid ""
+"Over this month's allowance (%(allowed)s minutes, %(used)s used): approval "
+"will be refused."
+msgstr ""
+"يتجاوز رصيد هذا الشهر (%(allowed)s دقيقة، استُخدم %(used)s): سيُرفض "
+"الاعتماد."
+
 msgid "Overtime"
 msgstr "الإضافي"
+
+msgid "Overtime and holiday work"
+msgstr "الإضافي والعمل في العطلات"
+
+msgid "Overtime band"
+msgstr "شريحة إضافي"
+
+msgid "Overtime hours each month"
+msgstr "ساعات الإضافي كل شهر"
+
+msgid "Overtime in"
+msgstr "حضور اضافي"
+
+msgid "Overtime out"
+msgstr "انصراف اضافي"
 
 msgid "Overtime policies"
 msgstr "لوائح الإضافي"
@@ -1509,6 +3696,9 @@ msgstr "لوائح إضافي بشرائح دقائق؛ يُدفع الوقت ا
 
 msgid "Overtime policy"
 msgstr "لائحة الإضافي"
+
+msgid "Overtime rate"
+msgstr "معامل الإضافي"
 
 msgid "Overtime starts after (minutes)"
 msgstr "يبدأ الإضافي بعد (دقائق)"
@@ -1522,6 +3712,21 @@ msgstr "نظرة عامة"
 msgid "Owner"
 msgstr "المالك"
 
+msgid "Owner's email"
+msgstr "بريد المالك"
+
+msgid "Owner's name"
+msgstr "اسم المالك"
+
+msgid "Owner's password"
+msgstr "كلمة مرور المالك"
+
+msgid "Owner's username"
+msgstr "اسم مستخدم المالك"
+
+msgid "Owners"
+msgstr "الملاك"
+
 msgid "Page not found"
 msgstr "الصفحة غير موجودة"
 
@@ -1531,8 +3736,23 @@ msgstr "الصفحات"
 msgid "Paid"
 msgstr "طريقة الأجر"
 
+msgid "Paid (monthly / biweekly / weekly)"
+msgstr "الصرف (monthly / biweekly / weekly)"
+
+msgid "Paid and due"
+msgstr "المسدد والمستحق"
+
+msgid "Paid by"
+msgstr "صرفه"
+
 msgid "Paid by the company on top of pay."
 msgstr "تدفعها الشركة بالإضافة إلى الأجر."
+
+msgid "Paid by the employer (not deducted from pay)"
+msgstr "يتحملها صاحب العمل (لا تُخصم من الراتب)"
+
+msgid "Paid by way of"
+msgstr "طريقة الصرف"
 
 msgid "Paid days off for every branch or one branch."
 msgstr "إجازات مدفوعة لكل الفروع أو لفرع واحد."
@@ -1543,11 +3763,24 @@ msgid ""
 msgstr ""
 "إجازات مدفوعة الأجر. الإجازة الخاصة بفرع تسري على موظفي ذلك الفرع فقط."
 
+msgid "Paid on"
+msgstr "تاريخ الصرف"
+
+msgid "Paid only"
+msgstr "المصروفة فقط"
+
 msgid "Paper"
 msgstr "الورق"
 
-msgid "Parent"
-msgstr "الأصل"
+msgid "Part of a month's pay given early, recovered by that month's payroll."
+msgstr "جزء من أجر الشهر يُصرف مقدمًا، ويُسترد في مرتب ذلك الشهر."
+
+msgid ""
+"Part of a month's pay given early. The payroll of that month recovers it. A "
+"month's advances can't come to more than a month's pay."
+msgstr ""
+"جزء من أجر الشهر يُصرف مقدمًا، ويُسترد في مرتب ذلك الشهر. لا يمكن أن تزيد "
+"سلف الشهر عن أجر شهر."
 
 msgid "Password"
 msgstr "كلمة المرور"
@@ -1555,21 +3788,69 @@ msgstr "كلمة المرور"
 msgid "Password changed. The user was signed out everywhere."
 msgstr "تم تغيير كلمة المرور وتسجيل خروج المستخدم من كل الأجهزة."
 
+msgid "Pause"
+msgstr "إيقاف مؤقت"
+
+msgid "Paused"
+msgstr "متوقف مؤقتًا"
+
 msgid "Pay"
 msgstr "صرف"
 
 msgid "Pay already changes on this date."
 msgstr "يوجد تغيير في الراتب بالفعل في هذا التاريخ."
 
+msgid "Pay calendar"
+msgstr "تقويم الصرف"
+
+msgid "Pay calendars"
+msgstr "تقويمات الصرف"
+
+msgid "Pay counted as"
+msgstr "طريقة حساب الأجر"
+
+msgid "Pay counted as (fixed / daily / hourly)"
+msgstr "طريقة حساب الأجر (fixed / daily / hourly)"
+
+msgid "Pay frequency"
+msgstr "دورية الصرف"
+
 msgid "Pay is recorded from an earlier date."
 msgstr "الراتب مسجل من تاريخ أقدم."
+
+msgid "Pay item"
+msgstr "بند الراتب"
+
+msgid "Pay item given"
+msgstr "بند ممنوح"
 
 msgid "Pay items"
 msgstr "بنود الراتب"
 
+msgid "Pay items added"
+msgstr "بنود مضافة"
+
+msgid "Pay items deducted"
+msgstr "بنود مخصومة"
+
+msgid "Pay items given"
+msgstr "بنود الراتب الممنوحة"
+
+msgid ""
+"Pay items running at some time in the period: to whom, from when to when, "
+"how often and how much."
+msgstr ""
+"البنود السارية في وقت ما خلال الفترة: لمن ومن متى إلى متى وكل كم وبأي قيمة."
+
+msgid "Pay movement"
+msgstr "حركة على المرتب"
+
 msgid "Pay or hours change after this date; remove those changes first."
 msgstr ""
 "يوجد تغيير في الراتب أو المواعيد بعد هذا التاريخ؛ احذف تلك التغييرات أولًا."
+
+msgid "Pay paid"
+msgstr "صرف المرتب"
 
 msgid "Pay policies"
 msgstr "لوائح الأجور"
@@ -1577,11 +3858,136 @@ msgstr "لوائح الأجور"
 msgid "Pay setup"
 msgstr "إعداد الأجور"
 
+msgid "Payment reference"
+msgstr "مرجع الصرف"
+
+msgid "Payroll"
+msgstr "الرواتب"
+
+msgid "Payroll and attendance for every branch, in one place."
+msgstr "المرتبات والحضور لكل الفروع، في مكان واحد."
+
+msgid "Payroll period"
+msgstr "فترة رواتب"
+
+msgid "Payroll register"
+msgstr "كشف المرتبات"
+
+msgid "Payroll run"
+msgstr "مسير رواتب"
+
+msgid "Payroll runs"
+msgstr "مسيرات الرواتب"
+
+msgid "Payroll runs to approve"
+msgstr "مسيرات تنتظر الاعتماد"
+
+msgid "Payroll totals by run and branch"
+msgstr "إجمالي المرتبات حسب المسير والفرع"
+
+msgid ""
+"Payroll, attendance, leave, loans and people, for any period, branch, "
+"department or employee. Each can be printed, or downloaded as PDF or Excel."
+msgstr ""
+"المرتبات والحضور والإجازات والقروض والموظفون، لأي فترة أو فرع أو قسم أو "
+"موظف. يمكن طباعة كل تقرير أو تنزيله بصيغة PDF أو Excel."
+
+msgid "Payslip"
+msgstr "قسيمة الراتب"
+
+msgid "Payslip (PDF)"
+msgstr "القسيمة (PDF)"
+
+msgid "Payslip line added by hand"
+msgstr "بند قسيمة مضاف يدويًا"
+
+msgid "Payslips"
+msgstr "قسائم الرواتب"
+
+msgid "Payslips (30 days)"
+msgstr "كشوف الرواتب (30 يومًا)"
+
+msgid "Payslips (PDF)"
+msgstr "القسائم (PDF)"
+
+msgid "Payslips approved"
+msgstr "كشوف رواتب معتمدة"
+
+msgid ""
+"Payslips are sent from the company's own WhatsApp number: link it once by "
+"scanning a QR code with the phone (WhatsApp → Linked devices)."
+msgstr ""
+"تُرسل القسائم من رقم واتساب الشركة نفسه: اربطه مرة واحدة بمسح رمز QR بالهاتف"
+" (واتساب ← الأجهزة المرتبطة)."
+
+msgid "Payslips on their way: see Settings → Sent messages."
+msgstr "القسائم في الطريق: راجع الإعدادات ← الرسائل المرسلة."
+
+msgid ""
+"Payslips on WhatsApp, device and attendance clean-ups and the daily "
+"reminders, run by the worker (manage.py run_worker)."
+msgstr ""
+"كشوف الرواتب على واتساب، وتنظيف بيانات الأجهزة والحضور، والتذكيرات اليومية، "
+"ينفذها العامل (manage.py run_worker)."
+
+msgid "Payslips sent on WhatsApp appear here, with what happened to each."
+msgstr "تظهر هنا القسائم المرسلة على واتساب، مع ما حدث لكل منها."
+
+msgid "Payslips sent on WhatsApp from the company's own number."
+msgstr "إرسال القسائم على واتساب من رقم الشركة نفسه."
+
+msgid "Payslips worked out from attendance and your own rules"
+msgstr "قسائم رواتب تُحسب من الحضور ومن قواعدك أنت"
+
+msgid "PDF not available"
+msgstr "ملف PDF غير متاح"
+
+msgid "Penalties"
+msgstr "الجزاءات"
+
+msgid ""
+"Penalties for an employee, a department or a branch, deducted from pay."
+msgstr "جزاءات لموظف أو قسم أو فرع، تُخصم من الأجر."
+
+msgid "Penalties given"
+msgstr "الجزاءات الموقعة"
+
+msgid "Penalties to approve"
+msgstr "جزاءات تنتظر الاعتماد"
+
+msgid "Penalty"
+msgstr "جزاء"
+
+msgid "Penalty types"
+msgstr "أنواع الجزاءات"
+
 msgid "People"
 msgstr "عدد الموظفين"
 
 msgid "People who can sign in to this workspace, and what they may do."
 msgstr "الأشخاص الذين يمكنهم الدخول إلى هذا الحساب، وما يُسمح لهم به."
+
+msgid "per day worked"
+msgstr "عن كل يوم عمل"
+
+msgid "Per minute: now / busiest"
+msgstr "في الدقيقة: الآن / الأعلى"
+
+msgid "Percentage of salary"
+msgstr "نسبة من الراتب"
+
+msgid "Performance bonus"
+msgstr "حافز أداء"
+
+msgid "Period"
+msgstr "الفترة"
+
+msgid ""
+"Periods are counted on from it, before and after: each starts on a %(day)s."
+msgstr "تُحسب الفترات منه، قبله وبعده: كل فترة تبدأ يوم %(day)s."
+
+msgid "Periods start on day"
+msgstr "تبدأ الفترات يوم"
 
 msgid "Permission"
 msgstr "الصلاحية"
@@ -1595,8 +4001,17 @@ msgstr "البيانات الشخصية"
 msgid "Phone"
 msgstr "الهاتف"
 
-msgid "Piece"
-msgstr "القطعة"
+msgid "Phone for fingerprint check"
+msgstr "هاتف التحقق بالبصمة"
+
+msgid "Phone numbers without a country code are read as this country's."
+msgstr "أرقام الهاتف بدون كود الدولة تُقرأ على أنها من هذه الدولة."
+
+msgid "Photo"
+msgstr "الصورة"
+
+msgid "PIN"
+msgstr "الرقم على الجهاز"
 
 msgid "Pin to my shortcuts"
 msgstr "تثبيت في اختصاراتي"
@@ -1610,8 +4025,14 @@ msgstr "تم التثبيت في اختصاراتك."
 msgid "plan"
 msgstr "الباقة"
 
+msgid "Plan"
+msgstr "الباقة"
+
 msgid "Plan and details changed"
 msgstr "تعديل الباقة والبيانات"
+
+msgid "Plan and limits"
+msgstr "الباقة والحدود"
 
 msgid "Plan changed"
 msgstr "تم تعديل باقة"
@@ -1622,8 +4043,38 @@ msgstr "تم إنشاء باقة"
 msgid "Plan deleted"
 msgstr "تم حذف باقة"
 
+msgid "Plan deleted."
+msgstr "تم حذف الباقة."
+
 msgid "Plan features changed"
 msgstr "تم تغيير خصائص الباقة"
+
+msgid "Plan, limits and contact"
+msgstr "الباقة والحدود والتواصل"
+
+msgid "Plan: %(plan)s"
+msgstr "الباقة: %(plan)s"
+
+msgid "Plans"
+msgstr "الباقات"
+
+msgid "Platform"
+msgstr "المنصة"
+
+msgid "Platform console"
+msgstr "لوحة المنصة"
+
+msgid "Platform default: %(n)s per minute."
+msgstr "الافتراضي للمنصة: %(n)s في الدقيقة."
+
+msgid "Platform name"
+msgstr "اسم المنصة"
+
+msgid "Platform overview"
+msgstr "نظرة عامة على المنصة"
+
+msgid "Platform settings"
+msgstr "إعدادات المنصة"
 
 msgid "Platform settings changed"
 msgstr "تم تغيير إعدادات المنصة"
@@ -1641,20 +4092,38 @@ msgstr ""
 "PNG أو JPEG أو WEBP أو GIF أو ICO، حتى 2 ميجابايت. الأفضل صورة مربعة أو "
 "عريضة بخلفية شفافة."
 
-msgid "Postable"
-msgstr "يقبل الترحيل"
+msgid "Policy"
+msgstr "السياسة"
+
+msgid "Positions"
+msgstr "المواقع"
 
 msgid "Posted"
 msgstr "مرحّلة"
 
+msgid "Postpone a month"
+msgstr "تأجيل شهر"
+
 msgid "Postponed"
 msgstr "مؤجَّل"
+
+msgid "Preselected when you create a client."
+msgstr "تُختار تلقائياً عند إنشاء عميل."
 
 msgid "Present"
 msgstr "حاضر"
 
+msgid "Present each day"
+msgstr "الحضور كل يوم"
+
+msgid "Present today"
+msgstr "الحاضرون اليوم"
+
 msgid "Present, on their shift's times"
 msgstr "حاضر، بمواعيد ورديته"
+
+msgid "Preview"
+msgstr "معاينة"
 
 msgid "Previous"
 msgstr "السابق"
@@ -1665,11 +4134,8 @@ msgstr "اليوم السابق"
 msgid "Previous month"
 msgstr "الشهر السابق"
 
-msgid "Price board"
-msgstr "نشرة الأسعار"
-
-msgid "Price per carat"
-msgstr "السعر للقيراط"
+msgid "Price"
+msgstr "السعر"
 
 msgid "Print"
 msgstr "طباعة"
@@ -1683,20 +4149,53 @@ msgstr "طُبع"
 msgid "Problem"
 msgstr "المشكلة"
 
+msgid "Problems"
+msgstr "المشكلات"
+
 msgid "Progressive income tax tables, deducted from pay."
 msgstr "جداول ضريبة الدخل التصاعدية، تُخصم من الأجر."
 
 msgid "public holiday"
 msgstr "إجازة رسمية"
 
+msgid "Public holiday"
+msgstr "عطلة رسمية"
+
 msgid "Public holidays"
 msgstr "الإجازات الرسمية"
+
+msgid "Pull its users"
+msgstr "سحب مستخدمي الجهاز"
+
+msgid "Pull punches of these days"
+msgstr "سحب بصمات هذه الأيام"
+
+msgid "Punch inside the branch"
+msgstr "البصمة داخل الفرع"
 
 msgid "Purged"
 msgstr "محذوف نهائيًا"
 
+msgid "Qatar"
+msgstr "قطر"
+
+msgid "QR code to scan"
+msgstr "رمز QR للمسح"
+
 msgid "Qualification"
 msgstr "المؤهل"
+
+msgid "Quantity"
+msgstr "الكمية"
+
+msgid "Queued"
+msgstr "أُضيفت"
+
+msgid "Quiet"
+msgstr "هادئ"
+
+msgid "Radius (metres)"
+msgstr "نصف القطر (متر)"
 
 msgid "Rate"
 msgstr "السعر"
@@ -1712,8 +4211,44 @@ msgstr "إعادة التفعيل"
 msgid "Read-only access."
 msgstr "صلاحية اطلاع فقط."
 
+msgid "Ready"
+msgstr "جاهز"
+
 msgid "Reason"
 msgstr "السبب"
+
+msgid "Recalculate"
+msgstr "إعادة الحساب"
+
+msgid "Received by the employee"
+msgstr "استلام الموظف"
+
+msgid "Recent console activity"
+msgstr "أحدث نشاط في اللوحة"
+
+msgid "Reconnecting…"
+msgstr "جارٍ إعادة الاتصال…"
+
+msgid "Record that a payroll run was paid"
+msgstr "تسجيل صرف مسير الرواتب"
+
+msgid "Record the payment"
+msgstr "تسجيل الصرف"
+
+msgid "Recovered"
+msgstr "مُسترد"
+
+msgid "Reference"
+msgstr "المرجع"
+
+msgid "Refused"
+msgstr "المرفوضة"
+
+msgid "Refused (over the limit)"
+msgstr "مرفوضة (فوق الحد)"
+
+msgid "Regular"
+msgstr "عادي"
 
 msgid "Reject"
 msgstr "رفض"
@@ -1742,23 +4277,124 @@ msgstr "حذف هذا التغيير"
 msgid "Remove this role from its members first."
 msgstr "أزل هذا الدور من المستخدمين أولًا."
 
+msgid "removed"
+msgstr "تم الحذف"
+
 msgid "Removed from your shortcuts."
 msgstr "تمت الإزالة من اختصاراتك."
+
+msgid "Removed."
+msgstr "تمت الإزالة."
+
+msgid "Reopen to edit"
+msgstr "إعادة الفتح للتعديل"
+
+msgid "Reopened as a draft."
+msgstr "أُعيد فتحها كمسودة."
+
+msgid "Repaid"
+msgstr "تم السداد"
+
+msgid "Replace what was already entered by hand for that day"
+msgstr "استبدال ما أُدخل يدويًا لذلك اليوم"
+
+msgid "Replaced in each message:"
+msgstr "يُستبدل في كل رسالة:"
+
+msgid "Report export"
+msgstr "تصدير التقارير"
+
+msgid "Reports"
+msgstr "التقارير"
+
+msgid ""
+"Reports downloaded as PDF or Excel (they can always be read and printed on "
+"screen)."
+msgstr ""
+"تنزيل التقارير بصيغة PDF أو Excel (يمكن دائمًا قراءتها وطباعتها من الشاشة)."
+
+msgid "Request"
+msgstr "الطلب"
+
+msgid "Request limit"
+msgstr "حد الطلبات"
 
 msgid "Request limit changed"
 msgstr "تم تغيير حد الطلبات"
 
+msgid "Requests"
+msgstr "الطلبات"
+
+msgid ""
+"Requests from every client, how much server time they take, and who is being"
+" limited."
+msgstr "طلبات كل عميل، وكم تستهلك من وقت الخادم، ومن يتم تقييده."
+
+msgid "Requests over time"
+msgstr "الطلبات عبر الوقت"
+
+msgid "Requests per minute"
+msgstr "الطلبات في الدقيقة"
+
+msgid "Requests to the device"
+msgstr "الطلبات من الجهاز"
+
 msgid "Required"
 msgstr "مطلوب"
 
+msgid "Resend every punch"
+msgstr "إعادة إرسال كل البصمات"
+
+msgid "Resend everything"
+msgstr "إعادة إرسال كل شيء"
+
 msgid "Reserved."
 msgstr "محجوز."
+
+msgid "Restart the device: it sends everything it holds."
+msgstr "أعد تشغيل الجهاز: يرسل كل ما لديه."
 
 msgid "Restore"
 msgstr "استعادة"
 
 msgid "Restore access"
 msgstr "استعادة الدخول"
+
+msgid "Resume"
+msgstr "استئناف"
+
+msgid "Retrying"
+msgstr "تُعاد المحاولة"
+
+msgid "Reverse"
+msgstr "عكس"
+
+msgid "Reverse an approved payroll run"
+msgstr "عكس مسير رواتب معتمد"
+
+msgid "Reverse the run"
+msgstr "عكس المسير"
+
+msgid "Reversed"
+msgstr "معكوس"
+
+msgid "Reversed at"
+msgstr "وقت العكس"
+
+msgid "Reversed by"
+msgstr "عكسه"
+
+msgid "Reversed."
+msgstr "تم العكس."
+
+msgid "Revision"
+msgstr "المراجعة"
+
+msgid "revision %(n)s"
+msgstr "المراجعة %(n)s"
+
+msgid "Revoked at"
+msgstr "تاريخ الإلغاء"
 
 msgid "Role"
 msgstr "الدور"
@@ -1781,29 +4417,90 @@ msgstr "الصف"
 msgid "Rows"
 msgstr "الصفوف"
 
-msgid "Run every branch of your jewelry business from one place."
-msgstr "أدِر كل فروع محلات المجوهرات من مكان واحد."
+msgid "Run"
+msgstr "المسير"
+
+msgid "Run again"
+msgstr "شغّلها مجددًا"
+
+msgid "running"
+msgstr "يعمل"
+
+msgid "Running"
+msgstr "قيد التشغيل"
+
+msgid "Runs"
+msgstr "المسيرات"
+
+msgid ""
+"Runs already exist for this pay frequency: its periods can't move any more."
+msgstr "توجد مسيرات بالفعل لهذه الدورية: لم يعد ممكنًا تحريك فتراتها."
+
+msgid "Salary"
+msgstr "الراتب"
+
+msgid "Salary advance"
+msgstr "سلفة"
+
+msgid "Salary advances"
+msgstr "السلف"
 
 msgid "Salary or wage"
 msgstr "الراتب أو الأجر"
 
-msgid "Sale making / g"
-msgstr "مصنعية البيع / جم"
+msgid "Salary or wages"
+msgstr "الراتب أو الأجر"
 
 msgid "Saturday"
 msgstr "السبت"
 
+msgid "Saudi Arabia"
+msgstr "السعودية"
+
 msgid "Save"
 msgstr "حفظ"
+
+msgid "Save all {count}"
+msgstr "حفظ الكل ({count})"
+
+msgid "Save settings"
+msgstr "حفظ الإعدادات"
 
 msgid "Save the change"
 msgstr "حفظ التغيير"
 
+msgid "Save the correction"
+msgstr "حفظ التصحيح"
+
+msgid "Save the details"
+msgstr "حفظ البيانات"
+
+msgid "Save the {count} that are ready, leave out the rest"
+msgstr "حفظ الجاهز ({count}) وترك الباقي"
+
+msgid "Save to get more empty rows."
+msgstr "احفظ لتظهر صفوف فارغة أخرى."
+
 msgid "Saved."
 msgstr "تم الحفظ."
 
-msgid "Scrap buy price / g"
-msgstr "سعر شراء الكسر / جم"
+msgid "Say what the line is for."
+msgstr "اذكر سبب البند."
+
+msgid "Say why the run is reversed."
+msgstr "اذكر سبب عكس المسير."
+
+msgid "Say why the times are entered by hand."
+msgstr "اذكر سبب إدخال المواعيد يدويًا."
+
+msgid "Say why this off-cycle run is needed."
+msgstr "اذكر سبب الحاجة إلى هذا المسير الاستثنائي."
+
+msgid "Say why."
+msgstr "اذكر السبب."
+
+msgid "Scan the code with the phone"
+msgstr "امسح الرمز بالهاتف"
 
 msgid "Search"
 msgstr "بحث"
@@ -1814,11 +4511,32 @@ msgstr "جارٍ البحث…"
 msgid "Search…"
 msgstr "بحث…"
 
+msgid "Seconds between two payslips"
+msgstr "ثوانٍ بين كل قسيمتين"
+
+msgid "Secret"
+msgstr "السر"
+
+msgid "See all"
+msgstr "عرض الكل"
+
 msgid "See employees' pay"
 msgstr "الاطلاع على رواتب الموظفين"
 
+msgid "See evaluations"
+msgstr "عرض التقييمات"
+
+msgid "See fingerprint devices and what they sent"
+msgstr "عرض أجهزة البصمة وما أرسلته"
+
+msgid "See payroll runs and payslips"
+msgstr "عرض مسيرات الرواتب والقسائم"
+
 msgid "See the history of changes (who changed what, and when)"
 msgstr "عرض سجل التعديلات (من عدّل ماذا ومتى)"
+
+msgid "See the WhatsApp messages sent"
+msgstr "عرض رسائل واتساب المرسلة"
 
 msgid "See who signed in, when and from where, and failed attempts"
 msgstr "معرفة من دخل ومتى ومن أين، والمحاولات الفاشلة"
@@ -1826,11 +4544,42 @@ msgstr "معرفة من دخل ومتى ومن أين، والمحاولات ا�
 msgid "Selected branches"
 msgstr "فروع محددة"
 
-msgid "Sell price / g"
-msgstr "سعر البيع / جم"
+msgid "Send a test"
+msgstr "إرسال رسالة تجريبية"
+
+msgid "Send a WhatsApp message"
+msgstr "إرسال رسالة واتساب"
+
+msgid "Send again"
+msgstr "إرسال مرة أخرى"
 
 msgid "Send an Idempotency-Key header with this request."
 msgstr "أرسل ترويسة Idempotency-Key مع هذا الطلب."
+
+msgid ""
+"Send each employee their payslip on WhatsApp, from the company's number. "
+"Payslips already sent are left out."
+msgstr ""
+"أرسل لكل موظف قسيمته على واتساب من رقم الشركة. لا تُعاد القسائم المرسلة من "
+"قبل."
+
+msgid "Send payslips on WhatsApp"
+msgstr "إرسال القسائم على واتساب"
+
+msgid "Sent"
+msgstr "أُرسلت"
+
+msgid "Sent messages"
+msgstr "الرسائل المرسلة"
+
+msgid "Sent to the device"
+msgstr "أُرسل للجهاز"
+
+msgid "Serial number"
+msgstr "الرقم التسلسلي"
+
+msgid "Server address"
+msgstr "عنوان السيرفر"
 
 msgid "Set a new password"
 msgstr "تعيين كلمة مرور جديدة"
@@ -1838,11 +4587,23 @@ msgstr "تعيين كلمة مرور جديدة"
 msgid "Set and change employees' pay"
 msgstr "تحديد رواتب الموظفين وتغييرها"
 
-msgid "Setting type"
-msgstr "نوع التركيب"
+msgid "Set up fingerprint devices and link their users"
+msgstr "إعداد أجهزة البصمة وربط مستخدميها"
+
+msgid "Set up pay calendars"
+msgstr "إعداد تقويمات الصرف"
 
 msgid "Settings"
 msgstr "الإعدادات"
+
+msgid "Settled on"
+msgstr "تاريخ التسوية"
+
+msgid "Share of server time"
+msgstr "نصيبه من وقت الخادم"
+
+msgid "Shared between the weeks by days"
+msgstr "يُوزع على الأسابيع بعدد الأيام"
 
 msgid "Shift"
 msgstr "الوردية"
@@ -1850,14 +4611,23 @@ msgstr "الوردية"
 msgid "Shift ends"
 msgstr "نهاية الوردية"
 
+msgid "Shift ends (HH:MM)"
+msgstr "نهاية الوردية (HH:MM)"
+
 msgid "Shift starts"
 msgstr "بداية الوردية"
 
-msgid "Short name"
-msgstr "اسم مختصر"
+msgid "Shift starts (HH:MM)"
+msgstr "بداية الوردية (HH:MM)"
+
+msgid "Should be"
+msgstr "يجب أن تكون"
 
 msgid "Show"
 msgstr "عرض"
+
+msgid "Show all"
+msgstr "عرض الكل"
 
 msgid "Show everyone"
 msgstr "عرض الكل"
@@ -1870,6 +4640,9 @@ msgstr "عرضها"
 
 msgid "Showing %(start)s–%(end)s of %(total)s"
 msgstr "عرض %(start)s–%(end)s من %(total)s"
+
+msgid "Shown in every workspace sidebar. Empty: the platform name."
+msgstr "يظهر في القائمة الجانبية لكل مساحة عمل. فارغ: اسم المنصة."
 
 msgid "Sick leave"
 msgstr "إجازة مرضية"
@@ -1895,17 +4668,65 @@ msgstr "خروج"
 msgid "Signing in…"
 msgstr "جارٍ تسجيل الدخول…"
 
+msgid "Signs in as"
+msgstr "يدخل باسم"
+
 msgid "since %(day)s"
 msgstr "منذ %(day)s"
 
 msgid "Single"
 msgstr "أعزب"
 
+msgid "Slow"
+msgstr "بطيئة"
+
+msgid "Slow / errors"
+msgstr "بطيئة / أخطاء"
+
+msgid "Slow requests"
+msgstr "طلبات بطيئة"
+
+msgid "Slow responses"
+msgstr "استجابات بطيئة"
+
+msgid "Slowest"
+msgstr "الأبطأ"
+
+msgid "Slowest: %(n)s ms"
+msgstr "الأبطأ: %(n)s مللي ثانية"
+
 msgid "Social insurance"
 msgstr "التأمينات الاجتماعية"
 
-msgid "Source"
-msgstr "المصدر"
+msgid "Social insurance (employee share)"
+msgstr "التأمينات الاجتماعية (حصة الموظف)"
+
+msgid "Social insurance (employer share)"
+msgstr "التأمينات الاجتماعية (حصة صاحب العمل)"
+
+msgid "Some came or left at other times"
+msgstr "حضر بعضهم أو انصرف في مواعيد أخرى"
+
+msgid "Some of these employees aren't yours to manage."
+msgstr "بعض هؤلاء الموظفين ليسوا ضمن صلاحياتك."
+
+msgid "Some requests refused"
+msgstr "رُفضت بعض الطلبات"
+
+msgid "Staff only"
+msgstr "للفريق فقط"
+
+msgid "Started"
+msgstr "بدأت"
+
+msgid "Starting salary"
+msgstr "مرتب التعيين"
+
+msgid "Starts at"
+msgstr "يبدأ في"
+
+msgid "State"
+msgstr "الحالة"
 
 msgid "Status"
 msgstr "الحالة"
@@ -1916,32 +4737,30 @@ msgstr "تغيير الحالة"
 msgid "Staying this many minutes after the shift or less is not overtime."
 msgstr "البقاء بعد الوردية بهذا العدد من الدقائق أو أقل لا يُعد إضافيًا."
 
-msgid "Stone code"
-msgstr "كود الحجر"
+msgid "Still due"
+msgstr "ما زال مستحقًا"
 
-msgid "Stone details"
-msgstr "بيانات الأحجار"
+msgid "Still on"
+msgstr "ما زالت مستمرة"
 
-msgid "Stone grade"
-msgstr "درجة حجر"
+msgid "Stopped by hand"
+msgstr "إيقاف يدوى"
 
-msgid "Stones (ct)"
-msgstr "الأحجار (قيراط)"
-
-msgid "Stones' cost"
-msgstr "تكلفة الأحجار"
+msgid "Stopped by itself"
+msgstr "إيقاف تلقائى"
 
 msgid "Subject to income tax"
 msgstr "خاضع لضريبة الدخل"
 
+msgid ""
+"Sums recovered in monthly installments by payroll. An employee repays one "
+"loan at a time."
+msgstr ""
+"مبالغ تُسترد على أقساط شهرية في المرتبات. يسدد الموظف قرضًا واحدًا في كل "
+"مرة."
+
 msgid "Sunday"
 msgstr "الأحد"
-
-msgid "Supplier"
-msgstr "مورد"
-
-msgid "Supplier details"
-msgstr "بيانات المورد"
 
 msgid "Suspend"
 msgstr "إيقاف"
@@ -1952,17 +4771,26 @@ msgstr "إيقاف الدخول"
 msgid "Suspended"
 msgstr "موقوف"
 
-msgid "Symbol"
-msgstr "الرمز"
-
 msgid "System"
 msgstr "حسب الجهاز"
 
 msgid "Tables"
 msgstr "الجداول"
 
+msgid "Take the login away"
+msgstr "إلغاء الدخول"
+
+msgid "Taken"
+msgstr "المأخوذ"
+
+msgid "Tax bracket"
+msgstr "شريحة ضريبية"
+
 msgid "Tax registration no."
 msgstr "رقم التسجيل الضريبي"
+
+msgid "Tax table"
+msgstr "جدول الضريبة"
 
 msgid ""
 "Tax tables by the date they start. A month's tax is worked out on the yearly"
@@ -1975,11 +4803,33 @@ msgstr ""
 msgid "Taxable"
 msgstr "خاضع للضريبة"
 
+msgid "taxable"
+msgstr "خاضع للضريبة"
+
 msgid "Teal"
 msgstr "أزرق مخضر"
 
+msgid "Test"
+msgstr "تجربة"
+
+msgid "Test message on its way."
+msgstr "الرسالة التجريبية في الطريق."
+
+msgid "Test the connection"
+msgstr "اختبار الاتصال"
+
+msgid "That change is not allowed."
+msgstr "هذا التغيير غير مسموح."
+
+msgid "That email and password do not match. Check them and try again."
+msgstr ""
+"البريد الإلكتروني وكلمة المرور غير متطابقين. تأكد منهما وحاول مرة أخرى."
+
 msgid "That login keeps its own password: leave the password empty."
 msgstr "هذا الحساب يحتفظ بكلمة مروره: اترك كلمة المرور فارغة."
+
+msgid "That login keeps its own password: leave this empty."
+msgstr "هذا الحساب يحتفظ بكلمة مروره: اترك هذا الحقل فارغًا."
 
 msgid ""
 "That username or email and password do not match. Check them and try again."
@@ -1987,11 +4837,61 @@ msgstr ""
 "اسم المستخدم أو البريد الإلكتروني وكلمة المرور غير متطابقين. تأكد منهما "
 "وحاول مرة أخرى."
 
+msgid "The amount %(amount)s on %(day)s"
+msgstr "المبلغ %(amount)s بتاريخ %(day)s"
+
+msgid "The amount %(amount)s on %(day)s, over %(months)s months"
+msgstr "المبلغ %(amount)s بتاريخ %(day)s على %(months)s شهر"
+
+msgid ""
+"The amount, the percentage, or the number of days or hours. Each employee's "
+"amount is worked out from their pay on that date."
+msgstr ""
+"المبلغ أو النسبة أو عدد الأيام أو الساعات. يُحسب مبلغ كل موظف من أجره في ذلك"
+" التاريخ."
+
+msgid ""
+"The app sends where the employee is during the shift; a check-in needs it "
+"switched on."
+msgstr "يرسل التطبيق موقع الموظف أثناء الوردية؛ ولا يُسجل الحضور إلا بتفعيله."
+
+msgid "The clock recorded this day (%(came)s); this entry wins over it."
+msgstr "سجّل جهاز الحضور هذا اليوم (%(came)s)؛ وهذا الإدخال يُقدَّم عليه."
+
+msgid "The company's WhatsApp number is not linked."
+msgstr "رقم واتساب الشركة غير مربوط."
+
+msgid ""
+"The company's WhatsApp number is not linked. Link it again in Settings → "
+"WhatsApp."
+msgstr "رقم واتساب الشركة غير مربوط. اربطه مرة أخرى من الإعدادات ← واتساب."
+
+msgid "The default plan must be offered for new clients."
+msgstr "الباقة الافتراضية يجب أن تكون معروضة للعملاء الجدد."
+
+msgid "The device didn't answer"
+msgstr "لم يرد الجهاز"
+
+msgid "The device has punches: it stays in its branch."
+msgstr "للجهاز بصمات: يبقى في فرعه."
+
+msgid "The employee"
+msgstr "الموظف"
+
 msgid "The employee isn't employed on all these days."
 msgstr "الموظف ليس على رأس العمل في كل هذه الأيام."
 
 msgid "The employee isn't employed on that day."
 msgstr "الموظف ليس على رأس العمل في ذلك اليوم."
+
+msgid "The end must be another time than the start."
+msgstr "يجب أن تختلف النهاية عن البداية."
+
+msgid "The evaluator"
+msgstr "المقيِّم"
+
+msgid "The first person to sign in; can add everyone else."
+msgstr "أول من يسجل الدخول، ويمكنه إضافة الباقين."
 
 msgid ""
 "The first record can't be removed: it is what the employee started with. "
@@ -2014,6 +4914,29 @@ msgstr "يوجد تغيير في المواعيد بالفعل في هذا ال�
 msgid "The image must be 2 MB or smaller."
 msgstr "يجب ألا يزيد حجم الصورة عن 2 ميجابايت."
 
+msgid "The item already runs over some of these days."
+msgstr "البند ساري بالفعل في بعض هذه الأيام."
+
+msgid "The job will run again in a moment."
+msgstr "ستعمل المهمة مجددًا خلال لحظات."
+
+msgid "The last plan cannot be deleted."
+msgstr "لا يمكن حذف آخر باقة."
+
+msgid ""
+"The leave starting in the period: who, which kind, from when to when and how"
+" many working days."
+msgstr ""
+"الإجازات التي تبدأ في الفترة: لمن ونوعها ومن متى إلى متى وعدد أيام العمل."
+
+msgid ""
+"The login keeps its own password. Only for the same person (one owner, "
+"several companies)."
+msgstr "يحتفظ الحساب بكلمة مروره. فقط لنفس الشخص (مالك واحد لعدة شركات)."
+
+msgid "The login no longer works."
+msgstr "لم يعد الدخول يعمل."
+
 msgid ""
 "The logo appears in the sidebar, on the sign-in page and in the browser tab."
 " Only your company can see your files."
@@ -2021,8 +4944,17 @@ msgstr ""
 "يظهر الشعار في القائمة الجانبية وصفحة تسجيل الدخول وتبويب المتصفح. ملفاتك لا"
 " يراها إلا شركتك."
 
-msgid "The month's salary, the week's wage or the day's wage."
-msgstr "راتب الشهر أو أجر الأسبوع أو أجر اليوم."
+msgid "The main address cannot be removed."
+msgstr "لا يمكن حذف العنوان الرئيسي."
+
+msgid "The message with each payslip"
+msgstr "الرسالة مع كل قسيمة"
+
+msgid "The number"
+msgstr "الرقم"
+
+msgid "The owner already has a login: add this workspace to it"
+msgstr "المالك لديه حساب بالفعل: أضف مساحة العمل هذه إليه"
 
 msgid "The Owner role cannot be changed."
 msgstr "لا يمكن تعديل دور المالك."
@@ -2030,11 +4962,79 @@ msgstr "لا يمكن تعديل دور المالك."
 msgid "The page you are looking for does not exist or was moved."
 msgstr "الصفحة المطلوبة غير موجودة أو تم نقلها."
 
+msgid ""
+"The pay record, schedules, policies, rates and days used, kept with the "
+"payslip. An approved payslip is never recalculated from today's data."
+msgstr ""
+"سجل الأجر والمواعيد واللوائح والنسب والأيام المستخدمة، محفوظة مع القسيمة. "
+"القسيمة المعتمدة لا يُعاد حسابها أبدًا من بيانات اليوم."
+
+msgid "The payslip no longer exists."
+msgstr "لم تعد القسيمة موجودة."
+
+msgid ""
+"The payslips are frozen: later changes to salaries, rates or attendance "
+"don't change them. What they paid can't be changed or paid again."
+msgstr ""
+"القسائم مجمدة: التغييرات اللاحقة في الرواتب أو النسب أو الحضور لا تغيرها. "
+"وما صرفته لا يمكن تعديله أو صرفه مرة أخرى."
+
+msgid ""
+"The payslips stay on record; installments, advances and everything else the "
+"run paid become due again, so a new run can pay them."
+msgstr ""
+"تبقى القسائم في السجل؛ والأقساط والسلف وكل ما صرفه المسير تعود مستحقة، "
+"ليصرفها مسير جديد."
+
+msgid "The PDF could not be made right now"
+msgstr "تعذّر إنشاء ملف PDF الآن"
+
+msgid "The period comes from the pay calendar. Today falls in:"
+msgstr "الفترة تأتي من تقويم الصرف. اليوم يقع في:"
+
+msgid "The period from %(start)s to %(end)s — net %(net)s"
+msgstr "الفترة من %(start)s الى %(end)s — الصافي %(net)s"
+
+msgid ""
+"The period isn't over: %(days)s days still to come are counted as expected."
+msgstr "الفترة لم تنتهِ: %(days)s أيام متبقية تُحسب كما هو متوقع."
+
+msgid "The plan and its feature choices are removed. This cannot be undone."
+msgstr "ستُحذف الباقة واختيارات خصائصها. لا يمكن التراجع."
+
+msgid "The plan does not include it"
+msgstr "الباقة لا تتضمنها"
+
+msgid "The plan includes it"
+msgstr "الباقة تتضمنها"
+
+msgid "The run pays the employees on this frequency."
+msgstr "المسير يصرف للموظفين على هذه الدورية."
+
+msgid ""
+"The same hours away for several employees, one or more spans in the day. "
+"Each is checked on their own: overlaps, their schedule and their monthly "
+"allowance. Preview, then save."
+msgstr ""
+"نفس ساعات الإذن لعدة موظفين، فترة أو أكثر في اليوم. يُفحص كل موظف على حدة: "
+"التداخل ومواعيده ورصيده الشهري. عاين ثم احفظ."
+
+msgid "The same request is already waiting for the device."
+msgstr "نفس الطلب ينتظر الجهاز بالفعل."
+
 msgid "The same request is still being processed."
 msgstr "الطلب نفسه ما زال قيد التنفيذ."
 
 msgid "The shift must end at another time than it starts."
 msgstr "يجب أن تنتهي الوردية في وقت غير وقت بدايتها."
+
+msgid ""
+"The times several employees came and left, when the clock didn't record "
+"them. Lateness, early leave and overtime follow from these times as from the"
+" clock's. Preview, then save."
+msgstr ""
+"مواعيد حضور وانصراف عدة موظفين عندما لم يسجلها الجهاز. يُحسب التأخير "
+"والانصراف المبكر والإضافي من هذه المواعيد كما من الجهاز. عاين ثم احفظ."
 
 msgid "The user can no longer sign in. Their history is kept."
 msgstr "لن يتمكن المستخدم من الدخول، مع الاحتفاظ بسجله."
@@ -2042,8 +5042,23 @@ msgstr "لن يتمكن المستخدم من الدخول، مع الاحتفا
 msgid "The user can sign in again with their roles."
 msgstr "سيتمكن المستخدم من الدخول مرة أخرى بأدواره."
 
+msgid "The WhatsApp service answered with an error (%(status)s)."
+msgstr "ردت خدمة واتساب بخطأ (%(status)s)."
+
+msgid "The WhatsApp service is not reachable. Try again later or ask support."
+msgstr "تعذّر الوصول إلى خدمة واتساب. حاول لاحقًا أو اسأل الدعم."
+
+msgid "The WhatsApp service refused the platform's key. Ask support."
+msgstr "رفضت خدمة واتساب مفتاح المنصة. اسأل الدعم."
+
 msgid "The workspace must keep at least one active owner."
 msgstr "يجب أن يبقى في الحساب مالك نشط واحد على الأقل."
+
+msgid "Their hours already change on %(day)s, inside this range."
+msgstr "مواعيدهم تتغير بالفعل يوم %(day)s، داخل هذه المدة."
+
+msgid "Their hours change again on %(day)s; that change stays."
+msgstr "مواعيدهم تتغير مرة أخرى يوم %(day)s؛ ويبقى ذلك التغيير."
 
 msgid "Theme"
 msgstr "السمة"
@@ -2051,11 +5066,41 @@ msgstr "السمة"
 msgid "There is already a holiday on this day."
 msgstr "توجد إجازة بالفعل في هذا اليوم."
 
-msgid "There is already hourly leave on that day."
-msgstr "يوجد إذن بالفعل في ذلك اليوم."
-
 msgid "These are all days off or holidays: no leave is needed."
 msgstr "كل هذه الأيام راحة أو إجازات رسمية: لا حاجة لإجازة."
+
+msgid "They are all in this batch already."
+msgstr "كلهم موجودون في هذه الدفعة بالفعل."
+
+msgid "They have no working hours on that day yet."
+msgstr "ليس لهم مواعيد عمل في ذلك اليوم بعد."
+
+msgid "They leave on %(day)s."
+msgstr "يتركون العمل يوم %(day)s."
+
+msgid "This account cannot use the platform console."
+msgstr "هذا الحساب لا يملك صلاحية لوحة المنصة."
+
+msgid "This address is reserved."
+msgstr "هذا العنوان محجوز."
+
+msgid "This address is taken."
+msgstr "هذا العنوان مستخدم."
+
+msgid "This band overlaps another one."
+msgstr "هذه الشريحة تتداخل مع شريحة أخرى."
+
+msgid "This batch has corrections: correct it again instead."
+msgstr "لهذه الدفعة تصحيحات: صحّحها مرة أخرى بدلًا من ذلك."
+
+msgid "This batch is %(status)s."
+msgstr "هذه الدفعة %(status)s."
+
+msgid "This corrects"
+msgstr "هذا يصحّح"
+
+msgid "This domain is already in use."
+msgstr "هذا النطاق مستخدم بالفعل."
 
 msgid "This email already belongs to another account."
 msgstr "هذا البريد الإلكتروني مسجل لحساب آخر."
@@ -2066,6 +5111,31 @@ msgid ""
 msgstr ""
 "هذا البريد له حساب بالفعل. أضف مساحة العمل هذه إلى ذلك الحساب، أو استخدم "
 "بريداً آخر."
+
+msgid ""
+"This email already has a login. Tick “add this workspace to it” below, or "
+"use another email."
+msgstr ""
+"هذا البريد له حساب بالفعل. اختر «أضف مساحة العمل هذه إليه» بالأسفل، أو "
+"استخدم بريدًا آخر."
+
+msgid "This employee already has a login."
+msgstr "لهذا الموظف دخول بالفعل."
+
+msgid "This employee already has a PIN on this branch's devices."
+msgstr "لهذا الموظف رقم بالفعل على أجهزة هذا الفرع."
+
+msgid "This employee has no login."
+msgstr "ليس لهذا الموظف دخول."
+
+msgid "This employee is still repaying a loan."
+msgstr "هذا الموظف ما زال يسدد قرضًا."
+
+msgid "This employee isn't employed on that day, or isn't yours to manage."
+msgstr "هذا الموظف ليس على رأس العمل في ذلك اليوم، أو ليس ضمن من تديرهم."
+
+msgid "This employee isn't in the run."
+msgstr "هذا الموظف ليس في المسير."
 
 msgid "This feature is not available in your plan."
 msgstr "هذه الخاصية غير متاحة في باقتك."
@@ -2079,8 +5149,20 @@ msgstr "هذا الحقل مطلوب."
 msgid "This Idempotency-Key was used for another request."
 msgstr "مفتاح Idempotency-Key هذا استُخدم لطلب آخر."
 
+msgid "This installment and the later ones move a month on"
+msgstr "يتأخر هذا القسط والأقساط التالية شهرًا"
+
 msgid "This is not an Excel (.xlsx) file."
 msgstr "هذا ليس ملف إكسل (.xlsx)."
+
+msgid "This is the batch's only employee: delete the draft instead."
+msgstr "هذا هو الموظف الوحيد في الدفعة: احذف المسودة بدلًا من ذلك."
+
+msgid "This loan is no longer being repaid."
+msgstr "هذا القرض لم يعد قيد السداد."
+
+msgid "This minute"
+msgstr "هذه الدقيقة"
 
 msgid ""
 "This month's allowance is %(allowed)s minutes and %(used)s are used; this "
@@ -2089,8 +5171,23 @@ msgstr ""
 "رصيد هذا الشهر %(allowed)s دقيقة واستُخدم منه %(used)s؛ وهذا الطلب يحتاج "
 "%(minutes)s."
 
+msgid "This needs the permission in every branch."
+msgstr "هذا يحتاج الصلاحية في كل الفروع."
+
+msgid "This number is not on WhatsApp."
+msgstr "هذا الرقم غير موجود على واتساب."
+
+msgid "This overlaps an earlier span."
+msgstr "هذه الفترة تتداخل مع فترة سابقة."
+
+msgid "This overlaps other hourly leave on that day."
+msgstr "هذا يتداخل مع إذن آخر في ذلك اليوم."
+
 msgid "This page"
 msgstr "هذه الصفحة"
+
+msgid "This period is closed."
+msgstr "هذه الفترة مغلقة."
 
 msgid ""
 "This person uses the same login outside this workspace, so only they can "
@@ -2102,11 +5199,20 @@ msgstr ""
 msgid "This phone number already belongs to another account."
 msgstr "رقم الهاتف هذا مسجّل لحساب آخر."
 
+msgid ""
+"This PIN's punches are already in an employee's attendance: the link can't "
+"change."
+msgstr "بصمات هذا الرقم في حضور موظف بالفعل: لا يمكن تغيير الربط."
+
 msgid "This request is %(status)s already."
 msgstr "هذا الطلب %(status)s بالفعل."
 
 msgid "This screen cannot be pinned."
 msgstr "لا يمكن تثبيت هذه الشاشة."
+
+msgid ""
+"This serial number is already registered, here or with another company."
+msgstr "هذا الرقم التسلسلي مسجل بالفعل، هنا أو لدى شركة أخرى."
 
 msgid "This table has no columns to print."
 msgstr "لا توجد أعمدة للطباعة في هذا الجدول."
@@ -2117,11 +5223,32 @@ msgstr "اسم المستخدم مستخدم بالفعل في هذا الحسا
 msgid "Thursday"
 msgstr "الخميس"
 
+msgid "Time away"
+msgstr "مدة الإذن"
+
+msgid "Time spans"
+msgstr "الفترات"
+
+msgid "Time zone"
+msgstr "المنطقة الزمنية"
+
+msgid "Times are given for someone not in the group."
+msgstr "أُدخلت مواعيد لشخص ليس ضمن المجموعة."
+
+msgid "Times by hand for a group"
+msgstr "مواعيد يدوية لمجموعة"
+
 msgid "Title"
 msgstr "العنوان"
 
 msgid "To"
 msgstr "إلى"
+
+msgid "To (minutes)"
+msgstr "إلى (دقائق)"
+
+msgid "To be recovered"
+msgstr "لم تُسترد بعد"
 
 msgid "To minute"
 msgstr "إلى دقيقة"
@@ -2147,8 +5274,38 @@ msgstr "طلبات كثيرة جدًا. انتظر دقيقة ثم حاول مر
 msgid "Too many wrong passwords. Wait a few minutes, then try again."
 msgstr "كلمات مرور خاطئة كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى."
 
+msgid "Too small for this many installments."
+msgstr "المبلغ أقل من أن يُقسَّم على هذا العدد من الأقساط."
+
 msgid "Tools"
 msgstr "أدوات"
+
+msgid "Total"
+msgstr "الإجمالي"
+
+msgid "Total deductions"
+msgstr "إجمالي الاستقطاعات"
+
+msgid "Total earnings"
+msgstr "إجمالي المستحقات"
+
+msgid "Total for the year"
+msgstr "إجمالي المرتب خلال السنة"
+
+msgid "Tracking sessions"
+msgstr "جلسات التتبع"
+
+msgid "Traffic"
+msgstr "حركة الطلبات"
+
+msgid "Traffic and limits"
+msgstr "حركة الطلبات والحدود"
+
+msgid "Trial days"
+msgstr "أيام التجربة"
+
+msgid "Trial ends on"
+msgstr "نهاية الفترة التجريبية"
 
 msgid "Tuesday"
 msgstr "الثلاثاء"
@@ -2161,6 +5318,18 @@ msgstr "اكتب للبحث…"
 
 msgid "Undo: still working here"
 msgstr "تراجع: ما زال يعمل هنا"
+
+msgid "Unexcused absence"
+msgstr "غياب بدون إذن"
+
+msgid "United Arab Emirates"
+msgstr "الإمارات"
+
+msgid "United Kingdom"
+msgstr "المملكة المتحدة"
+
+msgid "United States"
+msgstr "الولايات المتحدة"
 
 msgid "Unknown action."
 msgstr "إجراء غير معروف."
@@ -2183,6 +5352,12 @@ msgstr "دور غير معروف."
 msgid "Unknown status."
 msgstr "حالة غير معروفة."
 
+msgid "Unlink"
+msgstr "فك الربط"
+
+msgid "Unlinked."
+msgstr "تم فك الربط."
+
 msgid "unpaid"
 msgstr "بدون أجر"
 
@@ -2196,14 +5371,50 @@ msgstr ""
 "الإجازة بدون أجر تُخصم في المرتبات. الأنواع التي تستخدم الرصيد السنوي لا "
 "تتجاوز الأيام المتبقية."
 
+msgid "Unread only"
+msgstr "غير المقروء فقط"
+
+msgid "Until"
+msgstr "حتى"
+
+msgid "Until (empty: no end)"
+msgstr "حتى (فارغ: بلا نهاية)"
+
+msgid "Until (optional)"
+msgstr "حتى (اختياري)"
+
+msgid "Up to"
+msgstr "حتى"
+
 msgid "Upload a PNG, JPEG, WEBP, GIF or ICO image."
 msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF أو ICO."
+
+msgid "Use"
+msgstr "الاستخدام"
 
 msgid "Use digits only."
 msgstr "استخدم أرقامًا فقط."
 
+msgid "Use Print and choose “Save as PDF” instead, or try again in a minute."
+msgstr ""
+"استخدم الطباعة واختر «حفظ بتنسيق PDF» بدلًا من ذلك، أو حاول مرة أخرى بعد "
+"دقيقة."
+
+msgid "Use the mobile app"
+msgstr "استخدام تطبيق الهاتف"
+
+msgid "Use the plan"
+msgstr "اتبع الباقة"
+
 msgid "Use the workspace colour (%(name)s)"
 msgstr "استخدام لون مساحة العمل (%(name)s)"
+
+msgid ""
+"Used on the dark sidebar, the sign-in panel and in dark mode. Empty: the "
+"logo above."
+msgstr ""
+"يُستخدم في القائمة الداكنة ولوحة تسجيل الدخول والوضع الداكن. فارغ: الشعار "
+"أعلاه."
 
 msgid "User"
 msgstr "المستخدم"
@@ -2229,6 +5440,9 @@ msgstr "المستخدمون"
 msgid "Users can still pick their own in the appearance menu."
 msgstr "يمكن لكل مستخدم اختيار لونه من قائمة المظهر."
 
+msgid "Uses the annual balance"
+msgstr "يُخصم من الرصيد السنوي"
+
 msgid "Uses the yearly balance"
 msgstr "تستخدم الرصيد السنوي"
 
@@ -2250,6 +5464,9 @@ msgstr "عرض الموظفين"
 msgid "View hourly leave"
 msgstr "عرض الأذونات"
 
+msgid "View incentives"
+msgstr "عرض الحوافز"
+
 msgid "View income tax tables"
 msgstr "عرض جداول ضريبة الدخل"
 
@@ -2259,17 +5476,29 @@ msgstr "عرض لوائح التأخير"
 msgid "View leave requests and balances"
 msgstr "عرض طلبات الإجازات والأرصدة"
 
+msgid "View loans"
+msgstr "عرض القروض"
+
 msgid "View overtime policies"
 msgstr "عرض لوائح الإضافي"
 
 msgid "View pay items"
 msgstr "عرض بنود الراتب"
 
+msgid "View penalties"
+msgstr "عرض الجزاءات"
+
 msgid "View public holidays"
 msgstr "عرض الإجازات الرسمية"
 
+msgid "View salary advances"
+msgstr "عرض السلف"
+
 msgid "View social insurance rates"
 msgstr "عرض نسب التأمينات الاجتماعية"
+
+msgid "View the pay items given to employees"
+msgstr "عرض بنود الراتب الممنوحة للموظفين"
 
 msgid "View users"
 msgstr "عرض المستخدمين"
@@ -2280,11 +5509,29 @@ msgstr "مُطّلع"
 msgid "Violet"
 msgstr "بنفسجي"
 
+msgid "Waiting"
+msgstr "في الانتظار"
+
+msgid "waiting"
+msgstr "ينتظر"
+
 msgid "Waiting for approval"
 msgstr "في انتظار الاعتماد"
 
+msgid "Waiting for the device"
+msgstr "ينتظر الجهاز"
+
+msgid "Waiting for the QR scan"
+msgstr "ينتظر مسح الرمز"
+
+msgid "Waiting to be sent"
+msgstr "ينتظر الإرسال"
+
 msgid "Wednesday"
 msgstr "الأربعاء"
+
+msgid "Weekly"
+msgstr "أسبوعي"
 
 msgid "Weekly days off"
 msgstr "أيام الراحة الأسبوعية"
@@ -2294,14 +5541,8 @@ msgid ""
 msgstr ""
 "أيام الراحة الأسبوعية والإجازات الرسمية داخل المدة لا تُحسب أيام إجازة."
 
-msgid "Weekly wage"
-msgstr "أجر أسبوعي"
-
-msgid "Weight (g)"
-msgstr "الوزن (جم)"
-
-msgid "Weights and karats handled precisely"
-msgstr "أوزان وعيارات بدقة تامة"
+msgid "Weeks counted from"
+msgstr "تُحسب الأسابيع من"
 
 msgid "Welcome back, %(name)s"
 msgstr "مرحبًا بعودتك، %(name)s"
@@ -2309,14 +5550,73 @@ msgstr "مرحبًا بعودتك، %(name)s"
 msgid "What"
 msgstr "البيان"
 
+msgid ""
+"What each plan includes. A client gets its plan's features unless you switch"
+" one on or off on the client's own page. A feature that is off disappears "
+"from the client's menus, pages and API."
+msgstr ""
+"ما تتضمنه كل باقة. يحصل العميل على خصائص باقته إلا إذا فعّلت أو أوقفت خاصية "
+"من صفحته. الخاصية الموقوفة تختفي من قوائم العميل وصفحاته والـ API."
+
 msgid "What happened"
 msgstr "ما حدث"
+
+msgid "What the device says about itself"
+msgstr "ما يقوله الجهاز عن نفسه"
+
+msgid ""
+"What the devices sent, as they sent it: the time, the device, the PIN and "
+"the employee it is linked to, and whether it is in attendance."
+msgstr ""
+"ما أرسلته الأجهزة كما أرسلته: الوقت والجهاز والرقم والموظف المربوط به، وهل "
+"دخل الحضور."
+
+msgid "What this payslip was calculated from"
+msgstr "ما حُسبت منه هذه القسيمة"
+
+msgid ""
+"What you sell: each plan's price, limits and features. Clients get their "
+"plan's unless you set their own."
+msgstr ""
+"ما تبيعه: سعر كل باقة وحدودها وخصائصها. يحصل العملاء على ما في باقتهم ما لم "
+"تحدد لهم غير ذلك."
 
 msgid "WhatsApp"
 msgstr "واتساب"
 
+msgid "WhatsApp is not set up on this platform yet: ask support."
+msgstr "لم يُجهز واتساب على المنصة بعد: اسأل الدعم."
+
+msgid "WhatsApp is not set up on this platform."
+msgstr "واتساب غير مُجهز على المنصة."
+
+msgid "WhatsApp is switched off for this company."
+msgstr "واتساب متوقف لهذه الشركة."
+
+msgid "WhatsApp may block a number that sends many messages at once."
+msgstr "قد يحظر واتساب رقمًا يرسل رسائل كثيرة دفعة واحدة."
+
+msgid "WhatsApp number"
+msgstr "رقم واتساب"
+
+msgid "WhatsApp session"
+msgstr "جلسة واتساب"
+
 msgid "When"
 msgstr "متى"
+
+msgid ""
+"When each pay frequency's periods start. They can't move once a run of that "
+"frequency exists."
+msgstr ""
+"متى تبدأ فترات كل دورية صرف. لا يمكن تحريكها بعد وجود مسير لتلك الدورية."
+
+msgid ""
+"Where the branch is: with the geofence on, punches from the mobile app are "
+"only accepted within this distance of it."
+msgstr ""
+"مكان الفرع: مع تفعيل النطاق، لا تُقبل بصمات التطبيق إلا داخل هذه المسافة "
+"منه."
 
 msgid "Who"
 msgstr "من"
@@ -2324,6 +5624,42 @@ msgstr "من"
 msgid ""
 "Who came and when: the daily sheet, manual entries, absences and days off."
 msgstr "من حضر ومتى: كشف الحضور اليومي والإدخال اليدوي والغياب والراحات."
+
+msgid "Whole in the week containing the 1st"
+msgstr "كاملًا في الأسبوع الذي يحتوي أول الشهر"
+
+msgid "Why"
+msgstr "السبب"
+
+msgid "Why (optional)"
+msgstr "السبب (اختياري)"
+
+msgid "Why by hand"
+msgstr "سبب الإدخال اليدوي"
+
+msgid "Why it changed"
+msgstr "سبب التغيير"
+
+msgid "Why it changes (optional)"
+msgstr "سبب التغيير (اختياري)"
+
+msgid "Why it is cancelled"
+msgstr "سبب الإلغاء"
+
+msgid "Why it is reopened"
+msgstr "سبب إعادة الفتح"
+
+msgid "Why it was reversed"
+msgstr "سبب العكس"
+
+msgid "Why it was revoked"
+msgstr "سبب الإلغاء"
+
+msgid "Why off-cycle"
+msgstr "سبب المسير الاستثنائي"
+
+msgid "Why they left"
+msgstr "سبب ترك العمل"
 
 msgid "Widowed"
 msgstr "أرمل"
@@ -2334,11 +5670,20 @@ msgstr "بدون جدول ضريبة لن تُخصم ضريبة دخل في ال
 msgid "Without rates, payroll deducts no social insurance."
 msgstr "بدون نسب لن تُخصم تأمينات اجتماعية في المرتبات."
 
+msgid "Work on holidays and leave days"
+msgstr "العمل في العطلات وأيام الإجازة"
+
 msgid "Worked"
 msgstr "ساعات العمل"
 
 msgid "Worked (h)"
 msgstr "ساعات العمل (س)"
+
+msgid "Worker"
+msgstr "العامل"
+
+msgid "Workers"
+msgstr "العمّال"
 
 msgid "Working"
 msgstr "يعمل"
@@ -2346,11 +5691,32 @@ msgstr "يعمل"
 msgid "Working hours"
 msgstr "مواعيد العمل"
 
+msgid "Working hours for a group"
+msgstr "مواعيد العمل لمجموعة"
+
+msgid "Write at least one note."
+msgstr "اكتب ملاحظة واحدة على الأقل."
+
+msgid "Write each employee's yearly evaluation here."
+msgstr "اكتب هنا التقييم السنوي لكل موظف."
+
+msgid "Write evaluations"
+msgstr "كتابة التقييمات"
+
+msgid "Write the message sent with a payslip."
+msgstr "اكتب الرسالة المرسلة مع القسيمة."
+
 msgid "Wrong name or password"
 msgstr "اسم أو كلمة مرور خاطئة"
 
+msgid "Year"
+msgstr "السنة"
+
 msgid "Yearly"
 msgstr "سنوياً"
+
+msgid "Yearly base pay"
+msgstr "الراتب الأساسي السنوي"
 
 msgid "Yearly exemption"
 msgstr "الإعفاء السنوي"
@@ -2366,6 +5732,9 @@ msgstr "نعم"
 
 msgid "you"
 msgstr "أنت"
+
+msgid "You are all caught up."
+msgstr "لا يوجد ما يحتاج متابعة."
 
 msgid "You can only grant permissions you have yourself."
 msgstr "لا يمكنك منح صلاحيات لا تملكها."
@@ -2385,8 +5754,29 @@ msgstr "ليست لديك صلاحية لفتح هذه الصفحة"
 msgid "Your data kept private to your company"
 msgstr "بياناتك خاصة بشركتك وحدها"
 
+msgid "Your hourly leave was cancelled"
+msgstr "تم الغاء الاذن"
+
+msgid "Your leave request was approved"
+msgstr "تمت الموافقة على طلب الاجازة"
+
+msgid "Your leave request was rejected"
+msgstr "تم رفض طلب الاجازة"
+
+msgid "Your leave was cancelled"
+msgstr "تم الغاء الاجازة"
+
 msgid "Your name, logo and colour on every screen."
 msgstr "اسمك وشعارك ولونك على كل الشاشات."
+
+msgid "Your name, logos and links, as every client sees them."
+msgstr "اسمك وشعاراتك وروابطك كما يراها كل عميل."
+
+msgid "Your pay was paid"
+msgstr "تم صرف المرتب"
+
+msgid "Your plan allows %(limit)s app logins. Contact us to add more."
+msgstr "باقتك تسمح بـ %(limit)s حسابات تطبيق. تواصل معنا لإضافة المزيد."
 
 msgid "Your plan allows %(limit)s branches. Contact us to add more."
 msgstr "باقتك تسمح بـ %(limit)s فروع. تواصل معنا لإضافة المزيد."
@@ -2409,3 +5799,24 @@ msgid ""
 msgstr ""
 "وصلت مساحة العمل إلى حد الطلبات لهذه الدقيقة. حاول مرة أخرى بعد %(seconds)s "
 "ثانية."
+
+msgid ""
+"ZKTeco devices send their punches here as they happen. On the device: Menu →"
+" Communication → Cloud server settings: server mode ADMS, the address below,"
+" proxy off."
+msgstr ""
+"ترسل أجهزة ZKTeco بصماتها هنا فور حدوثها. على الجهاز: القائمة ← الاتصالات ← "
+"إعدادات سيرفر السحابة: وضع السيرفر ADMS، والعنوان أدناه، والبروكسي متوقف."
+
+msgid ""
+"ZKTeco devices sending punches to the system (ADMS), linked to employees."
+msgstr "أجهزة ZKTeco ترسل البصمات إلى النظام (ADMS)، مربوطة بالموظفين."
+
+msgid "{count} days saved."
+msgstr "تم حفظ {count} يوم."
+
+msgid "{count} hourly leaves saved."
+msgstr "تم حفظ {count} إذن."
+
+msgid "{passed} ready to save, {failed} with problems."
+msgstr "{passed} جاهز للحفظ، {failed} به مشكلات."

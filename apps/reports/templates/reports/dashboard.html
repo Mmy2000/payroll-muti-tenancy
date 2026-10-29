@@ -1,0 +1,88 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Dashboard" %}{% endblock %}
+{% block page_header %}
+  {% blocktranslate trimmed asvar greeting with name=request.user.display_name %}Welcome back, {{ name }}{% endblocktranslate %}
+  {% include "components/page_header.html" with title=greeting subtitle=today_label %}
+{% endblock %}
+{% block content %}
+
+{% if shortcuts.items %}
+{# The member's pinned screens (the star in the top bar). #}
+<section class="mb-6" aria-labelledby="shortcuts-title">
+  <h2 id="shortcuts-title" class="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">{% icon "star" "size-3.5 text-amber-500" %}{% translate "Your shortcuts" %}</h2>
+  <ul class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+    {% for item in shortcuts.items %}
+    <li class="group relative" data-shortcut>
+      <a href="{{ item.url }}" class="card flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900">
+        <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">{% icon item.icon "size-4" %}</span>
+        <span class="min-w-0 truncate">{{ item.label }}</span>
+      </a>
+      <button type="button" class="absolute -top-1.5 -end-1.5 grid size-5 place-items-center rounded-full border border-slate-200 bg-surface text-slate-400 opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-slate-900 focus-visible:opacity-100 max-lg:opacity-100"
+              data-pin="{{ item.screen }}" data-pin-remove data-endpoint="{% url 'iam-shortcuts' %}" aria-pressed="true"
+              data-pin-label="{% translate 'Pin to my shortcuts' %}" data-unpin-label="{% translate 'Remove from my shortcuts' %}"
+              title="{% translate 'Remove from my shortcuts' %}" aria-label="{% translate 'Remove from my shortcuts' %}">{% icon "x" "size-3" %}</button>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {% if people %}{% url 'employees' as url %}{% translate "Employees working" as label %}{% blocktranslate trimmed asvar note count n=people.departments %}{{ n }} department{% plural %}{{ n }} departments{% endblocktranslate %}
+    {% include "reports/_tile.html" with value=people.working icon="users" %}{% endif %}
+  {% if attendance %}{% url 'attendance' as url %}{% translate "Present today" as label %}{% blocktranslate trimmed asvar note with absent=attendance.absent leave=attendance.leave %}{{ absent }} absent · {{ leave }} on leave{% endblocktranslate %}
+    {% include "reports/_tile.html" with value=attendance.present icon="clock" %}{% endif %}
+  {% if payroll %}{% url 'payroll-runs' as url %}{% translate "Net pay, last approved" as label %}
+    {% include "reports/_tile.html" with value=payroll.net_text icon="calculator" note=payroll.month %}{% endif %}
+  {% if branch_count is not None %}{% url 'branches' as url %}{% translate "Branches" as label %}{% blocktranslate trimmed asvar note count n=member_count|default:0 %}{{ n }} user{% plural %}{{ n }} users{% endblocktranslate %}
+    {% include "reports/_tile.html" with value=branch_count icon="store" %}{% endif %}
+</div>
+
+{% if waiting %}
+<section class="card mt-6">
+  <h2 class="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">{% translate "Needs attention" %}</h2>
+  <ul class="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-y-0">
+    {% for a in waiting %}<li><a class="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50" href="{{ a.url }}">
+      <span class="grid size-8 place-items-center rounded-lg bg-amber-50 text-amber-700">{% icon a.icon "size-4" %}</span>
+      <span class="flex-1">{{ a.label }}</span><span class="badge badge-warning num">{{ a.count }}</span></a></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+  {% if attendance %}
+  <section class="card"><div class="card-body">
+    <h2 class="text-sm font-semibold text-slate-900">{% translate "Present each day" %}</h2>
+    <p class="mb-3 text-xs text-slate-500">{% translate "Employees present, the last 14 days" %}</p>
+    {% translate "Employees present each day" as label %}{% include "components/column_chart.html" with chart=attendance.present_days %}
+  </div></section>
+  {% endif %}
+  {% if payroll %}
+  <section class="card"><div class="card-body">
+    <h2 class="text-sm font-semibold text-slate-900">{% translate "Net pay by department" %}</h2>
+    <p class="mb-3 text-xs text-slate-500">{{ payroll.month }}</p>
+    {% translate "Net pay by department" as label %}{% include "components/bar_chart.html" with chart=payroll.by_department %}
+  </div></section>
+  <section class="card"><div class="card-body">
+    <h2 class="text-sm font-semibold text-slate-900">{% translate "Net pay each month" %}</h2>
+    <p class="mb-3 text-xs text-slate-500">{% translate "Approved and paid runs, the last 12 months" %}</p>
+    {% translate "Net pay each month" as label %}{% include "components/column_chart.html" with chart=payroll.net_months %}
+  </div></section>
+  {% if payroll.has_overtime %}
+  <section class="card"><div class="card-body">
+    <h2 class="text-sm font-semibold text-slate-900">{% translate "Overtime hours each month" %}</h2>
+    <p class="mb-3 text-xs text-slate-500">{% translate "Hours paid as overtime, the last 12 months" %}</p>
+    {% translate "Overtime hours each month" as label %}{% include "components/column_chart.html" with chart=payroll.overtime_months %}
+  </div></section>
+  {% endif %}
+  {% endif %}
+  {% if people %}
+  <section class="card"><div class="card-body">
+    <h2 class="text-sm font-semibold text-slate-900">{% translate "New hires each month" %}</h2>
+    <p class="mb-3 text-xs text-slate-500">{% translate "By hiring date, the last 24 months" %}</p>
+    {% translate "New hires each month" as label %}{% include "components/column_chart.html" with chart=people.hires %}
+  </div></section>
+  {% endif %}
+</div>
+{% endblock %}

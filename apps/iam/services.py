@@ -20,6 +20,7 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, PermissionDenied, ValidationError
+from apps.platform.tenants.limits import check_room_for, is_app_login
 
 from .catalog import WILDCARD, is_known_permission, permissions
 from .models import (
@@ -36,6 +37,8 @@ from .models import (
 OWNER = "owner"
 MANAGER = "manager"
 VIEWER = "viewer"
+EMPLOYEE = "employee"
+APP_SIGNIN = "mobile.signin"
 
 
 def _system_role_templates() -> dict[str, tuple[str, str, list[str]]]:
@@ -47,6 +50,7 @@ def _system_role_templates() -> dict[str, tuple[str, str, list[str]]]:
         OWNER: (*names[OWNER], [WILDCARD]),
         MANAGER: (*names[MANAGER], managing),
         VIEWER: (*names[VIEWER], viewing),
+        EMPLOYEE: (*names[EMPLOYEE], [c for c in (APP_SIGNIN,) if c in catalog]),
     }
 
 
@@ -249,6 +253,10 @@ def _validate_member(data: MemberInput, user: User | None) -> dict:
             "roles": roles, "branches": branches}
 
 
+def _member_role_codes(membership: Membership) -> set[str]:
+    return set(membership.roles.values_list("role__code", flat=True))
+
+
 def _apply_roles(membership: Membership, data: MemberInput, clean: dict, actor) -> None:
     wanted = {a.role_id: a for a in data.roles}
     for role in clean["roles"].values():
@@ -267,10 +275,8 @@ def _apply_roles(membership: Membership, data: MemberInput, clean: dict, actor) 
 def create_member(data: MemberInput, password: str, *, actor=None) -> Membership:
     if actor is not None:
         actor.require("admin.users.manage")
-    from apps.platform.tenants.limits import check_user_limit
-
-    check_user_limit()
     clean = _validate_member(data, None)
+    check_room_for(role.code for role in clean["roles"].values())
     try:
         validate_password(password)
     except DjangoValidationError as exc:
@@ -297,6 +303,10 @@ def update_member(membership_id: int, data: MemberInput, *, actor=None) -> Membe
         if membership is None:
             raise NotFound(_("Not found."))
         clean = _validate_member(data, membership.user)
+        new_codes = {role.code for role in clean["roles"].values()}
+        if (membership.status == MembershipStatus.ACTIVE
+                and is_app_login(_member_role_codes(membership)) != is_app_login(new_codes)):
+            check_room_for(new_codes)  # an app login becoming an office user, or back
         user = membership.user
         if clean["email"] != user.email or (data.phone.strip() or None) != user.phone:
             _ensure_not_shared(user, "email")
@@ -326,6 +336,8 @@ def set_member_status(membership_id: int, status: str, *, actor=None) -> Members
             raise ValidationError(_("You cannot suspend yourself."), code="IAM_SELF_SUSPEND")
         for assignment in membership.roles.select_related("role"):
             _ensure_can_grant(actor, _role_codes(assignment.role))
+        if status == MembershipStatus.ACTIVE and membership.status != MembershipStatus.ACTIVE:
+            check_room_for(_member_role_codes(membership))  # back in: takes a place again
         membership.status = status
         membership.save(update_fields=["status", "updated_at"])
         _ensure_an_owner_remains()

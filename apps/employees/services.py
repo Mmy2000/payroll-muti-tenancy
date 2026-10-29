@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from datetime import date, time
+from datetime import date, time, timedelta
 from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import Max
 from django.utils.translation import gettext as _
 
+from apps.core import locks
 from apps.core.crypto import blind_index, encrypt
 from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.org.models import Branch, Department, TenantProfile
@@ -27,7 +28,8 @@ from .models import (
     Gender,
     MaritalStatus,
     MilitaryStatus,
-    PayBasis,
+    PayFrequency,
+    WageType,
     Weekday,
     WorkSchedule,
 )
@@ -165,7 +167,8 @@ def _apply_card(employee: Employee, data: EmployeeInput, actor) -> None:
 class CompensationInput:
     effective_from: date | None  # None: from the hiring date (a new employee)
     salary: Decimal
-    basis: str = PayBasis.MONTHLY
+    wage_type: str = WageType.FIXED
+    pay_frequency: str = PayFrequency.MONTHLY
     hours_per_day: Decimal = Decimal(8)
     overtime_multiplier: Decimal = Decimal("1.5")
     absence_multiplier: Decimal = Decimal(1)
@@ -190,8 +193,10 @@ class ScheduleInput:
 
 def _check_pay(data: CompensationInput) -> dict:
     errors: dict[str, list[str]] = {}
-    if data.basis not in PayBasis.values:
-        errors["basis"] = [_("Choose how the employee is paid.")]
+    if data.wage_type not in WageType.values:
+        errors["wage_type"] = [_("Choose how the pay is counted.")]
+    if data.pay_frequency not in PayFrequency.values:
+        errors["pay_frequency"] = [_("Choose how often the employee is paid.")]
     if data.salary < 0:
         errors["salary"] = [_("Must not be negative.")]
     if not Decimal(0) < data.hours_per_day <= Decimal(24):
@@ -225,8 +230,9 @@ def _check_schedule(data: ScheduleInput) -> dict:
 
 def _new_pay(employee: Employee, data: CompensationInput, actor) -> Compensation:
     values = {name: getattr(data, name) for name in (
-        "basis", "salary", "hours_per_day", "overtime_multiplier", "absence_multiplier",
-        "holiday_multiplier", "insured_salary", "annual_leave_days", "permission_hours")}
+        "wage_type", "pay_frequency", "salary", "hours_per_day", "overtime_multiplier",
+        "absence_multiplier", "holiday_multiplier", "insured_salary", "annual_leave_days",
+        "permission_hours")}
     return Compensation.objects.create(
         employee=employee, effective_from=data.effective_from or employee.hired_on,
         note=data.note.strip(), created_by=getattr(actor, "user", None), **values)
@@ -287,6 +293,7 @@ def update_employee(employee_id: int, data: EmployeeInput, *, actor=None) -> Emp
 def _check_change_date(employee: Employee, effective_from: date | None) -> date:
     if effective_from is None:
         raise _invalid({"effective_from": [_("Enter the date the change starts.")]})
+    locks.ensure_open(employee.pk, effective_from, date.max)
     if effective_from < employee.hired_on:
         raise _invalid({"effective_from": [_("Must not be before the hiring date.")]})
     if employee.left_on is not None and effective_from > employee.left_on:
@@ -325,7 +332,7 @@ def change_schedule(employee_id: int, data: ScheduleInput, *, actor=None) -> Wor
 
 
 def _delete_change(model, record_id: int, permission: str, actor) -> None:
-    # TODO(phase 4): refuse once a posted payroll covers the change's dates.
+    """Remove a change entered by mistake, unless an approved payroll used it."""
     with transaction.atomic():
         record = model.objects.select_related("employee").filter(pk=record_id).first()
         if record is None or (actor is not None and record.employee_id not in set(
@@ -333,6 +340,7 @@ def _delete_change(model, record_id: int, permission: str, actor) -> None:
             raise NotFound(_("Not found."))
         if actor is not None:
             actor.require(permission, branch=record.employee.branch_id)
+        locks.ensure_open(record.employee_id, record.effective_from, date.max)
         siblings = model.objects.filter(employee_id=record.employee_id)
         if siblings.order_by("effective_from", "id").first().pk == record.pk:
             raise DomainError(_("The first record can't be removed: it is what the employee "
@@ -357,6 +365,7 @@ def end_employment(employee_id: int, left_on: date, reason: str = "", *,
             actor.require(MANAGE, branch=employee.branch_id)
         if left_on < employee.hired_on:
             raise _invalid({"left_on": [_("Must not be before the hiring date.")]})
+        locks.ensure_open(employee.pk, left_on + timedelta(days=1), date.max)
         later = (employee.pay_history.filter(effective_from__gt=left_on).exists()
                  or employee.schedules.filter(effective_from__gt=left_on).exists())
         if later:

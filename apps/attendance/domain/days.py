@@ -4,8 +4,12 @@ how early and how long. Pure: no database. The screens and payroll both call `ev
 The status is decided by the first rule that applies (chain of responsibility):
 
 1. not employed that day (before hiring, after leaving);
-2. a manager's entry for the day (it wins over everything else);
-3. the clock: any punch makes the day "present", even on a rest day (then all of it is extra);
+2. a manager's entry for the day (it wins over everything else, except that a day marked
+   "day off" on which the employee clocked in is a worked rest day: all of it is extra, as
+   PayRole's Salary/payroll.py treats a day marked weekly off);
+3. the clock: any punch makes the day "present", even on a rest day (then all of it is extra)
+   or on approved leave (then `leave` keeps the leave's name: payroll pays such a day at the
+   holiday rate and doesn't count it as leave taken);
 4. approved leave;
 5. a public holiday;
 6. a weekly day off;
@@ -73,8 +77,12 @@ class DayFacts:
         return self.shift is not None and self.day.weekday() in self.shift.days_off
 
     @property
+    def marked_day_off(self) -> bool:
+        return self.manual is not None and self.manual.kind == "day_off"
+
+    @property
     def rest_day(self) -> bool:
-        return bool(self.holiday) or self.weekly_off
+        return bool(self.holiday) or self.weekly_off or self.marked_day_off
 
 
 @dataclass(frozen=True)
@@ -83,6 +91,9 @@ class DayResult:
     status: Status
     source: str = ""  # "manual" or "clock" when the status comes from one of them
     label: str = ""  # the leave type or holiday name
+    leave: str = ""  # approved leave covering the day, even when the employee came
+    marked_day_off: bool = False  # a manager marked it a day off (worked anyway: all extra)
+    holiday: str = ""  # the public holiday on the day, even when the employee came
     paid: bool = True  # an absence that is still paid (excused, paid leave, holiday, day off)
     rest_day: bool = False
     check_in: datetime | None = None
@@ -106,7 +117,8 @@ def presence(facts: DayFacts, check_in: datetime, check_out: datetime | None,
     result = DayResult(facts.day, Status.PRESENT, source=source, rest_day=facts.rest_day,
                        check_in=check_in, check_out=check_out,
                        missing_check_out=check_out is None, hourly_minutes=facts.hourly_minutes,
-                       label=facts.holiday)
+                       label=facts.holiday or facts.leave, leave=facts.leave,
+                       holiday=facts.holiday, marked_day_off=facts.marked_day_off)
     if check_out is None:
         return result
     worked = _minutes(check_out - check_in)
@@ -141,9 +153,13 @@ def manual_entry(facts: DayFacts) -> DayResult | None:
         return None
     if entry.kind == "worked":
         return presence(facts, entry.check_in, entry.check_out, "manual")
+    if entry.kind == "day_off" and facts.punches:
+        return None  # they came anyway: the clock decides, on a rest day
     status = {"absent": Status.ABSENT, "excused": Status.EXCUSED,
               "day_off": Status.DAY_OFF}[entry.kind]
-    return DayResult(facts.day, status, source="manual", paid=status != Status.ABSENT,
+    # An excused absence (PayRole: a day marked "إجازة بإذن") is not penalized, and not paid
+    # either: paid days away are leave of a paid type.
+    return DayResult(facts.day, status, source="manual", paid=status == Status.DAY_OFF,
                      rest_day=status == Status.DAY_OFF)
 
 
@@ -155,13 +171,13 @@ def clocked(facts: DayFacts) -> DayResult | None:
 def on_leave(facts: DayFacts) -> DayResult | None:
     if not facts.leave:
         return None
-    return DayResult(facts.day, Status.LEAVE, label=facts.leave, paid=facts.leave_paid,
-                     rest_day=facts.rest_day)
+    return DayResult(facts.day, Status.LEAVE, label=facts.leave, leave=facts.leave,
+                     paid=facts.leave_paid, rest_day=facts.rest_day)
 
 
 def holiday(facts: DayFacts) -> DayResult | None:
-    return (DayResult(facts.day, Status.HOLIDAY, label=facts.holiday, rest_day=True)
-            if facts.holiday else None)
+    return (DayResult(facts.day, Status.HOLIDAY, label=facts.holiday, holiday=facts.holiday,
+                      rest_day=True) if facts.holiday else None)
 
 
 def weekly_off(facts: DayFacts) -> DayResult | None:

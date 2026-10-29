@@ -20,4 +20,12 @@ urlpatterns = [
     path("policies/", include("apps.policies.api.views")),
     path("compensation/", include("apps.compensation.api.views")),
     path("attendance/", include("apps.attendance.api.views")),
+    path("loans/", include("apps.loans.api.views")),
+    path("adjustments/", include("apps.adjustments.api.views")),
+    path("payroll/", include("apps.payroll.api.views")),
+    path("devices/", include("apps.devices.api.views")),
+    path("mobile/", include("apps.mobile.web_api")),
+    path("messaging/", include("apps.messaging.api")),
+    path("notifications/", include("apps.notifications.api")),
+    path("evaluations/", include("apps.evaluations.api")),
 ]

@@ -8,6 +8,7 @@
     <p class="mt-1 text-sm text-slate-500">{{ day|date:"l" }} · {{ day|date:"DATE_FORMAT" }}{% if day == today %} · {% translate "today" %}{% endif %}</p>
   </div>
   <div class="flex flex-wrap items-center gap-2">
+    {% if can_manage_any %}<a class="btn btn-secondary" href="{% url 'attendance-times' %}">{% icon "users" "size-4" %}{% translate "Times by hand for a group" %}</a>{% endif %}
     {% if can_import %}<a class="btn btn-secondary" href="{% url 'attendance-import' %}">{% icon "file-spreadsheet" "size-4" %}{% translate "Import from Excel" %}</a>{% endif %}
   </div>
 </div>

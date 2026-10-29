@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Sent messages" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Sent messages" %}</h1>
+  <p class="mt-1 text-sm text-slate-500">{% translate "Every WhatsApp message: waiting, sent, or failed and why." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% include "components/list_tabs.html" %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "To" %}</th><th>{% translate "What" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for m in page.object_list %}
+        <tr>
+          <td><span class="num text-sm">{{ m.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td>
+          <td>{{ m.employee.name|default:"" }} <span class="num text-xs text-slate-500">{{ m.phone }}</span></td>
+          <td class="text-sm">{{ m.get_kind_display }}{% if m.payslip %} · <a class="text-brand-700 hover:underline" href="{% url 'payslip' m.payslip.run_id m.payslip_id %}">{{ m.payslip.run }}</a>{% endif %}</td>
+          <td>{% if m.status == "sent" %}<span class="badge badge-success">{{ m.get_status_display }}</span>{% elif m.status == "failed" %}<span class="badge badge-danger">{{ m.get_status_display }}</span>{% else %}<span class="badge badge-warning">{{ m.get_status_display }}</span>{% endif %}
+            {% if m.error %}<p class="mt-1 max-w-sm text-xs text-red-700">{{ m.error }}</p>{% endif %}</td>
+          <td class="text-end">{% if can_send and m.status == "failed" %}
+            <form data-api-form data-method="POST" data-endpoint="{% url 'whatsapp-again' m.pk %}" data-success="{% translate 'On its way again.' %}">
+              <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs">{% icon "repeat" "size-4" %}{% translate "Send again" %}</button></form>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "Nothing sent yet" as empty_title %}
+    {% translate "Payslips sent on WhatsApp appear here, with what happened to each." as empty_text %}
+    {% include "components/empty_state.html" with icon="send" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

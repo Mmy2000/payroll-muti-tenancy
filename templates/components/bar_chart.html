@@ -1,0 +1,19 @@
+{% load i18n %}{# Bars by category (apps.core.charts.bars): include with chart= and label=. #}
+<figure class="viz" data-viz>
+  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" class="h-auto w-full" direction="ltr" style="direction: ltr" role="img" aria-label="{{ label }}">
+    {% for tick in chart.ticks %}<line class="viz-rule" x1="{{ tick.x }}" x2="{{ tick.x }}" y1="0" y2="{{ chart.height }}"/>{% endfor %}
+    {% for mark in chart.marks %}
+    <g data-mark data-title="{{ mark.title }}" data-value="{{ mark.shown }}">
+      <rect class="viz-hit" x="0" y="{{ mark.hit_y }}" width="{{ chart.width }}" height="{{ mark.hit_h }}"/>
+      <text class="viz-text viz-label" x="{{ chart.start|add:'-8' }}" y="{{ mark.text_y }}" dy="3.5" text-anchor="end">{{ mark.label|truncatechars:22 }}</text>
+      {% if mark.path %}<path class="viz-bar" d="{{ mark.path }}"/>{% endif %}
+      <text class="viz-text viz-value" x="{{ mark.value_x }}" y="{{ mark.text_y }}" dy="3.5">{{ mark.shown }}</text>
+    </g>
+    {% endfor %}
+  </svg>
+  <div class="viz-tip hidden" data-viz-tip role="status"></div>
+  <details class="mt-2 text-xs text-slate-500">
+    <summary class="cursor-pointer select-none">{% translate "As a table" %}</summary>
+    <table class="table mt-2 text-sm"><tbody>{% for name, value in chart.rows %}<tr><td>{{ name }}</td><td class="text-end"><span class="num">{{ value }}</span></td></tr>{% endfor %}</tbody></table>
+  </details>
+</figure>

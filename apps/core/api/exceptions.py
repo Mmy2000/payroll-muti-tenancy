@@ -49,7 +49,10 @@ def _envelope(code, message, fields, context, status, headers=None):
 
 def exception_handler(exc, context):
     if isinstance(exc, AppError):
-        return _envelope(exc.code, exc.message, exc.fields, context, exc.status)
+        response = _envelope(exc.code, exc.message, exc.fields, context, exc.status)
+        if exc.details is not None:  # e.g. the rows of a bulk change (apps/core/bulk.py)
+            response.data["error"]["details"] = exc.details
+        return response
 
     response = drf_exception_handler(exc, context)
     if response is None:

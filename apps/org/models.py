@@ -68,6 +68,10 @@ class Branch(TenantScopedModel):
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     is_active = models.BooleanField(default=True)
+    # Where it is, for punches from the mobile app inside its area (the geofence feature).
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    radius_m = models.PositiveIntegerField(default=200)
 
     class Meta:
         ordering = ["code"]

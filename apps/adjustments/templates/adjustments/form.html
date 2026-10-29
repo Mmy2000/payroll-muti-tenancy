@@ -1,0 +1,64 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{{ page_kind.new_label }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url page_kind.plural %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ page_kind.title }}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ page_kind.new_label }}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-endpoint="{% url page_kind.kind|add:'-batch-list' %}" data-method="POST"
+      data-redirect="{% url page_kind.plural %}{id}/" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {% include "employees/_target_fields.html" %}
+        <div>
+          <label class="form-label" for="f-type">{% translate "Type" %}</label>
+          <select id="f-type" name="type_id" class="form-input">
+            {% for t in types %}<option value="{{ t.pk }}">{{ t.name }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="type_id"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-date">{% translate "Date" %}</label>
+          <input id="f-date" type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "It counts in this month's pay." %}</p>
+          <p class="form-error" data-error-for="date"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-method">{% translate "Counted as" %}</label>
+          <select id="f-method" name="method" class="form-input">
+            {% for m in methods %}<option value="{{ m.key }}">{{ m.label }} ({{ m.unit }})</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="method"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-quantity">{% translate "How much" %}</label>
+          <input id="f-quantity" name="quantity" class="form-input num w-full text-start" inputmode="decimal" required>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "The amount, the percentage, or the number of days or hours. Each employee's amount is worked out from their pay on that date." %}</p>
+          <p class="form-error" data-error-for="quantity"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-reason">{% translate "Reason" %}</label>
+          <input id="f-reason" name="reason" class="form-input" maxlength="300">
+        </div>
+        {% if can_approve %}
+        <label class="flex items-center gap-3 sm:col-span-2">
+          <input type="checkbox" name="approve" class="size-4 rounded border-slate-300 accent-brand-600">
+          <span class="text-sm text-slate-700">{% translate "Approve it now (otherwise it stays a draft you can still edit)" %}</span>
+        </label>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url page_kind.plural %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

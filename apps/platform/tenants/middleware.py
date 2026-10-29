@@ -1,4 +1,5 @@
-"""Counts every request to a client's workspace and enforces its requests-per-minute limit."""
+"""Which hosts are served at all (HostCheckMiddleware), and per-client request counting with the
+requests-per-minute limit (TrafficMiddleware)."""
 
 from __future__ import annotations
 
@@ -7,6 +8,7 @@ import time
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
 from django.http import JsonResponse
+from django.http.request import split_domain_port, validate_host
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -14,6 +16,30 @@ from django.utils.translation import gettext as _
 from . import traffic
 from .models import TenantStatus
 from .selectors import tenant_for_host
+
+
+def is_known_host(domain: str) -> bool:
+    """A host this server answers for: the fixed ones (DJANGO_ALLOWED_HOSTS), the platform's,
+    or a client's domain saved in the console (TenantDomain, cached 60 s and dropped on save)."""
+    domain = domain.lower().rstrip(".")
+    fixed = [*settings.FIXED_HOSTS, *settings.PLATFORM_HOSTS]
+    return bool(domain) and (validate_host(domain, fixed) or tenant_for_host(domain) is not None)
+
+
+class HostCheckMiddleware:
+    """Django's ALLOWED_HOSTS check, extended to the clients' own domains: a domain added in the
+    platform console opens at once, with no settings change or restart. ALLOWED_HOSTS is "*" so
+    Django leaves the check to this middleware, which runs before anything reads the host;
+    unknown hosts still get 400 (no Host header poisoning of links or redirects)."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        domain, _port = split_domain_port(request.get_host())  # "*": checks the format only
+        if not is_known_host(domain):
+            raise DisallowedHost(f"Invalid HTTP_HOST header: {domain!r}.")
+        return self.get_response(request)
 
 
 class TrafficMiddleware:

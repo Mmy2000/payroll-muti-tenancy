@@ -1,0 +1,111 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui audit %}
+{% block title %}{{ device.name }}{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'devices' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Fingerprint devices" %}</a>
+    <span class="ms-auto">{% history_link device %}</span>
+  </div>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ device.name }}</h1>
+    {% if not device.is_active %}<span class="badge badge-neutral">{% translate "Off" %}</span>{% elif device.online %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Online" %}</span>{% else %}<span class="badge badge-warning">{% translate "Not calling" %}</span>{% endif %}
+  </div>
+  <p class="mt-1 text-sm text-slate-500"><span class="num">{{ device.serial }}</span> · {{ device.branch.name }} · {% translate "Last call" %} <span class="num">{{ device.last_seen_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</span>{% if device.last_ip %} · <span class="num">{{ device.last_ip }}</span>{% endif %}{% if device.info %} · <span class="num">{{ device.info }}</span>{% endif %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="space-y-6">
+{% if can_manage %}
+<section class="card">
+  <div class="card-body flex flex-wrap items-start gap-3">
+    <form data-api-form data-method="POST" data-endpoint="{% url 'device-ask' device.pk %}" data-success="{% translate 'Asked: the device answers on its next call.' %}">
+      <input type="hidden" name="kind" value="test"><button type="submit" class="btn btn-secondary">{% icon "activity" "size-4" %}{% translate "Test the connection" %}</button></form>
+    <form data-api-form data-method="POST" data-endpoint="{% url 'device-ask' device.pk %}" data-success="{% translate 'Asked: the device answers on its next call.' %}">
+      <input type="hidden" name="kind" value="pull_users"><button type="submit" class="btn btn-secondary">{% icon "users" "size-4" %}{% translate "Pull its users" %}</button></form>
+    <form class="flex flex-wrap items-start gap-2" data-api-form data-method="POST" data-endpoint="{% url 'device-ask' device.pk %}" data-success="{% translate 'Asked: the device answers on its next call.' %}">
+      <input type="hidden" name="kind" value="pull_punches">
+      <div><input type="date" name="start" class="form-input" aria-label="{% translate 'From' %}" data-empty="null"><p class="form-error" data-error-for="start"></p></div>
+      <input type="date" name="end" class="form-input" aria-label="{% translate 'To' %}" data-empty="null">
+      <button type="submit" class="btn btn-secondary">{% icon "file-down" "size-4" %}{% translate "Pull punches of these days" %}</button></form>
+    <form data-api-form data-method="POST" data-endpoint="{% url 'device-resend' device.pk %}" data-success="{% translate 'Restart the device: it sends everything it holds.' %}">
+      <button type="submit" class="btn btn-ghost">{% icon "repeat" "size-4" %}{% translate "Resend everything" %}</button></form>
+    <div class="hidden w-full rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+  </div>
+</section>
+{% endif %}
+
+<section class="card overflow-hidden">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+    <h2 class="text-base font-semibold text-slate-900">{% translate "Enrolled on the branch's devices" %}</h2>
+    {% if can_manage %}<form data-api-form data-method="POST" data-endpoint="{% url 'device-link-by-code' device.pk %}" data-success="{% translate 'Linked.' %}">
+      <button type="submit" class="btn btn-secondary text-xs">{% icon "link" "size-4" %}{% translate "Link PINs that are employee codes" %}</button></form>{% endif %}
+  </div>
+  {% if users %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "PIN" %}</th><th>{% translate "Name on the device" %}</th><th class="min-w-[18rem]">{% translate "Employee" %}</th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr class="{% if u.removed %}text-slate-400{% endif %}">
+          <td><span class="num">{{ u.pin }}</span></td>
+          <td>{{ u.name|default:"—" }}{% if u.removed %} <span class="text-xs">({% translate "no longer on the device" %})</span>{% endif %}</td>
+          <td>{% if can_manage %}
+            <form class="flex items-center gap-2" data-api-form data-method="POST" data-endpoint="{% url 'device-user-link' u.pk %}" data-success="{% translate 'Saved.' %}">
+              <select name="employee_id" class="form-input" data-empty="null" aria-label="{% translate 'Employee' %}">
+                <option value="">—</option>
+                {% for e in employees %}<option value="{{ e.pk }}" {% if u.employee_id == e.pk %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}
+              </select>
+              <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs">{% translate "Save" %}</button>
+              <p class="form-error" data-error-for="employee_id"></p>
+            </form>
+          {% else %}{{ u.employee.name|default:"—" }}{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="px-4 py-5 text-sm text-slate-500">{% translate "Nobody yet: pull the device's users, or wait for its first punches." %}</p>
+  {% endif %}
+</section>
+
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <section class="card overflow-hidden">
+    <h2 class="border-b border-slate-100 px-4 py-3 text-base font-semibold text-slate-900">{% translate "Latest punches" %}</h2>
+    <table class="table">
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "PIN" %}</th><th>{% translate "Employee" %}</th><th>{% translate "In attendance" %}</th></tr></thead>
+      <tbody>
+      {% for p in punches %}<tr><td><span class="num">{{ p.at|date:"SHORT_DATETIME_FORMAT" }}</span></td><td><span class="num">{{ p.device_user.pin }}</span></td><td>{{ p.device_user.employee.name|default:"—" }}</td><td>{% if p.punch_id %}{% icon "check" "size-4 text-emerald-600" %}{% else %}<span class="text-xs text-slate-400">{% translate "waiting" %}</span>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-sm text-slate-500">{% translate "Nothing received yet." %}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <section class="card overflow-hidden">
+    <h2 class="border-b border-slate-100 px-4 py-3 text-base font-semibold text-slate-900">{% translate "Requests to the device" %}</h2>
+    <table class="table">
+      <thead><tr><th>{% translate "When" %}</th><th>{% translate "Request" %}</th><th>{% translate "Status" %}</th><th class="text-end">{% translate "Rows" %}</th></tr></thead>
+      <tbody>
+      {% for c in commands %}<tr><td><span class="num">{{ c.created_at|date:"SHORT_DATETIME_FORMAT" }}</span></td><td class="text-xs"><span class="num">{{ c.command|truncatechars:40 }}</span></td><td>{{ c.get_status_display }}</td><td class="text-end"><span class="num">{{ c.rows }}</span></td></tr>
+      {% empty %}<tr><td colspan="4" class="text-sm text-slate-500">—</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+
+{% if can_manage %}
+<form class="card" data-api-form data-method="PUT" data-endpoint="{% url 'device-detail' device.pk %}" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-4">
+    <h2 class="text-base font-semibold text-slate-900 sm:col-span-4">{% translate "Settings" %}</h2>
+    <div><label class="form-label" for="s-serial">{% translate "Serial number" %}</label><input id="s-serial" name="serial" class="form-input num" value="{{ device.serial }}"><p class="form-error" data-error-for="serial"></p></div>
+    <div><label class="form-label" for="s-name">{% translate "Name" %}</label><input id="s-name" name="name" class="form-input" value="{{ device.name }}"><p class="form-error" data-error-for="name"></p></div>
+    <div><label class="form-label" for="s-branch">{% translate "Branch" %}</label>
+      <select id="s-branch" name="branch_id" class="form-input">{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == device.branch_id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select><p class="form-error" data-error-for="branch_id"></p></div>
+    <label class="flex items-end gap-3 pb-2"><input type="checkbox" name="is_active" class="size-4 rounded border-slate-300 accent-brand-600" {% if device.is_active %}checked{% endif %}><span class="text-sm text-slate-700">{% translate "Accept its calls" %}</span></label>
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 sm:col-span-4" data-form-error role="alert"></div>
+    <div class="sm:col-span-4"><button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button></div>
+  </div>
+</form>
+{% endif %}
+</div>
+{% endblock %}

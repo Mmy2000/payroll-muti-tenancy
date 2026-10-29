@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Pay calendars" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Pay calendars" %}</h1>
+  <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "When each pay frequency's periods start. They can't move once a run of that frequency exists." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+{% for calendar in calendars %}
+  <form class="card" data-api-form data-method="PUT" data-endpoint="{% url 'pay-calendar-detail' calendar.frequency %}" data-success="{% translate 'Saved.' %}" novalidate>
+    <div class="card-body space-y-4">
+      <h2 class="font-medium text-slate-900">{{ calendar.get_frequency_display }}</h2>
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+      {% if calendar.frequency == "monthly" %}
+      <div>
+        <label class="form-label" for="c-{{ calendar.frequency }}-day">{% translate "Periods start on day" %}</label>
+        <input id="c-{{ calendar.frequency }}-day" name="start_day" class="form-input num w-24 text-start" inputmode="numeric" value="{{ calendar.start_day }}" required>
+        <p class="mt-1.5 text-xs text-slate-500">{% translate "1 pays calendar months. 26 pays from the 26th to the 25th of the next month." %}</p>
+        <p class="form-error" data-error-for="start_day"></p>
+      </div>
+      {% else %}
+      <div>
+        <label class="form-label" for="c-{{ calendar.frequency }}-anchor">{% translate "First day of one period" %}</label>
+        <input id="c-{{ calendar.frequency }}-anchor" type="date" name="anchor" class="form-input" value="{{ calendar.anchor|date:'Y-m-d' }}" required>
+        <p class="mt-1.5 text-xs text-slate-500">{% blocktranslate trimmed with day=calendar.anchor|date:"l" %}Periods are counted on from it, before and after: each starts on a {{ day }}.{% endblocktranslate %}</p>
+        <p class="form-error" data-error-for="anchor"></p>
+      </div>
+      <div>
+        <label class="form-label" for="c-{{ calendar.frequency }}-items">{% translate "Monthly pay items" %}</label>
+        <select id="c-{{ calendar.frequency }}-items" name="monthly_items" class="form-input" data-native>
+          {% for value, label in monthly_rules %}<option value="{{ value }}" {% if calendar.monthly_items == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <p class="mt-1.5 text-xs text-slate-500">{% translate "How an item given monthly is paid to these employees. Loan installments are always taken whole, in the period containing the 1st of their month." %}</p>
+      </div>
+      {% endif %}
+      <button type="submit" class="btn btn-secondary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </div>
+  </form>
+{% endfor %}
+</div>
+{% endblock %}

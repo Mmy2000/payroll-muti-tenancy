@@ -1,5 +1,5 @@
 """Pay items: the catalogue of allowances and other additions and deductions, and the entries
-giving an item to employees for a month (`PayItemEntry`), summed by payroll.
+giving an item to employees on a schedule (`PayItemAssignment`), summed by payroll.
 
 PayRole kept two catalogues in one table (`Allow.Pfn1`: `code` for allowances, `code1` for other
 items). Here an item is one row with a kind; its daily/monthly basis is applied as labelled
@@ -47,37 +47,55 @@ class PayItem(TenantScopedModel):
         return self.name
 
 
-class EntryStatus(models.TextChoices):
+class AssignmentStatus(models.TextChoices):
     ACTIVE = "active", _("In effect")
     CANCELLED = "cancelled", _("Cancelled")
 
 
-class PayItemEntry(TenantScopedModel):
-    """An item given to one employee for one month (PayRole: `Pfe2` with `so1`/`so2`). The
-    amount is for the month (a fixed item) or for each day worked (a per-day item). An item is
-    given once a month per employee. Entries made together share a `batch`."""
+class ItemFrequency(models.TextChoices):
+    ONCE = "once", _("Once")
+    PERIOD = "period", _("Every pay period")
+    MONTHLY = "monthly", _("Every month")
+    WEEKLY = "weekly", _("Every week")
+
+
+class PayItemAssignment(TenantScopedModel):
+    """An item given to one employee on a schedule (PayRole: `Pfe2` with `so1`/`so2`, one row per
+    month): once on `starts_on`, or every pay period, month or week from `starts_on` to `ends_on`
+    (open when empty). Payroll allocates it to its periods (docs/payroll-design.md §4), prorated
+    when the employee or the item covers only part of a period.
+
+    The amount is for one unit of the frequency, or, for a per-day item, for each day worked. The
+    same item can't run twice over the same days for an employee. Assignments made together share
+    a `batch`."""
 
     employee = models.ForeignKey("employees.Employee", on_delete=models.PROTECT,
-                                 related_name="pay_item_entries")
-    item = models.ForeignKey(PayItem, on_delete=models.PROTECT, related_name="entries")
-    month = models.DateField()  # its first day
+                                 related_name="pay_item_assignments")
+    item = models.ForeignKey(PayItem, on_delete=models.PROTECT, related_name="assignments")
+    frequency = models.CharField(max_length=8, choices=ItemFrequency.choices,
+                                 default=ItemFrequency.MONTHLY)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    starts_on = models.DateField()
+    ends_on = models.DateField(null=True, blank=True)
     note = models.CharField(max_length=300, blank=True)
     batch = models.UUIDField(default=uuid.uuid4)
-    status = models.CharField(max_length=10, choices=EntryStatus.choices,
-                              default=EntryStatus.ACTIVE)
+    status = models.CharField(max_length=10, choices=AssignmentStatus.choices,
+                              default=AssignmentStatus.ACTIVE)
 
     class Meta:
-        ordering = ["-month", "employee_id"]
-        indexes = [models.Index(fields=["tenant", "month"], name="compensation_entry_month_idx"),
-                   models.Index(fields=["tenant", "batch"], name="compensation_entry_batch_idx")]
+        ordering = ["-starts_on", "employee_id"]
+        indexes = [
+            models.Index(fields=["tenant", "employee", "starts_on"],
+                         name="compensation_assign_emp_idx"),
+            models.Index(fields=["tenant", "batch"], name="compensation_entry_batch_idx"),
+        ]
         constraints = [
-            models.UniqueConstraint(fields=["tenant", "employee", "item", "month"],
-                                    condition=Q(status="active"),
-                                    name="compensation_entry_once_a_month_uniq"),
-            models.CheckConstraint(condition=Q(amount__gt=0, month__day=1),
-                                   name="compensation_entry_values_check"),
+            models.CheckConstraint(
+                condition=Q(amount__gt=0)
+                & (Q(ends_on__isnull=True) | Q(ends_on__gte=models.F("starts_on")))
+                & (~Q(frequency="once") | Q(ends_on=models.F("starts_on"))),
+                name="compensation_assignment_values_check"),
         ]
 
     def __str__(self):
-        return f"{self.employee_id} {self.item_id} {self.month}"
+        return f"{self.employee_id} {self.item_id} {self.frequency} {self.starts_on}"

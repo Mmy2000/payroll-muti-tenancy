@@ -1,14 +1,15 @@
-"""The activity page: who changed what, and when, across the audited master data, or the
-history of one record (?table=…&row=…)."""
+"""The activity page: who changed what, and when, across the audited data, or the history of
+one record (?table=…&row=…) with the parts that belong to it (an employee's pay and hours, a
+loan's installments…). The audited tables come from apps/audit/catalog.py."""
 
 from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date
 
-from django.apps import apps
 from django.core.paginator import Paginator
 from django.db import models
+from django.db.models import Q
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 
@@ -16,19 +17,15 @@ from apps.core.templatetags.ui import num
 from apps.iam.authz import permission_required
 from apps.iam.models import Membership
 
-from .labels import COLUMNS, TABLES
+from . import catalog
+from .labels import COLUMNS
 from .models import AuditAction, AuditEvent
-from .registry import AUDITED
 
 HIDDEN = "***"
 
 
-def _models_by_table() -> dict[str, type[models.Model]]:
-    return {apps.get_model(label)._meta.db_table: apps.get_model(label) for label in AUDITED}
-
-
 def _name(obj) -> str:
-    for attribute in ("label", "display_name", "name", "username", "barcode", "code",
+    for attribute in ("label", "display_name", "name", "username", "number", "code",
                       "permission"):
         value = getattr(obj, attribute, None)
         if value:
@@ -64,7 +61,7 @@ class _Labels:
 
 
 def _describe(events) -> list[dict]:
-    by_table = _models_by_table()
+    by_table = catalog.audited_models()
     labels = _Labels()
     for event in events:
         model = by_table.get(event.table_name)
@@ -117,11 +114,23 @@ def _describe(events) -> list[dict]:
         if name is None:  # deleted since: name it from what was recorded
             recorded = event.changes
             name = next((str(recorded[key]) for key in ("name", "display_name", "username",
-                                                        "code", "barcode", "permission")
+                                                        "number", "code", "permission")
                          if isinstance(recorded.get(key), str)), f"#{event.row_id}")
-        rows.append({"event": event, "what": TABLES.get(event.table_name, event.table_name),
-                     "name": name, "changes": changes})
+        rows.append({"event": event, "what": catalog.label(model) if model else
+                     event.table_name, "name": name, "changes": changes})
     return rows
+
+
+def _record_events(model, row_id: int) -> Q:
+    """The record's own events and those of its parts, deleted parts included: every part was
+    inserted with the trail on, and its insert event names the record."""
+    match = Q(table_name=model._meta.db_table, row_id=row_id)
+    for part, column in catalog.parts(model):
+        table = part._meta.db_table
+        ids = AuditEvent.objects.filter(table_name=table, action=AuditAction.INSERT,
+                                        **{f"changes__{column}": row_id}).values("row_id")
+        match |= Q(table_name=table, row_id__in=ids)
+    return match
 
 
 @permission_required("admin.audit.history")
@@ -131,10 +140,13 @@ def activity(request):
     row = request.GET.get("row", "")
     who = request.GET.get("user", "")
     date_from, date_to = _date(request.GET.get("from", "")), _date(request.GET.get("to", ""))
-    if table in TABLES:
+    model = catalog.model_for(table) if table else None
+    if table and model is None:
+        events = events.none()  # not an audited table: nothing, rather than everything
+    elif model is not None and row.isdigit():
+        events = events.filter(_record_events(model, int(row)))
+    elif model is not None:
         events = events.filter(table_name=table)
-    if row.isdigit():
-        events = events.filter(row_id=int(row))
     if who.isdigit():
         events = events.filter(user_id=int(who))
     if date_from:
@@ -144,16 +156,15 @@ def activity(request):
     page = Paginator(events.order_by("-at", "-id"), 40).get_page(request.GET.get("page"))
     rows = _describe(list(page.object_list))
     record = None
-    if table in TABLES and row.isdigit():
-        model = _models_by_table()[table]
+    if model is not None and row.isdigit():
         obj = model._default_manager.filter(pk=int(row)).first()
-        record = {"what": TABLES[table], "name": _name(obj) if obj else rows[0]["name"]
-                  if rows else f"#{row}"}
+        own = next((r for r in rows if r["event"].table_name == table), None)
+        record = {"what": catalog.label(model), "name": _name(obj) if obj else
+                  own["name"] if own else f"#{row}"}
     query = request.GET.copy()
     query.pop("page", None)
     return render(request, "audit/activity.html", {
-        "page": page, "rows": rows, "record": record, "tables": sorted(
-            TABLES.items(), key=lambda pair: str(pair[1])),
+        "page": page, "rows": rows, "record": record, "tables": catalog.choices(),
         "members": Membership.objects.select_related("user").order_by("username"),
         "filters": {"table": table, "row": row, "user": who, "from": date_from, "to": date_to},
         "query": query.urlencode(),

@@ -1,0 +1,46 @@
+{% extends "layouts/bulk_form.html" %}
+{% load i18n ui %}
+{% block fields %}
+<div>
+  <label class="form-label" for="f-day">{% translate "Day" %}</label>
+  <input id="f-day" type="date" name="work_date" class="form-input" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+  <p class="form-error" data-error-for="work_date"></p>
+</div>
+<div>
+  <label class="form-label" for="f-in">{% translate "Came" %}</label>
+  <input id="f-in" type="time" name="check_in" class="form-input" data-empty="null" required>
+  <p class="form-error" data-error-for="check_in"></p>
+</div>
+<div>
+  <label class="form-label" for="f-out">{% translate "Left" %}</label>
+  <input id="f-out" type="time" name="check_out" class="form-input" data-empty="null" required>
+  <p class="mt-1.5 text-xs text-slate-500">{% translate "Earlier than the time they came: the next morning (a night shift)." %}</p>
+  <p class="form-error" data-error-for="check_out"></p>
+</div>
+<div class="sm:col-span-3">
+  <span class="form-label">{% translate "Some came or left at other times" %}</span>
+  <div class="space-y-2" data-rows="own_times"></div>
+  <template data-row-template="own_times">
+    <div class="flex flex-wrap items-center gap-2" data-row>
+      <select class="form-input min-w-56 flex-1" data-field="employee_id" aria-label="{% translate 'Employee' %}">
+        {% for e in group_employees %}<option value="{{ e.pk }}">{{ e.code }} · {{ e.name }}</option>{% endfor %}
+      </select>
+      <input type="time" class="form-input w-auto" data-field="check_in" data-empty="null" aria-label="{% translate 'Came' %}">
+      <input type="time" class="form-input w-auto" data-field="check_out" data-empty="null" aria-label="{% translate 'Left' %}">
+      <button type="button" class="btn btn-ghost px-2" data-remove-row aria-label="{% translate 'Remove' %}">{% icon "x" "size-4" %}</button>
+      <p class="form-error w-full" data-row-error></p>
+    </div>
+  </template>
+  <button type="button" class="btn btn-ghost mt-2 text-sm" data-add-row="own_times">{% icon "plus" "size-4" %}{% translate "Other times for one employee" %}</button>
+  <p class="form-error" data-error-for="own_times"></p>
+</div>
+<div class="sm:col-span-3">
+  <label class="form-label" for="f-reason">{% translate "Why by hand" %}</label>
+  <input id="f-reason" name="reason" class="form-input" maxlength="300" required placeholder="{% translate 'e.g. the fingerprint device was down' %}">
+  <p class="form-error" data-error-for="reason"></p>
+</div>
+<label class="flex items-center gap-3 sm:col-span-3">
+  <input type="checkbox" name="replace" class="size-4 rounded border-slate-300 accent-brand-600">
+  <span class="text-sm text-slate-700">{% translate "Replace what was already entered by hand for that day" %}</span>
+</label>
+{% endblock %}

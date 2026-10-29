@@ -63,6 +63,7 @@ class ListQuery:
     party_model: str = ""  # "app_label.Model" whose `name` labels the chip
     choices: list = field(default_factory=list)
     per_page: int = 25
+    keep: tuple = ()  # other query parameters the page owns (e.g. "month"), kept in its links
 
     def __post_init__(self):
         from apps.org.models import Branch
@@ -133,7 +134,8 @@ class ListQuery:
         values = {"q": self.q, "from": self.date_from or "", "to": self.date_to or "",
                   "branch": self.branch or "",
                   self.party_param: (self.party_id or "") if party else "",
-                  **{c.name: c.value for c in self.choices}, **override}
+                  **{c.name: c.value for c in self.choices},
+                  **{name: self.request.GET.get(name, "") for name in self.keep}, **override}
         return urlencode({k: v for k, v in values.items() if v not in ("", None)})
 
     @property
@@ -142,6 +144,11 @@ class ListQuery:
         return [{"label": label, "active": choice.value == str(value),
                  "query": self._encode(party=True, **{choice.name: value})}
                 for choice in self.choices if choice.tabs for value, label in choice.options]
+
+    @property
+    def kept(self) -> dict:
+        """The `keep` parameters and their values, for the filter form's hidden fields."""
+        return {name: self.request.GET[name] for name in self.keep if self.request.GET.get(name)}
 
     def without_party(self) -> str:
         return self._encode(party=False)

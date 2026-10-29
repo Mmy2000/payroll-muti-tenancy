@@ -1,5 +1,5 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui %}
+{% load i18n ui audit %}
 {% block title %}{% if policy %}{{ policy.name }}{% else %}{{ kind.new_label }}{% endif %}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
@@ -7,7 +7,7 @@
   <div class="mt-2 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if policy %}{{ policy.name }}{% else %}{{ kind.new_label }}{% endif %}</h1>
     {% if policy and not policy.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
-    {% if policy %}<span class="ms-auto">{% include "audit/_history_link.html" with table=kind.table row=policy.pk %}</span>{% endif %}
+    {% if policy %}<span class="ms-auto">{% history_link policy %}</span>{% endif %}
   </div>
 </div>
 {% endblock %}

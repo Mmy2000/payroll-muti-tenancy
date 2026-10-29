@@ -1,0 +1,55 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Fingerprint devices" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Fingerprint devices" %}</h1>
+  <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "ZKTeco devices send their punches here as they happen. On the device: Menu → Communication → Cloud server settings: server mode ADMS, the address below, proxy off." %}</p>
+  <p class="mt-2 text-sm text-slate-700">{% translate "Server address" %}: <span class="num font-medium">{{ server }}</span></p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="space-y-6">
+<section class="card overflow-hidden">
+  {% if devices %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Device" %}</th><th>{% translate "Serial number" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Status" %}</th><th>{% translate "Last call" %}</th></tr></thead>
+      <tbody>
+      {% for d in devices %}
+        <tr>
+          <td><a class="font-medium text-brand-700 hover:underline" href="{% url 'device' d.pk %}">{{ d.name }}</a></td>
+          <td><span class="num">{{ d.serial }}</span></td>
+          <td>{{ d.branch.name }}</td>
+          <td>{% if not d.is_active %}<span class="badge badge-neutral">{% translate "Off" %}</span>{% elif d.online %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Online" %}</span>{% else %}<span class="badge badge-warning">{% translate "Not calling" %}</span>{% endif %}</td>
+          <td><span class="num text-sm text-slate-500">{{ d.last_seen_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No devices yet" as empty_title %}
+    {% translate "Add a device with the serial number on its label; it starts sending punches on its next call." as empty_text %}
+    {% include "components/empty_state.html" with icon="fingerprint" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+
+{% if can_manage %}
+<form class="card" data-api-form data-method="POST" data-endpoint="{% url 'device-list' %}" data-redirect="{% url 'devices' %}{id}/" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-4">
+    <h2 class="text-base font-semibold text-slate-900 sm:col-span-4">{% translate "Add a device" %}</h2>
+    <div><label class="form-label" for="d-serial">{% translate "Serial number" %}</label>
+      <input id="d-serial" name="serial" class="form-input num" maxlength="32" required><p class="form-error" data-error-for="serial"></p></div>
+    <div><label class="form-label" for="d-name">{% translate "Name" %}</label>
+      <input id="d-name" name="name" class="form-input" maxlength="60" required><p class="form-error" data-error-for="name"></p></div>
+    <div><label class="form-label" for="d-branch">{% translate "Branch" %}</label>
+      <select id="d-branch" name="branch_id" class="form-input">{% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
+      <p class="form-error" data-error-for="branch_id"></p></div>
+    <div class="flex items-end"><button type="submit" class="btn btn-primary w-full">{% icon "plus" "size-4" %}{% translate "Add" %}</button></div>
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 sm:col-span-4" data-form-error role="alert"></div>
+  </div>
+</form>
+{% endif %}
+</div>
+{% endblock %}

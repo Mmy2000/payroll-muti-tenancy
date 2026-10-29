@@ -16,8 +16,8 @@ from django.utils.translation import gettext as _
 
 from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
 from apps.core.history import in_effect
-from apps.employees.domain.rates import monthly_pay
 from apps.employees.services import get_employee
+from apps.notifications import events
 
 from .models import Advance, AdvanceStatus
 
@@ -51,20 +51,30 @@ def give_advance(data: AdvanceInput, *, actor=None) -> Advance:
             raise ValidationError(_("Please correct the highlighted fields."),
                                   fields={"date": [_("The employee isn't employed on that day.")]})
         pay = in_effect(employee.pay_history.all(), data.date)
-        limit = monthly_pay(pay.basis, pay.salary) if pay else Decimal(0)
+        limit = pay.terms.monthly if pay else Decimal(0)
         already = month_advances(employee, data.date)
         if already + data.amount > limit:
             raise DomainError(
                 _("Advances this month would come to %(total)s, more than a month's pay "
                   "(%(limit)s).") % {"total": already + data.amount, "limit": limit},
                 code="LOANS_ADVANCE_LIMIT")
-        return Advance.objects.create(employee=employee, date=data.date, amount=data.amount,
-                                      reason=data.reason.strip(),
-                                      created_by=getattr(actor, "user", None))
+        advance = Advance.objects.create(employee=employee, date=data.date, amount=data.amount,
+                                         reason=data.reason.strip(),
+                                         created_by=getattr(actor, "user", None))
+        events.advance_given(advance, by=actor)
+        return advance
+
+
+def settle_advances(advance_ids, *, recovered: bool) -> None:
+    """Payroll approved (recovered) or reversed (open again) these advances."""
+    if advance_ids:
+        Advance.objects.filter(pk__in=list(advance_ids)).exclude(
+            status=AdvanceStatus.CANCELLED).update(
+            status=AdvanceStatus.RECOVERED if recovered else AdvanceStatus.OPEN)
 
 
 def cancel_advance(advance_id: int, *, actor=None) -> Advance:
-    # TODO(phase 4): refuse once a posted payroll recovered it (status "recovered" does).
+    """Only an advance still to be recovered (no approved payroll took it) can be cancelled."""
     with transaction.atomic():
         advance = Advance.objects.select_for_update().filter(pk=advance_id).first()
         if advance is None:

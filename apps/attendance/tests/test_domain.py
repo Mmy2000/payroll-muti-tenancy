@@ -48,7 +48,22 @@ def test_rules_in_order():
     entry = ManualEntry("absent")
     clocked = (at(MONDAY, 9), at(MONDAY, 17))
     assert evaluate_day(facts(manual=entry, punches=clocked)).status == Status.ABSENT
-    assert evaluate_day(facts(manual=ManualEntry("excused"))).paid
+    excused = evaluate_day(facts(manual=ManualEntry("excused")))
+    assert excused.status == Status.EXCUSED and not excused.paid  # not penalized, not paid
+
+
+def test_coming_on_a_day_marked_off_is_a_worked_rest_day():
+    came = (at(MONDAY, 10), at(MONDAY, 13))
+    result = evaluate_day(facts(manual=ManualEntry("day_off"), punches=came))
+    assert result.status == Status.PRESENT and result.rest_day
+    assert result.extra_minutes == 180 and result.late_minutes == 0
+    assert evaluate_day(facts(manual=ManualEntry("day_off"))).status == Status.DAY_OFF
+
+
+def test_coming_on_a_leave_day_keeps_the_leave():
+    came = (at(MONDAY, 9), at(MONDAY, 17))
+    result = evaluate_day(facts(leave="Annual leave", punches=came))
+    assert result.status == Status.PRESENT and result.leave == "Annual leave"
 
 
 def test_working_a_rest_day_is_all_extra():

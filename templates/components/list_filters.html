@@ -22,9 +22,10 @@
       {% for value, label in choice.options %}<option value="{{ value }}" {% if choice.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
   {% endif %}{% endfor %}
   {% if filters.party_id %}<input type="hidden" name="{{ filters.party_param }}" value="{{ filters.party_id }}">{% endif %}
+  {% for name, value in filters.kept.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
   <div class="col-span-2 flex gap-2">
     <button class="btn btn-secondary max-lg:flex-1" type="submit">{% icon "search" "size-4" %}{% translate "Show" %}</button>
-    {% if filters.active %}<a class="btn btn-ghost" href="?">{% translate "Clear" %}</a>{% endif %}
+    {% if filters.active %}<a class="btn btn-ghost" href="?{% for name, value in filters.kept.items %}{{ name }}={{ value|urlencode }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}">{% translate "Clear" %}</a>{% endif %}
   </div>
 </form>
 {% if filters.party_id %}

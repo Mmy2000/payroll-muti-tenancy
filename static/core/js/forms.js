@@ -3,6 +3,7 @@
 // the browser). Field errors from the envelope land in [data-error-for="<field>"].
 //
 // Empty inputs: data-empty="omit" leaves the field out, "null" sends null, default sends "".
+// A <select multiple> sends the list of its chosen values.
 
 import { api, ApiError } from "./api.js";
 import { busy, startNavigation } from "./loading.js";
@@ -27,6 +28,10 @@ function collect(form) {
       if (el.checked) values[el.name] = el.value;
       continue;
     }
+    if (el.type === "select-multiple") {
+      values[el.name] = [...el.selectedOptions].map((option) => option.value);
+      continue;
+    }
     const value = el.value.trim();
     if (value !== "") values[el.name] = value;
     else if (el.dataset.empty === "null") values[el.name] = null;
@@ -45,14 +50,21 @@ function flatten(fields, prefix = "", out = {}) {
   return out;
 }
 
-function clearErrors(form) {
+/** The request body a form sends: its values, shaped by its data-shape. */
+export function formBody(form) {
+  const values = collect(form);
+  const shaper = shapers.get(form.dataset.shape);
+  return shaper ? shaper(values, form) : values;
+}
+
+export function clearErrors(form) {
   form.querySelectorAll("[data-error-for]").forEach((node) => (node.textContent = ""));
   form.querySelectorAll("[aria-invalid]").forEach((node) => node.removeAttribute("aria-invalid"));
   const banner = form.querySelector("[data-form-error]");
   if (banner) banner.classList.add("hidden");
 }
 
-function showErrors(form, error) {
+export function showErrors(form, error) {
   const ui = strings();
   const fields = flatten(error.fields);
   let first = null;
@@ -89,9 +101,7 @@ function showErrors(form, error) {
 async function submit(form) {
   const ui = strings();
   const button = form.querySelector('[type="submit"]');
-  const values = collect(form);
-  const shaper = shapers.get(form.dataset.shape);
-  const body = shaper ? shaper(values, form) : values;
+  const body = formBody(form);
 
   clearErrors(form);
   const done = busy(button); // stays busy while the next page loads after a success

@@ -10,6 +10,9 @@ role doesn't allow.** These rules are part of normal work and of every code revi
   (`--tenant`/`--all-tenants`) and worker jobs provide it. Don't open one yourself in request
   code.
 - The tenant comes **only from the host**, never from a parameter, header or body field.
+- Unknown hosts are refused (400) by `HostCheckMiddleware`, first in `MIDDLEWARE`: the fixed
+  hosts, the platform hosts and the clients' saved domains only. Django's `ALLOWED_HOSTS` is `"*"`
+  because of it: never move it down or remove it.
 - Every tenant model has `TenantScopedModel`, a tenant-leading index, `EnableTenantRLS` and
   `GuardTenantFKs`. The isolation suite enforces this; never skip or weaken a test in
   `tests/isolation/`.

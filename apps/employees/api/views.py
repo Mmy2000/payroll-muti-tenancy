@@ -6,15 +6,16 @@ from rest_framework.response import Response
 from rest_framework.routers import SimpleRouter
 
 from apps.core.history import in_effect
-from apps.employees import services
-from apps.employees.domain.rates import daily_rate, hourly_rate
+from apps.employees import group_hours, services
+from apps.employees.api.targets import GroupFields, outcome_response
 from apps.employees.models import (
     Compensation,
     Employee,
     Gender,
     MaritalStatus,
     MilitaryStatus,
-    PayBasis,
+    PayFrequency,
+    WageType,
     Weekday,
     WorkSchedule,
 )
@@ -29,16 +30,17 @@ class CompensationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Compensation
-        fields = ["id", "effective_from", "basis", "salary", "hours_per_day",
+        fields = ["id", "effective_from", "wage_type", "pay_frequency", "salary",
+                  "hours_per_day",
                   "overtime_multiplier", "absence_multiplier", "holiday_multiplier",
                   "insured_salary", "annual_leave_days", "permission_hours", "note",
                   "daily_rate", "hourly_rate"]
 
     def get_daily_rate(self, row):
-        return str(daily_rate(row.basis, row.salary))
+        return str(row.terms.daily)
 
     def get_hourly_rate(self, row):
-        return str(hourly_rate(row.basis, row.salary, row.hours_per_day))
+        return str(row.terms.hourly)
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
@@ -114,7 +116,9 @@ def _decimal(digits, places, **extra):
 
 class PayWriteSerializer(serializers.Serializer):
     effective_from = serializers.DateField(allow_null=True, required=False, default=None)
-    basis = serializers.ChoiceField(choices=PayBasis.choices, default=PayBasis.MONTHLY)
+    wage_type = serializers.ChoiceField(choices=WageType.choices, default=WageType.FIXED)
+    pay_frequency = serializers.ChoiceField(choices=PayFrequency.choices,
+                                            default=PayFrequency.MONTHLY)
     salary = _decimal(12, 2, min_value=0)
     hours_per_day = _decimal(4, 2, default=Decimal("8"))
     overtime_multiplier = _decimal(5, 2, min_value=0, default=Decimal("1.5"))
@@ -242,8 +246,37 @@ class ScheduleChangeViewSet(viewsets.GenericViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class GroupHoursSerializer(GroupFields):
+    effective_from = serializers.DateField()
+    until = serializers.DateField(allow_null=True, required=False, default=None)
+    starts_at = serializers.TimeField()
+    ends_at = serializers.TimeField()
+    change_days_off = serializers.BooleanField(default=False)
+    days_off = serializers.ListField(child=serializers.ChoiceField(choices=Weekday.choices),
+                                     default=list, max_length=7)
+    note = serializers.CharField(max_length=300, allow_blank=True, default="")
+
+
+class GroupHoursViewSet(viewsets.GenericViewSet):
+    """POST new working hours for a group: previewed (`save` false), then saved."""
+
+    required_permissions = {"create": MANAGE}
+
+    def create(self, request):
+        data = dict(_valid(GroupHoursSerializer, request.data))
+        group, options = GroupFields.group(data), GroupFields.run_options(data)
+        days_off = tuple(data.pop("days_off"))
+        if not data.pop("change_days_off"):
+            days_off = None  # each keeps their own
+        outcome = group_hours.change_hours_for_group(
+            group_hours.GroupHoursInput(group=group, days_off=days_off, **data), **options,
+            actor=request.actor)
+        return outcome_response(outcome)
+
+
 router = SimpleRouter()
 router.register("employees", EmployeeViewSet, basename="employee")
 router.register("pay-changes", PayChangeViewSet, basename="pay-change")
 router.register("schedule-changes", ScheduleChangeViewSet, basename="schedule-change")
+router.register("group-hours", GroupHoursViewSet, basename="group-hours")
 urlpatterns = router.urls

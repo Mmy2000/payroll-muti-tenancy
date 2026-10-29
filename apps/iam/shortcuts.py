@@ -28,12 +28,12 @@ def pinned(actor) -> list[dict]:
     rows = Shortcut.objects.filter(membership=actor.membership).values_list("screen", flat=True)
     return [{"screen": name, "label": str(items[name].label), "url": reverse(name),
              "icon": items[name].icon}
-            for name in rows if name in items and actor.can(items[name].permission)]
+            for name in rows if name in items and items[name].allows(actor)]
 
 
 def pin(actor, screen: str) -> None:
     item = screens().get(screen)
-    if item is None or not actor.can(item.permission):
+    if item is None or not item.allows(actor):
         raise ValidationError(_("This screen cannot be pinned."), fields={"screen": [screen]})
     mine = Shortcut.objects.filter(membership=actor.membership)
     if mine.filter(screen=screen).exists():

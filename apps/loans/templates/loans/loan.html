@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui audit %}
+{% block title %}{% translate "Loan" %} · {{ loan.employee.name }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'loans' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Loans" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ loan.employee.name }} · <span class="num">{{ loan.amount|num:2 }}</span></h1>
+    {% if loan.status == "active" %}<span class="badge badge-warning">{{ loan.get_status_display }}</span>{% elif loan.status == "settled" %}<span class="badge badge-success">{{ loan.get_status_display }}</span>{% else %}<span class="badge badge-neutral">{{ loan.get_status_display }}</span>{% endif %}
+    <span class="ms-auto">{% history_link loan %}</span>
+  </div>
+  <p class="mt-1 text-sm text-slate-500">{% blocktranslate trimmed with day=loan.granted_on|date:"DATE_FORMAT" %}Given on {{ day }}{% endblocktranslate %}{% if loan.reason %} · {{ loan.reason }}{% endif %} · {% translate "Repaid" %} <span class="num">{{ repaid|num:2 }}</span></p>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  <table class="table">
+    <thead><tr><th class="w-16">#</th><th>{% translate "Month" %}</th><th class="text-end">{% translate "Amount" %}</th><th>{% translate "Status" %}</th>{% if can_manage %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for i in installments %}
+      <tr>
+        <td><span class="num text-slate-500">{{ i.number }}</span></td>
+        <td><span class="num">{{ i.due_month|date:"Y-m" }}</span> <span class="text-xs text-slate-500">{{ i.due_month|date:"F" }}</span></td>
+        <td class="text-end"><span class="num">{{ i.amount|num:2 }}</span></td>
+        <td>{% if i.status == "paid" %}<span class="badge badge-success">{{ i.get_status_display }}</span>{% elif i.status == "due" %}<span class="badge badge-warning">{{ i.get_status_display }}</span>{% else %}<span class="badge badge-neutral">{{ i.get_status_display }}</span>{% endif %}</td>
+        {% if can_manage %}<td class="text-end">{% if i.status == "due" %}
+          <form data-api-form data-method="POST" data-endpoint="{% url 'installment-postpone' i.pk %}" data-success="{% translate 'Saved.' %}">
+            <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs" title="{% translate 'This installment and the later ones move a month on' %}">{% icon "calendar-clock" "size-4" %}{% translate "Postpone a month" %}</button>
+          </form>{% endif %}</td>{% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% if can_manage and loan.status == "active" %}
+<form class="mt-6" data-api-form data-method="POST" data-endpoint="{% url 'loan-cancel' loan.pk %}" data-success="{% translate 'Cancelled.' %}">
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 lg:w-2/3" data-form-error role="alert"></div>
+  <button type="submit" class="btn btn-secondary text-red-700">{% translate "Cancel the loan" %}</button>
+  <p class="mt-2 text-xs text-slate-500">{% translate "Only until the first installment is paid." %}</p>
+</form>
+{% endif %}
+{% endblock %}

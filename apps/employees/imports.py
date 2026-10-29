@@ -13,7 +13,7 @@ from apps.core.imports import CellError, Cells, Column, SheetImport
 from apps.org.models import Branch, Department
 
 from . import services
-from .models import PayBasis
+from .models import PayFrequency, WageType
 
 DAYS = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6,
         "الاثنين": 0, "الإثنين": 0, "الثلاثاء": 1, "الأربعاء": 2, "الاربعاء": 2, "الخميس": 3,
@@ -47,7 +47,8 @@ class EmployeeImport(SheetImport):
         Column("birth_date", _lazy("Birth date"), False, ""),
         Column("phone", _lazy("Phone"), False, ""),
         Column("insurance_number", _lazy("Insurance number"), False, ""),
-        Column("basis", _lazy("Paid (monthly / weekly / daily)"), False, "monthly"),
+        Column("wage_type", _lazy("Pay counted as (fixed / daily / hourly)"), False, "fixed"),
+        Column("pay_frequency", _lazy("Paid (monthly / biweekly / weekly)"), False, "monthly"),
         Column("salary", _lazy("Salary"), True, 6000),
         Column("hours_per_day", _lazy("Hours a day"), False, 8),
         Column("insured_salary", _lazy("Insured salary"), False, ""),
@@ -85,7 +86,8 @@ class EmployeeImport(SheetImport):
         pay = services.CompensationInput(
             effective_from=None,
             salary=cells.required("salary", cells.decimal("salary"), _("Enter the salary.")),
-            basis=cells.text("basis").lower() or PayBasis.MONTHLY,
+            wage_type=cells.text("wage_type").lower() or WageType.FIXED,
+            pay_frequency=cells.text("pay_frequency").lower() or PayFrequency.MONTHLY,
             hours_per_day=cells.decimal("hours_per_day", Decimal(8)),
             insured_salary=cells.decimal("insured_salary"),
             annual_leave_days=cells.integer("annual_leave_days", 21))

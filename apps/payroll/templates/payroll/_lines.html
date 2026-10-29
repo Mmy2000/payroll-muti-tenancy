@@ -1,0 +1,21 @@
+{% load i18n ui %}{# A table of payslip lines; include with lines= and title= #}
+<section class="card overflow-hidden">
+  <div class="card-body pb-0"><h2 class="font-medium text-slate-900">{{ title }}</h2></div>
+  {% if lines %}
+  <table class="table">
+    <thead><tr><th>{% translate "Line" %}</th><th class="text-end">{% translate "Quantity" %}</th><th class="text-end">{% translate "Rate" %}</th><th class="text-end">{% translate "Amount" %}</th></tr></thead>
+    <tbody>
+    {% for line in lines %}
+      <tr>
+        <td>{{ line.title }}{% if line.taxable %} <span class="text-xs text-slate-400" title="{% translate 'Counted in taxable pay' %}">·&nbsp;{% translate "taxable" %}</span>{% endif %}</td>
+        <td class="text-end">{% if line.quantity is not None %}<span class="num">{{ line.quantity|num:2 }}</span>{% endif %}</td>
+        <td class="text-end">{% if line.rate is not None %}<span class="num">{{ line.rate|num:2 }}</span>{% endif %}</td>
+        <td class="text-end"><span class="num">{{ line.amount|num:2 }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="card-body text-sm text-slate-400">—</p>
+  {% endif %}
+</section>

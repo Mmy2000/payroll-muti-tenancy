@@ -1,0 +1,60 @@
+{% extends "printing/sheet.html" %}
+{% load i18n ui %}
+{# Payslips, one per page (apps/payroll/printing.py). #}
+{% block style %}
+  .slip { break-after: page; }
+  .slip:last-child { break-after: auto; }
+  .slip header { margin-bottom: 12px; }
+  .who-is { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 16px; margin-bottom: 14px; }
+  .who-is p { margin: 0; }
+  .who-is .label { color: #71717a; font-size: 9px; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .net { margin-top: 16px; display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border: 1.5px solid {{ accent }}; border-radius: 6px; font-size: 14px; font-weight: 600; }
+  .draft { position: fixed; inset: 40% 0 auto; text-align: center; font-size: 64px; font-weight: 700; color: rgba(185, 28, 28, .12); transform: rotate(-20deg); }
+  .sign { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; color: #52525b; }
+  .sign p { margin: 0; padding-top: 6px; border-top: 1px solid #a1a1aa; }
+{% endblock %}
+{% block header %}{% endblock %}
+{% block content %}
+{% if run.is_draft %}<div class="draft">{% translate "Draft" %}</div>{% endif %}
+{% for doc in documents %}{% with slip=doc.slip employee=doc.employee %}
+<article class="slip">
+  <header>
+    <div class="who">
+      {% if logo %}<img src="{{ logo }}" alt="">{% endif %}
+      <div><p class="name">{{ profile.display_name }}</p><p class="title">{% translate "Payslip" %}</p></div>
+    </div>
+    <div class="meta">
+      <p><bdi dir="ltr"><span class="num">{{ run.period.start|date:"SHORT_DATE_FORMAT" }}</span> → <span class="num">{{ run.period.end|date:"SHORT_DATE_FORMAT" }}</span></bdi></p>
+      <p>{% if run.number %}<span class="num">{{ run.number }}</span>{% else %}{% translate "Draft" %}{% endif %}{% if run.period.kind == "off_cycle" %} · {% translate "Off-cycle" %}{% endif %}</p>
+      {% if run.paid_on %}<p>{% translate "Paid on" %} <span class="num">{{ run.paid_on|date:"SHORT_DATE_FORMAT" }}</span></p>{% endif %}
+    </div>
+  </header>
+  <div class="who-is">
+    <div><p class="label">{% translate "Employee" %}</p><p><span class="num">#{{ employee.code }}</span> {{ employee.name }}</p></div>
+    <div><p class="label">{% translate "Job" %}</p><p>{{ employee.job_title|default:"—" }}</p></div>
+    <div><p class="label">{% translate "Branch" %}</p><p>{{ employee.branch.name }}{% if employee.department %} · {{ employee.department.name }}{% endif %}</p></div>
+  </div>
+  <div class="columns">
+    <section>
+      <h2>{% translate "Earnings" %}</h2>
+      <table>
+        <thead><tr><th>{% translate "Item" %}</th><th class="end">{% translate "Count or base" %}</th><th class="end">{% translate "Amount" %}</th></tr></thead>
+        <tbody>{% for line in doc.earnings %}<tr><td>{{ line.title }}</td><td class="end">{% if line.quantity is not None %}<span class="num">{{ line.quantity|num:2 }}</span>{% endif %}</td><td class="end"><span class="num">{{ line.amount|num:2 }}</span></td></tr>{% empty %}<tr><td colspan="3" class="muted">—</td></tr>{% endfor %}</tbody>
+        <tfoot><tr><td colspan="2">{% translate "Total earnings" %}</td><td class="end"><span class="num">{{ slip.earnings|num:2 }}</span></td></tr></tfoot>
+      </table>
+    </section>
+    <section>
+      <h2>{% translate "Deductions" %}</h2>
+      <table>
+        <thead><tr><th>{% translate "Item" %}</th><th class="end">{% translate "Count or base" %}</th><th class="end">{% translate "Amount" %}</th></tr></thead>
+        <tbody>{% for line in doc.deductions %}<tr><td>{{ line.title }}</td><td class="end">{% if line.quantity is not None %}<span class="num">{{ line.quantity|num:2 }}</span>{% endif %}</td><td class="end"><span class="num">{{ line.amount|num:2 }}</span></td></tr>{% empty %}<tr><td colspan="3" class="muted">—</td></tr>{% endfor %}</tbody>
+        <tfoot><tr><td colspan="2">{% translate "Total deductions" %}</td><td class="end"><span class="num">{{ slip.deductions|num:2 }}</span></td></tr></tfoot>
+      </table>
+    </section>
+  </div>
+  <div class="net"><span>{% translate "Net pay" %}</span><span class="num{% if slip.net < 0 %} neg{% endif %}">{{ slip.net|num:2 }}</span></div>
+  <div class="sign"><p>{% translate "Received by the employee" %}</p><p>{% translate "For the company" %}</p></div>
+</article>
+{% endwith %}{% endfor %}
+{% endblock %}

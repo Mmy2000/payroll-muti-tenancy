@@ -26,7 +26,7 @@ ARABIC_PLURALS = ("nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : "
                   "n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;")
 
 _STRING = r"""("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')"""
-PY_FUNCS = {"_", "_l", "gettext", "gettext_lazy"}
+PY_FUNCS = {"_", "_l", "_lazy", "gettext", "gettext_lazy"}
 PY_PLURALS = {"ngettext", "ngettext_lazy"}
 TPL_TRANSLATE = re.compile(r"{%\s*(?:translate|trans)\s+" + _STRING)
 TPL_UNDERSCORE = re.compile(r"_\(" + _STRING + r"\)")

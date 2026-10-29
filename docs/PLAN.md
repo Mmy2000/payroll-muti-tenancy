@@ -113,8 +113,8 @@ Every module is a feature that the platform admin switches on or off from the co
 plan or for one client. Only the platform admin does this; a client's own users, Owners
 included, cannot change their features. Copied from Saas_ERP `apps/platform/tenants/features.py`,
 extended with dependencies, and filled by each app rather than one central list
-([ADR-102](decisions/ADR-102-features-registered-by-apps.md)). Until the console (phase 8) the
-platform admin switches them in the Django admin on the platform host.
+([ADR-102](decisions/ADR-102-features-registered-by-apps.md)). The
+platform admin switches them in the console (client → Features, Plans, Features).
 
 **How a feature's state is decided:**
 1. the client's own setting (console → client → Features), if saved;
@@ -182,10 +182,12 @@ platform admin on its own.
 | Daily/monthly flag of allowances applied inverted (`Salary/payroll.py:321` vs `Allow/views.py:339`) | Daily items are multiplied by days worked; monthly items are fixed |
 | Punches from the external attendance API (`/zkk/api/attendance/`) are ignored by payroll (`k` not set) | Every attendance source counts the same |
 | Overtime bands (GHA14) and "overtime starts after" are configured but unused | Overtime policy bands are applied |
-| Weekly-paid employees are paid as monthly ÷ 30 | Weekly pay computed on weekly periods (rules to confirm in phase 4) |
+| Weekly-paid employees are paid as monthly ÷ 30 | Weekly and biweekly runs on their own periods; monthly items split by days (or whole in the week of the 1st), installments whole in the week of the 1st (docs/payroll-design.md §4) |
 | Money stored as integers in payroll lines | `Decimal` everywhere, rounding only through `core.numeric` |
 | Salary and shift changes overwrite the card | Effective-dated history; payroll uses the values valid on each day |
-| Payroll creates attendance rows and marks installments while calculating | Preview has no side effects; posting settles installments; voiding reverses |
+| Payroll creates attendance rows and marks installments while calculating | A draft has no side effects; approval settles installments and advances; reversal releases them |
+| Insurance 14 % / 26 % when no rates are set | No rates: nothing deducted and approval blocked; 0 % is a deliberate setting; the employer share is a cost, not a deduction |
+| A paid run is recalculated from today's cards | Approved payslips are frozen with a snapshot of their inputs |
 | Logic compares Arabic label strings | Enumerated choices |
 | Manual-entry-overrides-device rule lives in a signal | A service rule |
 | WhatsApp sends inside the request (60 s timeout) | Queued jobs with retries |
@@ -203,8 +205,9 @@ Each phase ends with its tests passing and ruff clean.
 2. **Attendance**: manual entry, Excel import, day records, leave requests and balances, hourly
    permissions.
 3. **Loans and advances; incentives and penalties; pay item assignments.**
-4. **Payroll**: engine, preview, post, void, pay; payslips; golden tests built from worked
-   examples of PayRole's rules (with the fixes above).
+4. **Payroll**: pay calendars and periods (regular and off-cycle), runs (draft, approved, paid,
+   reversed), the engine, payslips with snapshots; tests built from worked examples of
+   PayRole's rules (with the fixes above).
 5. **Reports, PDF and Excel export, printing.**
 6. **Integrations**: ZK ADMS, WhatsApp through jobs, mobile API (unchanged contract) with
    biometric proof and GPS tracking.
@@ -216,9 +219,15 @@ Each phase ends with its tests passing and ruff clean.
 | Phase | State |
 |---|---|
 | 0. Foundation | Done (2026-10-28) |
-| 1. Master data | Done (2026-10-28). Deleting a pay/hours change or a tax/insurance row is not yet refused once a posted payroll used it (phase 4). |
-| 2. Attendance | Done (2026-10-29). Cancelling approved leave is not yet refused once a posted payroll covers it (phase 4). Punches from devices and the mobile app come in phase 6. |
+| 1. Master data | Done (2026-10-28). |
+| 2. Attendance | Done (2026-10-29). Punches from devices and the mobile app come in phase 6. |
+| 3. Advances, loans, incentives, penalties, pay items given | Done (2026-10-29). |
+| 4. Payroll | Done (2026-10-29): calendars, regular and off-cycle runs, draft → approved → paid, reversal, frozen payslips, nothing paid twice, locks on what an approved run covers (phases 1–3 now refuse those changes). |
+| 4b. History, bulk changes, batches | Done (2026-10-29): History pages read the payroll tables; hourly leave, attendance by hand and working hours for a group with a preview; incentive and penalty batches with drafts, approval, reopening, cancelling and corrections. |
+| 5. Reports, PDF, Excel, payslips | Done (2026-10-29): report registry with 14 reports, PDF and Excel export (one exporter, two formats), payslip PDFs, export permission and feature. |
+| 6. Devices, mobile app, WhatsApp | Done (2026-10-29): ZK ADMS devices, the mobile API with PayRole's contract (docs/mobile-api.md), notifications, WhatsApp payslips through jobs. |
+| 7. Evaluations, dashboard, notifications | Done (2026-10-29): evaluations with their card, the dashboard with server-drawn charts, the bell and the notifications page. |
+| 8. Platform console | Done (2026-10-29): sign-up, client page (plan, limits, company settings, domains, features, status), plans, features, traffic, jobs, platform settings, activity. |
 
 ## Open questions
 
-- Weekly pay: how a weekly-paid employee's period and pay are defined (answer before phase 4).

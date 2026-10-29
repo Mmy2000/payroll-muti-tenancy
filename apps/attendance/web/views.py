@@ -18,6 +18,7 @@ from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
 from apps.employees.services import get_employee, visible_employees
 from apps.employees.targets import employed_on
+from apps.employees.web.targets import employee_choices, group_page
 from apps.iam.authz import permission_required
 from apps.org.models import Branch, Department
 
@@ -73,6 +74,7 @@ def daily(request):
         "branches": branches, "branch": branch, "departments": departments,
         "department": department, "kinds": DayKind.choices,
         "can_manage": any(r["can_manage"] for r in rows),
+        "can_manage_any": actor.can(entries.MANAGE),
         "can_import": actor.can("attendance.import"),
     })
 
@@ -131,9 +133,8 @@ def _requests_page(request, *, model, view_permission, approve_permission, templ
 
 
 def _request_form_context(request, permission: str) -> dict:
-    employees = (visible_employees(request.actor, permission)
-                 .exclude(left_on__lt=timezone.localdate()).order_by("code"))
-    return {"employees": employees, "today": timezone.localdate(),
+    return {"employees": employee_choices(request.actor, permission),
+            "today": timezone.localdate(),
             "selected": request.GET.get("employee", "")}
 
 
@@ -164,6 +165,31 @@ def hourly_leave_new(request):
     return render(request, "attendance/hourly_form.html", {
         **_request_form_context(request, hourly.REQUEST),
         "can_approve": request.actor.can(hourly.APPROVE)})
+
+
+@permission_required(hourly.REQUEST)
+def hourly_leave_group(request):
+    return render(request, "attendance/hourly_group.html", group_page(
+        request, hourly.REQUEST, title=_("Hourly leave for a group"),
+        intro=_("The same hours away for several employees, one or more spans in the day. "
+                "Each is checked on their own: overlaps, their schedule and their monthly "
+                "allowance. Preview, then save."),
+        back_url=reverse("hourly-leave"), back_label=_("Hourly leave"),
+        endpoint=reverse("hourly-leave-group"), done_url=reverse("hourly-leave") + "?status=all",
+        done_message=_("{count} hourly leaves saved."), detail_label=_("Hours"),
+        can_approve=request.actor.can(hourly.APPROVE)))
+
+
+@permission_required(entries.MANAGE)
+def times_group(request):
+    return render(request, "attendance/times_group.html", group_page(
+        request, entries.MANAGE, title=_("Attendance by hand for a group"),
+        intro=_("The times several employees came and left, when the clock didn't record "
+                "them. Lateness, early leave and overtime follow from these times as from the "
+                "clock's. Preview, then save."),
+        back_url=reverse("attendance"), back_label=_("Attendance"),
+        endpoint=reverse("attendance-day-times"), done_url=reverse("attendance"),
+        done_message=_("{count} days saved."), detail_label=_("Came – left")))
 
 
 @permission_required("attendance.leave.view")

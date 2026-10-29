@@ -1,5 +1,6 @@
 """Settings shared by every environment. Values that differ per machine come from `.env`."""
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -13,9 +14,13 @@ if (BASE_DIR / ".env").exists():
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="")
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
-# Tenant hosts are `<slug>.<base>` or verified custom domains (TenantDomain). Platform hosts
-# have no tenant and serve config.platform_urls (the Django admin lives only there).
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[".localhost"])
+# Tenant hosts are `<slug>.<base>` or custom domains added in the console (TenantDomain).
+# Platform hosts have no tenant and serve config.platform_urls (the console lives only there).
+# Which hosts are answered is decided by apps.platform.tenants.middleware.HostCheckMiddleware:
+# FIXED_HOSTS (Django's ALLOWED_HOSTS patterns), PLATFORM_HOSTS and every client's domains, so a
+# custom domain works once added. Django's own check is handed over to it, hence "*".
+FIXED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[".localhost"])
+ALLOWED_HOSTS = ["*"]
 PLATFORM_HOSTS = env.list("PLATFORM_HOSTS", default=["admin.localhost"])
 ROOT_URLCONF = "config.urls"
 PLATFORM_URLCONF = "config.platform_urls"
@@ -43,10 +48,22 @@ INSTALLED_APPS = [
     "apps.compensation",
     "apps.employees",
     "apps.attendance",
+    "apps.loans",
+    "apps.adjustments",
+    "apps.payroll",
+    "apps.devices",
+    "apps.notifications",
+    "apps.mobile",
+    "apps.messaging",
+    "apps.evaluations",
+    "apps.printing",
+    "apps.reports",
 ]
 
 MIDDLEWARE = [
     "apps.core.middleware.RequestIdMiddleware",
+    # Refuses unknown hosts (400) before anything reads the host. Must stay at the top.
+    "apps.platform.tenants.middleware.HostCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
     # Counts requests per client and answers 429 over the limit, outside the tenant transaction.
     "apps.platform.tenants.middleware.TrafficMiddleware",
@@ -171,6 +188,24 @@ REST_FRAMEWORK = {
     ],
     "COERCE_DECIMAL_TO_STRING": True,
 }
+# The mobile app's sign-in (apps/mobile, docs/mobile-api.md): PayRole's lifetimes and rotation.
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=8),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "UPDATE_LAST_LOGIN": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+}
+if env("MOBILE_JWT_KEY", default=""):  # otherwise SimpleJWT signs with SECRET_KEY, when read
+    SIMPLE_JWT["SIGNING_KEY"] = env("MOBILE_JWT_KEY")
+
+# WhatsApp (apps/messaging, ops/wa-gateway): the gateway keeping each client's linked number.
+WA_GATEWAY_URL = env("WA_GATEWAY_URL", default="")
+WA_GATEWAY_KEY = env("WA_GATEWAY_KEY", default="")
+WHATSAPP_CONSOLE = env.bool("WHATSAPP_CONSOLE", default=False)  # messages kept in memory
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Payroll API",
     "VERSION": "web",

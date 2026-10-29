@@ -15,7 +15,7 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="mb-4 flex flex-wrap gap-1">{% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}"{% if tab.active %} aria-current="true"{% endif %}>{{ tab.label }}</a>{% endfor %}</div>
+{% include "components/list_tabs.html" %}
 <section class="card overflow-hidden">
   {% include "components/list_filters.html" %}
   {% if page.object_list %}

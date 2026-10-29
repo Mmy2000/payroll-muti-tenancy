@@ -1,0 +1,42 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Loans" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Loans" %}</h1>
+    <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Sums recovered in monthly installments by payroll. An employee repays one loan at a time." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'loan-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New loan" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% include "components/list_tabs.html" %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Given on" %}</th><th class="text-end">{% translate "Amount" %}</th>
+        <th class="text-end">{% translate "Installments" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for loan in page.object_list %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ loan.employee.name }}</td>
+          <td><span class="num">{{ loan.granted_on|date:"Y-m-d" }}</span></td>
+          <td class="text-end"><span class="num">{{ loan.amount|num:2 }}</span></td>
+          <td class="text-end"><span class="num">{{ loan.installments.all|length }}</span></td>
+          <td>{% if loan.status == "active" %}<span class="badge badge-warning">{{ loan.get_status_display }}</span>{% elif loan.status == "settled" %}<span class="badge badge-success">{{ loan.get_status_display }}</span>{% else %}<span class="badge badge-neutral">{{ loan.get_status_display }}</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'loan' loan.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "No loans here" as empty_title %}
+    {% include "components/empty_state.html" with icon="piggy-bank" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

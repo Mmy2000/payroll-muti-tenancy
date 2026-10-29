@@ -1,0 +1,22 @@
+{% extends "printing/sheet.html" %}
+{% load i18n %}
+{% block meta %}{% include "reports/_meta.html" %}{% endblock %}
+{% block content %}
+{% for table in tables %}
+<section>
+  {% if tables|length > 1 and table.title %}<h2>{{ table.title }}</h2>{% endif %}
+  {% if table.rows %}
+  <table>
+    <thead><tr>{% for column in table.columns %}<th {% if column.numeric %}class="end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in table.rows %}<tr class="{{ row.style }}">{% for cell in row.cells %}{% include "reports/_print_cell.html" %}{% endfor %}</tr>{% endfor %}
+    </tbody>
+    {% if table.totals %}<tfoot><tr>{% for cell in table.totals %}{% include "reports/_print_cell.html" %}{% endfor %}</tr></tfoot>{% endif %}
+  </table>
+  {% else %}
+  <p class="empty">{% translate "Nothing in this period." %}</p>
+  {% endif %}
+  {% if table.note %}<p class="note">{{ table.note }}</p>{% endif %}
+</section>
+{% endfor %}
+{% endblock %}

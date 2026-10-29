@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
+from apps.core import locks
 from apps.core.imports import CellError, Cells, Column, SheetImport
 from apps.employees.services import visible_employees
 
@@ -43,6 +44,8 @@ class PunchImport(SheetImport):
             raise CellError("date", _("Must not be in the future."))
         if day < employee.hired_on or (employee.left_on is not None and day > employee.left_on):
             raise CellError("date", _("The employee isn't employed on that day."))
+        if locks.period_locked(employee.pk, day):
+            raise CellError("date", _("An approved payroll already covers this day."))
         came = cells.required("check_in", cells.time("check_in"), _("Enter a time as HH:MM."))
         moments = [m for m in times_on(day, came, cells.time("check_out"), self.zone) if m]
         for moment in moments:

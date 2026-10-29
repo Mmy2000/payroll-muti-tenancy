@@ -37,3 +37,19 @@ def spans(queryset: QuerySet, start: date, end: date) -> list[Span]:
         if span_start <= span_end:
             result.append(Span(row, span_start, span_end))
     return result
+
+
+class Timeline:
+    """Effective-dated rows already loaded, to find the one in effect on many days without a
+    query each: `Timeline(rows).on(day)`."""
+
+    def __init__(self, rows):
+        import bisect
+
+        self._bisect = bisect.bisect_right
+        self.rows = sorted(rows, key=lambda r: (r.effective_from, r.pk))
+        self.starts = [r.effective_from for r in self.rows]
+
+    def on(self, day: date):
+        index = self._bisect(self.starts, day) - 1
+        return self.rows[index] if index >= 0 else None

@@ -7,6 +7,7 @@ export class ApiError extends Error {
     this.status = status;
     this.code = error.code || "ERROR";
     this.fields = error.fields || {};
+    this.details = error.details || null; // e.g. the rows of a refused bulk change
     this.requestId = error.request_id || null;
   }
 }

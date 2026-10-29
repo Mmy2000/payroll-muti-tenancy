@@ -1,0 +1,90 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "New payroll run" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'payroll-runs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Payroll runs" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New payroll run" %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-endpoint="{% url 'payroll-run-list' %}" data-method="POST"
+      data-redirect="{% url 'payroll-runs' %}{id}/" data-success="{% translate 'Calculated.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <label class="form-label" for="f-frequency">{% translate "Pay frequency" %}</label>
+          <select id="f-frequency" name="frequency" class="form-input" required>
+            {% for value, label in frequencies %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "The run pays the employees on this frequency." %}</p>
+          <p class="form-error" data-error-for="frequency"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-kind">{% translate "Run" %}</label>
+          <select id="f-kind" name="kind" class="form-input" required>
+            {% for value, label in kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="kind"></p>
+        </div>
+        <div class="sm:col-span-2" data-show-when="kind=regular">
+          <label class="form-label" for="f-day">{% translate "Any day of the period" %}</label>
+          <input id="f-day" type="date" name="day" data-empty="null" class="form-input sm:w-1/2" value="{{ today|date:'Y-m-d' }}" required>
+          <p class="mt-1.5 text-xs text-slate-500">
+            {% translate "The period comes from the pay calendar. Today falls in:" %}
+            {% for label, period in periods %}<span class="num">{{ period.start|date:"Y-m-d" }} → {{ period.end|date:"Y-m-d" }}</span> ({{ label }}){% if not forloop.last %} · {% endif %}{% endfor %}
+          </p>
+          <p class="form-error" data-error-for="day"></p>
+        </div>
+        <div data-show-when="kind=off_cycle">
+          <label class="form-label" for="f-start">{% translate "From" %}</label>
+          <input id="f-start" type="date" name="start" data-empty="null" class="form-input" required>
+          <p class="form-error" data-error-for="start"></p>
+        </div>
+        <div data-show-when="kind=off_cycle">
+          <label class="form-label" for="f-end">{% translate "To" %}</label>
+          <input id="f-end" type="date" name="end" data-empty="null" class="form-input" required>
+          <p class="form-error" data-error-for="end"></p>
+        </div>
+        <div class="sm:col-span-2" data-show-when="kind=off_cycle">
+          <label class="form-label" for="f-reason">{% translate "Reason" %}</label>
+          <input id="f-reason" name="reason" class="form-input" maxlength="300">
+          <p class="mt-1.5 text-xs text-slate-500">{% translate "An off-cycle run pays no salary: only what is dated in its days and not paid yet (one-time pay items, incentives, penalties, advances) and lines you add." %}</p>
+          <p class="form-error" data-error-for="reason"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-scope">{% translate "For" %}</label>
+          <select id="f-scope" name="scope" class="form-input">
+            {% if all_branches %}<option value="all">{% translate "Everyone" %}</option>{% endif %}
+            <option value="branch">{% translate "A branch" %}</option>
+            {% if all_branches %}<option value="department">{% translate "A department" %}</option>{% endif %}
+          </select>
+          <p class="form-error" data-error-for="scope"></p>
+        </div>
+        <div data-show-when="scope=branch">
+          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+          <select id="f-branch" name="scope_id" class="form-input">
+            {% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
+          <p class="form-error" data-error-for="scope_id"></p>
+        </div>
+        <div data-show-when="scope=department">
+          <label class="form-label" for="f-department">{% translate "Department" %}</label>
+          <select id="f-department" name="scope_id" class="form-input">
+            {% for d in departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-note">{% translate "Note" %}</label>
+          <input id="f-note" name="note" class="form-input" maxlength="300">
+        </div>
+      </div>
+    </section>
+  </div>
+  <aside class="space-y-4">
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "calculator" "size-4" %}{% translate "Calculate" %}</button>
+      <a href="{% url 'payroll-runs' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+    <p class="text-xs text-slate-500">{% translate "Employees already in another run of the same days are left out and listed in the run." %}</p>
+  </aside>
+</form>
+{% endblock %}

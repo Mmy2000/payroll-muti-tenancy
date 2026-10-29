@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.crypto import decrypt
+from apps.core.media import TenantUploadPath, validate_image
 from apps.core.models import EffectiveDatedModel, TenantScopedModel
 
 
@@ -48,6 +49,11 @@ class Employee(TenantScopedModel):
     phone = models.CharField(max_length=30, blank=True)
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
+    photo = models.FileField(upload_to=TenantUploadPath("employees"), blank=True,
+                             validators=[validate_image])
+    # Their own login to the mobile app (apps/mobile), if they have one.
+    member = models.OneToOneField("iam.Membership", null=True, blank=True,
+                                  on_delete=models.SET_NULL, related_name="employee")
 
     branch = models.ForeignKey("org.Branch", on_delete=models.PROTECT, related_name="+")
     department = models.ForeignKey("org.Department", null=True, blank=True,
@@ -92,21 +98,31 @@ class Employee(TenantScopedModel):
         return self.left_on is None or self.left_on >= timezone.localdate()
 
 
-class PayBasis(models.TextChoices):
-    MONTHLY = "monthly", _("Monthly salary")
-    WEEKLY = "weekly", _("Weekly wage")
+class WageType(models.TextChoices):
+    FIXED = "fixed", _("Fixed salary")
     DAILY = "daily", _("Daily wage")
+    HOURLY = "hourly", _("Hourly wage")
+
+
+class PayFrequency(models.TextChoices):
+    MONTHLY = "monthly", _("Monthly")
+    BIWEEKLY = "biweekly", _("Every two weeks")
+    WEEKLY = "weekly", _("Weekly")
 
 
 class Compensation(EffectiveDatedModel):
     """What the employee is paid from `effective_from` on (PayRole: `Pfe1.type`, `sal`,
     `d_sal`, `h_sal`, `hour`, `val_ovr`, `dis_hol`, `val_hol`, `i_net`, `hol`, `perm`).
 
-    `salary` is the month's salary, the week's wage or the day's wage depending on `basis`. The
-    daily and hourly rates follow from it (apps.employees.domain.rates)."""
+    The wage type (how pay is counted) and the pay frequency (how often it is run) are separate
+    (docs/payroll-design.md §1). `salary` is one unit of the wage type: the salary of one pay
+    period, the day's wage or the hour's wage. The day and hour rates follow from it
+    (apps.employees.domain.rates.PayTerms)."""
 
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="pay_history")
-    basis = models.CharField(max_length=8, choices=PayBasis.choices, default=PayBasis.MONTHLY)
+    wage_type = models.CharField(max_length=8, choices=WageType.choices, default=WageType.FIXED)
+    pay_frequency = models.CharField(max_length=8, choices=PayFrequency.choices,
+                                     default=PayFrequency.MONTHLY)
     salary = models.DecimalField(max_digits=12, decimal_places=2)
     hours_per_day = models.DecimalField(max_digits=4, decimal_places=2, default=8)
     # An hour of overtime is paid at the hourly rate × this.
@@ -129,6 +145,12 @@ class Compensation(EffectiveDatedModel):
                             holiday_multiplier__gte=0, permission_hours__gte=0),
                 name="employees_compensation_values_check"),
         ]
+
+    @property
+    def terms(self):
+        from .domain.rates import PayTerms
+
+        return PayTerms.of(self)
 
 
 class Weekday(models.IntegerChoices):  # Python's date.weekday()

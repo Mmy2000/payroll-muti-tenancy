@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -20,6 +21,10 @@ class BranchInput:
     phone: str = ""
     address: str = ""
     is_head_office: bool = False
+    # Where it is, for the mobile app's geofence (both or neither).
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
+    radius_m: int = 200
 
 
 def _save(branch: Branch, data: BranchInput, actor) -> Branch:
@@ -28,6 +33,12 @@ def _save(branch: Branch, data: BranchInput, actor) -> Branch:
     branch.phone = data.phone.strip()
     branch.address = data.address.strip()
     branch.is_head_office = data.is_head_office
+    if (data.latitude is None) != (data.longitude is None):
+        raise ValidationError(_("Please correct the highlighted fields."),
+                              fields={"longitude": [_("Enter both the latitude and the "
+                                                      "longitude, or neither.")]})
+    branch.latitude, branch.longitude = data.latitude, data.longitude
+    branch.radius_m = data.radius_m
     branch.updated_by = getattr(actor, "user", None)
     branch._stamp_tenant()
     with transaction.atomic():

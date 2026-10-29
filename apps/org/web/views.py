@@ -2,28 +2,9 @@ from django.db.models import Max
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
-from django.utils.formats import date_format
 
 from apps.iam.authz import permission_required
-from apps.iam.catalog import AUTHENTICATED
-from apps.iam.models import Membership, MembershipStatus
 from apps.org.models import Branch, Department
-
-
-@permission_required(AUTHENTICATED)
-def home(request):
-    """The dashboard. Each block shows only to members allowed to see what it counts; payroll
-    blocks (head count, attendance today, last payroll) join as their modules arrive."""
-    actor = request.actor
-    now = timezone.localtime()
-    context = {"today_label": f"{date_format(now, 'l')} · {date_format(now, 'DATE_FORMAT')}"}
-    if actor.can("org.branch.view"):
-        context["branch_count"] = Branch.objects.filter(is_active=True).count()
-    if actor.can("admin.users.view"):
-        context["member_count"] = Membership.objects.filter(
-            status=MembershipStatus.ACTIVE).count()
-    return render(request, "org/dashboard.html", context)
 
 
 @permission_required("org.branch.view")

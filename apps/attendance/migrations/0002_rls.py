@@ -3,9 +3,9 @@ enter (punches are append-only instead, enforced by a trigger); the attendance p
 built-in roles of existing clients; and their starting leave types."""
 
 from django.db import migrations
-from django.utils import translation
 
 from apps.audit.triggers import AuditModel, GuardTenantFKs
+from apps.core.migration_helpers import for_each_tenant
 from apps.core.tenancy.rls import EnableTenantRLS
 from apps.iam.migration_helpers import grant_to_system_roles
 
@@ -27,26 +27,18 @@ DROP FUNCTION IF EXISTS attendance_punch_append_only();
 def seed_leave_types(apps, schema_editor):
     from django.utils.translation import gettext as _
 
-    Tenant = apps.get_model("tenants", "Tenant")
-    TenantProfile = apps.get_model("org", "TenantProfile")
     LeaveType = apps.get_model("attendance", "LeaveType")
-    connection = schema_editor.connection
-    db = connection.alias
-    for tenant_id in Tenant.objects.using(db).values_list("id", flat=True):
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT set_config('app.tenant_id', %s, true)", [str(tenant_id)])
+
+    def add(tenant_id, db):
         if LeaveType.objects.using(db).filter(tenant_id=tenant_id).exists():
-            continue
-        locale = (TenantProfile.objects.using(db).filter(tenant_id=tenant_id)
-                  .values_list("locale", flat=True).first() or "ar")
-        with translation.override(locale):
-            rows = ((1, _("Annual leave"), True, True), (2, _("Sick leave"), True, False),
-                    (3, _("Unpaid leave"), False, False))
-            LeaveType.objects.using(db).bulk_create([
-                LeaveType(tenant_id=tenant_id, code=code, name=name, paid=paid,
-                          uses_annual_balance=balance) for code, name, paid, balance in rows])
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT set_config('app.tenant_id', '', true)")
+            return
+        rows = ((1, _("Annual leave"), True, True), (2, _("Sick leave"), True, False),
+                (3, _("Unpaid leave"), False, False))
+        LeaveType.objects.using(db).bulk_create([
+            LeaveType(tenant_id=tenant_id, code=code, name=name, paid=paid,
+                      uses_annual_balance=balance) for code, name, paid, balance in rows])
+
+    for_each_tenant(apps, schema_editor, add)
 
 
 class Migration(migrations.Migration):

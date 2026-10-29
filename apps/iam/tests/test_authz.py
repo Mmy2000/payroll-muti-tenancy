@@ -33,8 +33,8 @@ class TestActor:
 class TestRoles:
     def test_system_roles_seeded_and_owner_assigned(self, tenant_a):
         with tenant_context(tenant_a.id):
-            assert set(Role.objects.values_list("code", flat=True)) == {"owner", "manager",
-                                                                      "viewer"}
+            assert set(Role.objects.values_list("code", flat=True)) == {
+                "owner", "manager", "viewer", "employee"}
             from apps.iam.models import Membership
 
             actor = build_actor(Membership.objects.get(username="owner"))
@@ -85,11 +85,12 @@ def _api_views(patterns=None, prefix=""):
 
 def test_every_api_action_declares_a_permission():
     """A view without `required_permissions` for an action is denied at runtime; this
-    makes the omission a test failure instead of a silent 403."""
+    makes the omission a test failure instead of a silent 403. (The mobile app's /api/v1/
+    has its own rule: apps/mobile/tests.)"""
     missing = []
     for route, callback in _api_views():
         cls = getattr(callback, "cls", None)
-        if cls is None:
+        if cls is None or not route.startswith("api/web/"):
             continue
         declared = getattr(cls, "required_permissions", {}) or {}
         actions = getattr(callback, "actions", None)

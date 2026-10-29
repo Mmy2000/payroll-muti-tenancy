@@ -100,6 +100,7 @@
       {% endif %}
       <div class="ms-auto flex items-center gap-2">
         <button type="button" class="btn btn-ghost h-8 px-2 lg:hidden" data-cmdk-open aria-label="{% translate 'Search…' %}">{% icon "search" "size-[18px]" %}</button>
+        {% include "components/bell.html" %}
         {% include "components/appearance.html" %}
         {% include "components/lang_switch.html" %}
       </div>

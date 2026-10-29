@@ -1,0 +1,62 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "Pay items given" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Pay items given" %} · {{ month|date:"F Y" }}</h1>
+    <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Allowances and other items running in this month. Payroll gives each pay period its share; a per-day item is paid for each day worked." %}</p>
+  </div>
+  <div class="flex gap-2">
+    <a class="btn btn-secondary px-3" href="?month={{ previous|date:'Y-m' }}" aria-label="{% translate 'Previous month' %}"><span class="rtl:rotate-180">←</span></a>
+    <a class="btn btn-secondary px-3" href="?month={{ next|date:'Y-m' }}" aria-label="{% translate 'Next month' %}"><span class="rtl:rotate-180">→</span></a>
+    {% if can_manage %}<a href="{% url 'pay-item-assignment-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Give a pay item" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include "components/list_tabs.html" %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Pay item" %}</th><th>{% translate "How often" %}</th>
+        <th>{% translate "From" %}</th><th>{% translate "Until" %}</th><th class="text-end">{% translate "Amount" %}</th>{% if can_manage %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+      {% for a in page.object_list %}
+        <tr class="{% if a.status == 'cancelled' %}text-slate-400 line-through{% endif %}">
+          <td class="font-medium {% if a.status != 'cancelled' %}text-slate-900{% endif %}">{{ a.employee.name }}</td>
+          <td>{{ a.item.name }} <span class="text-xs text-slate-500">· {{ a.item.get_kind_display }}{% if a.item.basis == "per_day" %} · {% translate "per day worked" %}{% endif %}</span></td>
+          <td class="text-sm">{{ a.get_frequency_display }}</td>
+          <td><span class="num">{{ a.starts_on|date:"Y-m-d" }}</span></td>
+          <td><span class="num">{% if a.frequency == "once" %}—{% else %}{{ a.ends_on|date:"Y-m-d"|default:_("open") }}{% endif %}</span></td>
+          <td class="text-end"><span class="num font-medium">{{ a.amount|num:2 }}</span></td>
+          {% if can_manage %}<td class="text-end">{% if a.status == "active" %}
+            <div class="flex flex-wrap justify-end gap-1">
+              {% if a.frequency != "once" %}
+              <form class="flex items-center gap-1" data-api-form data-method="POST" data-endpoint="{% url 'pay-item-assignment-end' a.pk %}" data-success="{% translate 'Saved.' %}">
+                <input type="date" name="ends_on" class="form-input h-8 w-36 py-1 text-xs" value="{{ today|date:'Y-m-d' }}" aria-label="{% translate 'Last day' %}">
+                <button type="submit" class="btn btn-ghost h-8 px-2 text-xs">{% translate "End" %}</button>
+              </form>
+              {% endif %}
+              <form data-api-form data-method="POST" data-endpoint="{% url 'pay-item-assignment-cancel' a.pk %}" data-success="{% translate 'Cancelled.' %}">
+                <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs text-slate-500">{% translate "Cancel" %}</button>
+              </form>
+              <form data-api-form data-method="POST" data-endpoint="{% url 'pay-item-assignment-cancel' a.pk %}" data-success="{% translate 'Cancelled.' %}">
+                <input type="hidden" name="whole_batch" value="true">
+                <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs text-slate-500" title="{% translate 'Cancel every entry given at the same time' %}">{% translate "Cancel the whole group" %}</button>
+              </form>
+            </div>{% endif %}</td>{% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "Nothing given this month" as empty_title %}
+    {% include "components/empty_state.html" with icon="hand-coins" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

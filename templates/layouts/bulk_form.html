@@ -1,0 +1,27 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{# A bulk change for a group, previewed then saved (apps/core/bulk.py, static/core/js/bulk.js). The view gives title, intro, back_url, back_label, endpoint, done_url, done_message ("{count}"), detail_label and the group picker's choices; a page fills the "fields" block. #}
+{% block title %}{{ title }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{{ back_url }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ back_label }}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ title }}</h1>
+  <p class="mt-1 max-w-3xl text-sm text-slate-500">{{ intro }}</p>
+</div>
+{% endblock %}
+{% block content %}
+<form class="space-y-6" data-bulk-form data-shape="nested" data-endpoint="{{ endpoint }}" data-redirect="{{ done_url }}"
+      data-success="{{ done_message }}"
+      data-text-summary="{% translate '{passed} ready to save, {failed} with problems.' %}"
+      data-text-ok="{% translate 'Ready' %}" data-text-failed="{% translate 'Problem' %}"
+      data-text-save="{% translate 'Save all {count}' %}"
+      data-text-save-passing="{% translate 'Save the {count} that are ready, leave out the rest' %}" novalidate>
+  <section class="card">
+    <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
+      {% include "employees/_group_fields.html" %}
+      {% block fields %}{% endblock %}
+    </div>
+  </section>
+  {% include "components/bulk_preview.html" %}
+</form>
+{% endblock %}

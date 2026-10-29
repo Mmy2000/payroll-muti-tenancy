@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{{ page_kind.title }}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ page_kind.title }}</h1>
+    <p class="mt-1 max-w-2xl text-sm text-slate-500">{{ page_kind.intro }}</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url page_kind.kind|add:'-types' %}" class="btn btn-secondary">{% icon "list" "size-4" %}{{ page_kind.types_title }}</a>
+    {% if can_manage %}<a href="{% url page_kind.kind|add:'-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{{ page_kind.new_label }}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include "components/list_tabs.html" %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Type" %}</th><th>{% translate "For" %}</th>
+        <th class="text-end">{% translate "Employees" %}</th><th class="text-end">{% translate "Amount" %}</th><th>{% translate "Reason" %}</th><th>{% translate "Status" %}</th></tr></thead>
+      <tbody>
+      {% for b in page.object_list %}
+        <tr class="{% if b.status == 'cancelled' %}text-slate-400{% endif %}">
+          <td><a class="num font-medium text-brand-700 hover:underline" href="{% url page_kind.kind|add:'-batch' b.pk %}">{{ b.date|date:"Y-m-d" }}</a></td>
+          <td>{{ b.adjustment_type.name }}</td>
+          <td class="text-sm">{{ b.target_name|default:"—" }}</td>
+          <td class="text-end"><span class="num">{{ b.people }}</span></td>
+          <td class="text-end"><span class="num font-medium">{{ b.total|num:2 }}</span></td>
+          <td class="text-sm text-slate-600">{{ b.reason }}</td>
+          <td>{% include "adjustments/_status.html" with batch=b %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "Nothing here" as empty_title %}
+    {% include "components/empty_state.html" with icon=page_kind.icon title=empty_title text=page_kind.intro %}
+  {% endif %}
+</section>
+{% endblock %}

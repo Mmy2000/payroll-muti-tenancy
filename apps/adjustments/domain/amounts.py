@@ -7,24 +7,14 @@ class to `METHODS`, nothing else.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from decimal import Decimal
 
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.numeric import round_money
-from apps.employees.domain.rates import daily_rate, hourly_rate
+from apps.employees.domain.rates import PayTerms
 
 HUNDRED = Decimal(100)
-
-
-@dataclass(frozen=True)
-class Pay:
-    """The pay an amount is counted from (the employee's pay in effect that day)."""
-
-    basis: str
-    salary: Decimal
-    hours_per_day: Decimal
 
 
 class Method:
@@ -32,7 +22,7 @@ class Method:
     label = ""
     unit = ""  # what the quantity is in, for the form
 
-    def amount(self, quantity: Decimal, pay: Pay) -> Decimal:
+    def amount(self, quantity: Decimal, pay: PayTerms) -> Decimal:
         raise NotImplementedError
 
 
@@ -44,8 +34,8 @@ class Fixed(Method):
 
 
 class PercentOfSalary(Method):
-    """A share of the salary as entered: the month's salary, the week's or the day's wage
-    (PayRole: Enp/salary_base.py percent_of_salary)."""
+    """A share of the salary as entered: the period's fixed salary, or the day's or hour's
+    wage (PayRole: Enp/salary_base.py percent_of_salary)."""
 
     key, label, unit = "percent", _("Percentage of salary"), _("%")
 
@@ -57,14 +47,14 @@ class DaysOfPay(Method):
     key, label, unit = "days", _("Days of pay"), _("days")
 
     def amount(self, quantity, pay):
-        return round_money(daily_rate(pay.basis, pay.salary) * quantity)
+        return round_money(pay.daily * quantity)
 
 
 class HoursOfPay(Method):
     key, label, unit = "hours", _("Hours of pay"), _("hours")
 
     def amount(self, quantity, pay):
-        return round_money(hourly_rate(pay.basis, pay.salary, pay.hours_per_day) * quantity)
+        return round_money(pay.hourly * quantity)
 
 
 METHODS: dict[str, Method] = {m.key: m for m in (Fixed(), PercentOfSalary(), DaysOfPay(),

@@ -20,7 +20,8 @@ API = "/api/web/employees/employees/"
 def _payload(branch_id, code=1, name="Ahmed Ali", **extra):
     return {"code": code, "name": name, "branch_id": branch_id, "hired_on": "2025-01-01",
             "national_id": extra.pop("national_id", ""),
-            "pay": {"basis": "monthly", "salary": "6000", "hours_per_day": "8",
+            "pay": {"wage_type": "fixed", "pay_frequency": "monthly", "salary": "6000",
+                    "hours_per_day": "8",
                     "insured_salary": "5000"},
             "schedule": {"starts_at": "09:00", "ends_at": "17:00", "days_off": [4, 5]},
             **extra}

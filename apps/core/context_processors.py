@@ -16,8 +16,18 @@ class NavItem:
     label: str
     url_name: str
     icon: str
-    permission: str
+    permission: str  # or a function of the actor (a page open to several permissions)
     also_active_for: tuple[str, ...] = ()
+
+    def allows(self, actor) -> bool:
+        return self.permission(actor) if callable(self.permission) else \
+            actor.can(self.permission)
+
+
+def _any_report(actor) -> bool:
+    from apps.reports.views import visible_reports
+
+    return bool(visible_reports(actor))
 
 
 @dataclass(frozen=True)
@@ -41,19 +51,40 @@ NAVIGATION: list[NavSection] = [
     ]),
     NavSection("people", _("People"), "users", [
         NavItem(_("Employees"), "employees", "users", "employees.employee.view",
-                ("employee-new", "employee", "employee-edit", "employee-import")),
+                ("employee-new", "employee", "employee-edit", "employee-import",
+                 "employees-hours")),
         NavItem(_("Departments"), "departments", "users-round", "org.department.view",
                 ("department-new", "department-edit")),
+        NavItem(_("Evaluations"), "evaluations", "clipboard-check", "evaluations.evaluation.view",
+                ("evaluation-new", "evaluation")),
     ]),
     NavSection("attendance", _("Attendance"), "clock", [
         NavItem(_("Daily attendance"), "attendance", "clock", "attendance.day.view",
-                ("attendance-employee", "attendance-import")),
+                ("attendance-employee", "attendance-import", "attendance-times")),
         NavItem(_("Leave"), "leave-requests", "calendar-days", "attendance.leave.view",
                 ("leave-request-new", "leave-types")),
         NavItem(_("Hourly leave"), "hourly-leave", "calendar-clock", "attendance.hourly.view",
-                ("hourly-leave-new",)),
+                ("hourly-leave-new", "hourly-leave-for-group")),
+        NavItem(_("Fingerprint devices"), "devices", "fingerprint", "devices.device.view",
+                ("device",)),
+    ]),
+    NavSection("pay", _("Pay"), "hand-coins", [
+        NavItem(_("Pay items given"), "pay-item-assignments", "hand-coins",
+                "compensation.entry.view", ("pay-item-assignment-new",)),
+        NavItem(_("Incentives"), "incentives", "award", "adjustments.incentive.view",
+                ("incentive-new", "incentive-types", "incentive-batch")),
+        NavItem(_("Penalties"), "penalties", "gavel", "adjustments.penalty.view",
+                ("penalty-new", "penalty-types", "penalty-batch")),
+        NavItem(_("Salary advances"), "advances", "wallet", "loans.advance.view"),
+        NavItem(_("Loans"), "loans", "piggy-bank", "loans.loan.view", ("loan-new", "loan")),
+    ]),
+    NavSection("payroll", _("Payroll"), "calculator", [
+        NavItem(_("Payroll runs"), "payroll-runs", "calculator", "payroll.run.read",
+                ("payroll-run-new", "payroll-run", "payslip")),
+        NavItem(_("Reports"), "reports", "chart-column", _any_report, ("report",)),
     ]),
     NavSection("pay-setup", _("Pay setup"), "wallet", [
+        NavItem(_("Pay calendars"), "pay-calendars", "calendar", "payroll.calendar.manage"),
         NavItem(_("Pay items"), "pay-items", "hand-coins", "compensation.item.view",
                 ("pay-item-new", "pay-item-edit")),
         NavItem(_("Lateness"), "lateness-policies", "alarm-clock", "policies.lateness.view",
@@ -72,6 +103,8 @@ NAVIGATION: list[NavSection] = [
                 ("branch-new", "branch-edit")),
         NavItem(_("Users"), "users", "users", "admin.users.view", ("user-new", "user-edit")),
         NavItem(_("Roles"), "roles", "shield-check", "admin.users.view", ("role-new", "role-edit")),
+        NavItem(_("WhatsApp"), "whatsapp", "send", "messaging.whatsapp.link"),
+        NavItem(_("Sent messages"), "sent-messages", "inbox", "messaging.view"),
         NavItem(_("Activity"), "activity", "history", "admin.audit.history"),
         NavItem(_("Sign-ins"), "sign-ins", "log-in", "admin.signins.history"),
     ]),
@@ -88,7 +121,7 @@ def _navigation(request):
         visible = [
             {"label": item.label, "url": reverse(item.url_name), "icon": item.icon,
              "active": current == item.url_name or current in item.also_active_for}
-            for item in section.items if actor.can(item.permission)
+            for item in section.items if item.allows(actor)
         ]
         if not visible:
             continue
@@ -102,6 +135,17 @@ def _navigation(request):
     return sections
 
 
+def _bell(request) -> dict:
+    from apps.notifications.api import ICONS
+    from apps.notifications.attention import ICONS as QUEUE_ICONS
+    from apps.notifications.services import unread_count
+
+    unread = unread_count(request.actor.membership)
+    # Every icon the bell's menu may draw, for its script (notification kinds and queues).
+    icons = sorted({"bell", *ICONS.values(), *QUEUE_ICONS})
+    return {"unread": unread, "label": "99+" if unread > 99 else str(unread), "icons": icons}
+
+
 def _shortcuts(request) -> dict:
     """The member's pinned screens, and whether the screen they are on can be (or is) pinned."""
     from apps.iam.shortcuts import pinned, screens
@@ -110,7 +154,7 @@ def _shortcuts(request) -> dict:
     mine = pinned(request.actor)
     item = screens().get(current)
     screen = None
-    if item is not None and request.actor.can(item.permission):
+    if item is not None and item.allows(request.actor):
         screen = {"name": current, "label": str(item.label),
                   "pinned": any(s["screen"] == current for s in mine)}
     return {"items": mine, "screen": screen}
@@ -135,5 +179,6 @@ def shell(request):
         },
         "nav_sections": SimpleLazyObject(lambda: _navigation(request)),
         "shortcuts": SimpleLazyObject(lambda: _shortcuts(request)),
+        "bell": SimpleLazyObject(lambda: _bell(request)),
         "tenant_profile": SimpleLazyObject(lambda: TenantProfile.objects.first()),
     }

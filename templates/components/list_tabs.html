@@ -1,0 +1,2 @@
+{# The tabs of a list (apps/core/listing.py Choice(tabs=True)): include with filters=… #}
+<div class="mb-4 flex flex-wrap gap-1">{% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}"{% if tab.active %} aria-current="true"{% endif %}>{{ tab.label }}</a>{% endfor %}</div>

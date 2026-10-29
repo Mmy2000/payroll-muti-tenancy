@@ -6,7 +6,8 @@ from rest_framework.routers import SimpleRouter
 from apps.attendance import approvals, entries, hourly, leave
 from apps.attendance.models import DayKind, HourlyLeave, LeaveRequest, LeaveType
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
-from apps.employees.services import visible_employees
+from apps.employees.api.scoped import EmployeeRowsViewSet
+from apps.employees.api.targets import GroupFields, outcome_response
 
 # --- manual day entries --------------------------------------------------------------------
 
@@ -34,6 +35,21 @@ class ClearDaySerializer(serializers.Serializer):
     work_date = serializers.DateField()
 
 
+class OwnTimesSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField()
+    check_in = serializers.TimeField(allow_null=True, required=False, default=None)
+    check_out = serializers.TimeField(allow_null=True, required=False, default=None)
+
+
+class GroupTimesSerializer(GroupFields):
+    work_date = serializers.DateField()
+    check_in = serializers.TimeField(allow_null=True, required=False, default=None)
+    check_out = serializers.TimeField(allow_null=True, required=False, default=None)
+    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+    own_times = OwnTimesSerializer(many=True, required=False, default=list)
+    replace = serializers.BooleanField(default=False)
+
+
 def _valid(serializer_class, data) -> dict:
     payload = serializer_class(data=data)
     payload.is_valid(raise_exception=True)
@@ -47,11 +63,12 @@ def _entry(data: dict) -> entries.DayEntryInput:
 
 
 class DayEntryViewSet(viewsets.GenericViewSet):
-    """POST one day's entry, POST …/bulk/ the same entry for several employees, POST …/clear/
-    to remove an entry (the punches of the day count again)."""
+    """POST one day's entry, POST …/bulk/ the same entry for several employees, POST …/times/
+    times entered by hand for a group (previewed, then saved), POST …/clear/ to remove an entry
+    (the punches of the day count again)."""
 
     required_permissions = {"create": entries.MANAGE, "bulk": entries.MANAGE,
-                            "clear": entries.MANAGE}
+                            "times": entries.MANAGE, "clear": entries.MANAGE}
 
     def create(self, request):
         data = _valid(OneDaySerializer, request.data)
@@ -65,6 +82,17 @@ class DayEntryViewSet(viewsets.GenericViewSet):
         saved = entries.set_days(data["employee_ids"], data["work_date"], _entry(data),
                                  actor=request.actor)
         return Response({"saved": len(saved)})
+
+    @action(detail=False, methods=["post"])
+    def times(self, request):
+        data = dict(_valid(GroupTimesSerializer, request.data))
+        group, options = GroupFields.group(data), GroupFields.run_options(data)
+        own = {row["employee_id"]: (row["check_in"], row["check_out"])
+               for row in data.pop("own_times")}
+        outcome = entries.set_times_for_group(
+            entries.GroupTimesInput(group=group, own_times=own, **data), **options,
+            actor=request.actor)
+        return outcome_response(outcome)
 
     @action(detail=False, methods=["post"])
     def clear(self, request):
@@ -178,21 +206,23 @@ class HourlyLeaveWriteSerializer(serializers.Serializer):
     approve = serializers.BooleanField(default=False)
 
 
-class _RequestViewSet(DecisionMixin, viewsets.GenericViewSet):
+class SpanSerializer(serializers.Serializer):
+    starts_at = serializers.TimeField()
+    ends_at = serializers.TimeField()
+
+
+class GroupHourlyLeaveSerializer(GroupFields):
+    work_date = serializers.DateField()
+    spans = SpanSerializer(many=True, min_length=1, max_length=10)
+    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
+    approve = serializers.BooleanField(default=False)
+
+
+class _RequestViewSet(DecisionMixin, EmployeeRowsViewSet):
     """list (the member's branches), create (optionally approved at once) and decisions."""
 
-    model = None
-    view_permission = ""
     write_serializer_class = None
     filterset_fields = ["status", "employee"]
-
-    def get_queryset(self):
-        employees = visible_employees(self.request.actor, self.view_permission)
-        return self.model.objects.filter(employee__in=employees).select_related("employee")
-
-    def list(self, request):
-        page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
-        return self.get_paginated_response(self.get_serializer(page, many=True).data)
 
     def record(self, data: dict, approve: bool):
         raise NotImplementedError
@@ -206,6 +236,7 @@ class _RequestViewSet(DecisionMixin, viewsets.GenericViewSet):
 
 class LeaveRequestViewSet(_RequestViewSet):
     model = LeaveRequest
+    related = ("employee", "leave_type")
     view_permission = "attendance.leave.view"
     serializer_class = LeaveRequestSerializer
     write_serializer_class = LeaveRequestWriteSerializer
@@ -213,9 +244,6 @@ class LeaveRequestViewSet(_RequestViewSet):
     required_permissions = {"list": "attendance.leave.view", "create": leave.REQUEST,
                             "approve": leave.APPROVE, "reject": leave.APPROVE,
                             "cancel": leave.APPROVE}
-
-    def get_queryset(self):
-        return super().get_queryset().select_related("leave_type")
 
     def record(self, data, approve):
         return leave.request_leave(leave.LeaveRequestInput(**data), approve=approve,
@@ -229,12 +257,24 @@ class HourlyLeaveViewSet(_RequestViewSet):
     write_serializer_class = HourlyLeaveWriteSerializer
     decision_service = staticmethod(hourly.decide_hourly_leave)
     required_permissions = {"list": "attendance.hourly.view", "create": hourly.REQUEST,
-                            "approve": hourly.APPROVE, "reject": hourly.APPROVE,
-                            "cancel": hourly.APPROVE}
+                            "group": hourly.REQUEST, "approve": hourly.APPROVE,
+                            "reject": hourly.APPROVE, "cancel": hourly.APPROVE}
 
     def record(self, data, approve):
         return hourly.record_hourly_leave(hourly.HourlyLeaveInput(**data), approve=approve,
                                           actor=self.request.actor)
+
+    @action(detail=False, methods=["post"])
+    def group(self, request):
+        """The same spans for a group: previewed (`save` false), then saved."""
+        data = dict(_valid(GroupHourlyLeaveSerializer, request.data))
+        group, options = GroupFields.group(data), GroupFields.run_options(data)
+        spans = tuple((span["starts_at"], span["ends_at"]) for span in data.pop("spans"))
+        approve = data.pop("approve")
+        outcome = hourly.record_hourly_leave_for_group(
+            hourly.GroupHourlyLeaveInput(group=group, spans=spans, **data), approve=approve,
+            **options, actor=request.actor)
+        return outcome_response(outcome)
 
 
 router = SimpleRouter()

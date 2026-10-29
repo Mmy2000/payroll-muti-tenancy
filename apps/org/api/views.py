@@ -15,6 +15,14 @@ class BranchWriteSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=30, required=False, allow_blank=True, default="")
     address = serializers.CharField(required=False, allow_blank=True, default="")
     is_head_office = serializers.BooleanField(required=False, default=False)
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False,
+                                        allow_null=True, default=None, min_value=-90,
+                                        max_value=90)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False,
+                                         allow_null=True, default=None, min_value=-180,
+                                         max_value=180)
+    radius_m = serializers.IntegerField(required=False, default=200, min_value=20,
+                                        max_value=5000)
 
 
 class BranchViewSet(viewsets.GenericViewSet):
