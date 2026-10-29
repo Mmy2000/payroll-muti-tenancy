@@ -1,0 +1,95 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui attendance %}
+{% block title %}{% translate "Attendance" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Attendance" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ day|date:"l" }} · {{ day|date:"DATE_FORMAT" }}{% if day == today %} · {% translate "today" %}{% endif %}</p>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    {% if can_import %}<a class="btn btn-secondary" href="{% url 'attendance-import' %}">{% icon "file-spreadsheet" "size-4" %}{% translate "Import from Excel" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form method="get" class="card mb-6 grid grid-cols-2 gap-3 p-4 lg:flex lg:flex-wrap lg:items-end" role="search">
+  <div class="col-span-2 flex items-end gap-2">
+    <a class="btn btn-secondary h-10 px-3" href="?date={{ previous|date:'Y-m-d' }}{% if branch %}&branch={{ branch.pk }}{% endif %}{% if department %}&department={{ department.pk }}{% endif %}" aria-label="{% translate 'Previous day' %}"><span class="rtl:rotate-180">←</span></a>
+    <label class="flex-1"><span class="form-label">{% translate "Date" %}</span><input type="date" name="date" class="form-input" value="{{ day|date:'Y-m-d' }}"></label>
+    <a class="btn btn-secondary h-10 px-3" href="?date={{ next|date:'Y-m-d' }}{% if branch %}&branch={{ branch.pk }}{% endif %}{% if department %}&department={{ department.pk }}{% endif %}" aria-label="{% translate 'Next day' %}"><span class="rtl:rotate-180">→</span></a>
+  </div>
+  {% if branches|length > 1 %}
+  <label class="lg:w-44"><span class="form-label">{% translate "Branch" %}</span>
+    <select name="branch" class="form-input"><option value="">{% translate "All branches" %}</option>
+      {% for b in branches %}<option value="{{ b.pk }}" {% if branch == b %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
+  {% endif %}
+  <label class="lg:w-44"><span class="form-label">{% translate "Department" %}</span>
+    <select name="department" class="form-input"><option value="">{% translate "All departments" %}</option>
+      {% for d in departments %}<option value="{{ d.pk }}" {% if department == d %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select></label>
+  <button class="btn btn-secondary col-span-2 lg:col-span-1" type="submit">{% icon "search" "size-4" %}{% translate "Show" %}</button>
+</form>
+
+<div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+  {% include "attendance/_tile.html" with label=_("Present") value=summary.counts.present tone="text-emerald-700" %}
+  {% include "attendance/_tile.html" with label=_("Absent") value=summary.counts.absent tone="text-red-700" %}
+  {% include "attendance/_tile.html" with label=_("On leave") value=summary.counts.leave %}
+  {% include "attendance/_tile.html" with label=_("Day off or holiday") value=summary.counts.day_off|add:summary.counts.holiday %}
+  {% include "attendance/_tile.html" with label=_("Not yet") value=summary.counts.upcoming %}
+</div>
+
+<section class="card overflow-hidden">
+  {% if rows %}
+  {% if can_manage %}
+  <form id="bulk" class="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3" data-api-form data-shape="nested"
+        data-endpoint="{% url 'attendance-day-bulk' %}" data-method="POST" data-success="{% translate 'Saved.' %}" novalidate>
+    <input type="hidden" name="work_date" value="{{ day|date:'Y-m-d' }}">
+    <input type="hidden" name="shift_times" value="true">
+    <span class="text-sm text-slate-600">{% translate "For the ticked employees:" %}</span>
+    <select name="kind" class="form-input w-auto" aria-label="{% translate 'What happened' %}" data-native>
+      <option value="worked">{% translate "Present, on their shift's times" %}</option>
+      <option value="absent">{% translate "Absent" %}</option>
+      <option value="excused">{% translate "Excused absence" %}</option>
+      <option value="day_off">{% translate "Day off" %}</option>
+    </select>
+    <button type="submit" class="btn btn-primary">{% icon "check-check" "size-4" %}{% translate "Apply" %}</button>
+    <p class="form-error w-full" data-error-for="employee_ids"></p>
+    <div class="hidden w-full rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+  </form>
+  {% endif %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr>
+        {% if can_manage %}<th class="w-8"></th>{% endif %}
+        <th>{% translate "Employee" %}</th><th>{% translate "Status" %}</th>
+        <th>{% translate "Came" %}</th><th>{% translate "Left" %}</th><th class="text-end">{% translate "Worked" %}</th>
+        <th class="text-end">{% translate "Late" %}</th><th class="text-end">{% translate "Early" %}</th><th class="text-end">{% translate "Extra" %}</th>
+        {% if can_manage %}<th class="min-w-[22rem]">{% translate "Correct" %}</th>{% endif %}
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}{% with e=row.employee d=row.day %}
+        <tr>
+          {% if can_manage %}<td>{% if row.can_manage %}<input type="checkbox" form="bulk" data-multi="employee_ids" value="{{ e.pk }}" class="size-4 rounded border-slate-300 accent-brand-600" aria-label="{{ e.name }}" {% if d.status == "absent" or d.status == "upcoming" %}checked{% endif %}>{% endif %}</td>{% endif %}
+          <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'attendance-employee' e.pk %}?month={{ day|date:'Y-m' }}">{{ e.name }}</a>
+            <div class="text-xs text-slate-500"><span class="num">#{{ e.code }}</span> · {{ e.branch.name }}</div></td>
+          <td>{% day_badge d %}{% if d.source == "manual" %} <span class="text-xs text-slate-400" title="{% translate 'Entered by hand' %}">{% icon "pencil" "size-3 inline" %}</span>{% endif %}
+            {% if d.missing_check_out %}<div class="text-xs text-amber-700">{% translate "No check-out" %}</div>{% endif %}</td>
+          <td><span class="num">{{ d.check_in|time:"H:i"|default:"—" }}</span></td>
+          <td><span class="num">{{ d.check_out|time:"H:i"|default:"—" }}</span></td>
+          <td class="text-end"><span class="num">{{ d.worked_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num {% if d.late_minutes %}text-amber-700{% endif %}">{{ d.late_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num {% if d.early_minutes %}text-amber-700{% endif %}">{{ d.early_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num">{{ d.extra_minutes|hours }}</span></td>
+          {% if can_manage %}<td>{% if row.can_manage %}{% include "attendance/_day_editor.html" with employee=e result=d work_date=day %}{% endif %}</td>{% endif %}
+        </tr>
+      {% endwith %}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "Nobody to show" as empty_title %}
+    {% translate "No employees were working for you on this day, with these filters." as empty_text %}
+    {% include "components/empty_state.html" with icon="clock" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

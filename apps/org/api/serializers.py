@@ -1,0 +1,16 @@
+from rest_framework import serializers
+
+from apps.org.models import Branch, Department
+
+
+class BranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Branch
+        fields = ["id", "code", "name", "is_head_office", "phone",
+                  "address", "is_active"]
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ["id", "code", "name", "is_active"]

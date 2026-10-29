@@ -1,0 +1,57 @@
+{# An Excel import (apps/core/import_page.py): page, report, columns. #}
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{{ page.back_url }}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ page.back_label }}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ page.title }}</h1>
+  <p class="mt-1 max-w-2xl text-sm text-slate-500">{{ page.intro }} {% translate "If any row has a problem, nothing is imported and every problem is listed, so you can fix the file and try again." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    {% if report and report.errors %}
+    <section class="card overflow-hidden border-red-200">
+      <div class="border-b border-red-100 bg-red-50/70 px-5 py-3 text-sm font-medium text-red-800">
+        {% blocktranslate trimmed count counter=report.errors|length %}Nothing was imported: {{ counter }} row has a problem.{% plural %}Nothing was imported: {{ counter }} rows have problems.{% endblocktranslate %}
+      </div>
+      <table class="table">
+        <thead><tr><th class="w-20">{% translate "Row" %}</th><th>{% translate "Problem" %}</th></tr></thead>
+        <tbody>
+        {% for row, problems in report.errors %}
+          <tr><td><span class="num">{% if row %}{{ row }}{% else %}—{% endif %}</span></td>
+            <td class="text-sm">{% for problem in problems %}<div>{{ problem }}</div>{% endfor %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+    <form class="card" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="card-body space-y-4">
+        <div>
+          <label class="form-label" for="f-file">{% translate "Excel file (.xlsx)" %}</label>
+          <input id="f-file" type="file" name="file" accept=".xlsx" class="form-file" required>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button type="submit" class="btn btn-primary">{% icon "upload" "size-4" %}{% translate "Import" %}</button>
+          <a class="btn btn-secondary" href="{{ page.template_url }}">{% icon "file-down" "size-4" %}{% translate "Download the template" %}</a>
+        </div>
+      </div>
+    </form>
+  </div>
+  <aside class="card">
+    <div class="card-body">
+      <h2 class="text-base font-semibold text-slate-900">{% translate "Columns" %}</h2>
+      <p class="mt-1 text-sm text-slate-500">{% translate "The first row holds these names. Dates are YYYY-MM-DD, times HH:MM." %}</p>
+      <ul class="mt-4 space-y-1.5 text-sm">
+        {% for column in columns %}
+        <li class="flex justify-between gap-3"><code class="text-xs text-slate-700">{{ column.key }}</code><span class="text-end text-slate-500">{{ column.label }}{% if column.required %} <span class="text-red-600">*</span>{% endif %}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

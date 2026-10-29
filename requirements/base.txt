@@ -1,0 +1,13 @@
+# Runtime dependencies (Django 6.x, see docs/PLAN.md "Decisions").
+Django==6.1.2
+djangorestframework==3.18.3
+djangorestframework-simplejwt==5.5.1  # the mobile app's JWT sign-in (contract kept from PayRole)
+django-filter==26.2
+drf-spectacular==0.30.0
+psycopg[binary]==3.3.6
+django-environ==0.14.0
+argon2-cffi==25.1.0
+cryptography==50.0.2
+phonenumbers==9.0.42
+openpyxl==3.1.5  # Excel import and export
+gunicorn==23.0.0; sys_platform != "win32"  # the production app server (Linux)

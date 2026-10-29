@@ -1,0 +1,57 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui attendance %}
+{% block title %}{{ employee.name }} · {% translate "Attendance" %}{% endblock %}
+{% block page_header %}
+<div class="mb-6">
+  <a href="{% url 'employee' employee.pk %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ employee.name }}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Attendance" %} · {{ month|date:"F Y" }}</h1>
+    <span class="ms-auto flex gap-2">
+      <a class="btn btn-secondary px-3" href="?month={{ previous|date:'Y-m' }}" aria-label="{% translate 'Previous month' %}"><span class="rtl:rotate-180">←</span></a>
+      <a class="btn btn-secondary px-3" href="?month={{ next|date:'Y-m' }}" aria-label="{% translate 'Next month' %}"><span class="rtl:rotate-180">→</span></a>
+    </span>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">
+  {% include "attendance/_tile.html" with label=_("Present") value=summary.counts.present tone="text-emerald-700" %}
+  {% include "attendance/_tile.html" with label=_("Absent") value=summary.counts.absent tone="text-red-700" %}
+  {% include "attendance/_tile.html" with label=_("Excused") value=summary.counts.excused %}
+  {% include "attendance/_tile.html" with label=_("On leave") value=summary.counts.leave %}
+  {% include "attendance/_tile.html" with label=_("Worked (h)") value=summary.worked_minutes|hours %}
+  {% include "attendance/_tile.html" with label=_("Late (h)") value=summary.late_minutes|hours tone="text-amber-700" %}
+  {% include "attendance/_tile.html" with label=_("Extra (h)") value=summary.extra_minutes|hours %}
+  {% if balance %}{% include "attendance/_tile.html" with label=_("Annual leave left") value=balance.remaining %}{% endif %}
+</div>
+
+<section class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr>
+        <th>{% translate "Day" %}</th><th>{% translate "Status" %}</th><th>{% translate "Came" %}</th><th>{% translate "Left" %}</th>
+        <th class="text-end">{% translate "Worked" %}</th><th class="text-end">{% translate "Late" %}</th><th class="text-end">{% translate "Early" %}</th>
+        <th class="text-end">{% translate "Extra" %}</th><th class="text-end">{% translate "Hourly leave" %}</th>
+        {% if can_manage %}<th class="min-w-[22rem]">{% translate "Correct" %}</th>{% endif %}
+      </tr></thead>
+      <tbody>
+      {% for d in days %}
+        <tr class="{% if d.rest_day %}bg-slate-50/60{% endif %}">
+          <td><span class="num">{{ d.day|date:"d" }}</span> <span class="text-xs text-slate-500">{{ d.day|date:"D" }}</span></td>
+          <td>{% day_badge d %}{% if d.source == "manual" %} <span class="text-xs text-slate-400" title="{% translate 'Entered by hand' %}">{% icon "pencil" "size-3 inline" %}</span>{% endif %}
+            {% if d.missing_check_out %}<div class="text-xs text-amber-700">{% translate "No check-out" %}</div>{% endif %}</td>
+          <td><span class="num">{{ d.check_in|time:"H:i"|default:"—" }}</span></td>
+          <td><span class="num">{{ d.check_out|time:"H:i"|default:"—" }}</span></td>
+          <td class="text-end"><span class="num">{{ d.worked_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num {% if d.late_minutes %}text-amber-700{% endif %}">{{ d.late_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num {% if d.early_minutes %}text-amber-700{% endif %}">{{ d.early_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num">{{ d.extra_minutes|hours }}</span></td>
+          <td class="text-end"><span class="num">{{ d.hourly_minutes|hours }}</span></td>
+          {% if can_manage %}<td>{% if d.status != "not_employed" %}{% include "attendance/_day_editor.html" with result=d work_date=d.day %}{% endif %}</td>{% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Departments" %}{% endblock %}
+{% block page_header %}
+{% can "org.department.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Departments" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Groups of employees, across your branches." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'department-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "org.department.manage" as can_manage %}
+<section class="card overflow-hidden">
+  {% if departments %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for department in departments %}
+        <tr>
+          <td><span class="num text-slate-500">{{ department.code }}</span></td>
+          <td class="font-medium text-slate-900">{{ department.name }}</td>
+          <td>{% if department.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'department-edit' department.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No departments yet" as empty_title %}
+    {% translate "Departments group employees for reports and payroll runs." as empty_text %}
+    {% include "components/empty_state.html" with icon="users-round" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

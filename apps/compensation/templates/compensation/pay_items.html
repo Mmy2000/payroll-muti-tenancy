@@ -1,0 +1,43 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Pay items" %}{% endblock %}
+{% block page_header %}
+{% can "compensation.item.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Pay items" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Allowances and other additions and deductions given to employees for a month." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'pay-item-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New pay item" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "compensation.item.manage" as can_manage %}
+<section class="card overflow-hidden">
+  {% if items %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Kind" %}</th>
+        <th>{% translate "Counted" %}</th><th>{% translate "Taxable" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          <td><span class="num text-slate-500">{{ item.code }}</span></td>
+          <td class="font-medium text-slate-900">{{ item.name }}</td>
+          <td>{% if item.kind == "addition" %}<span class="badge badge-success">{{ item.get_kind_display }}</span>{% else %}<span class="badge badge-warning">{{ item.get_kind_display }}</span>{% endif %}</td>
+          <td class="text-slate-600">{{ item.get_basis_display }}</td>
+          <td>{% if item.taxable %}{% icon "check" "size-4 text-emerald-600" %}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
+          <td>{% if item.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'pay-item-edit' item.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    {% translate "No pay items yet" as empty_title %}
+    {% translate "Add allowances such as transport or meals, and deductions such as uniform costs." as empty_text %}
+    {% include "components/empty_state.html" with icon="hand-coins" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

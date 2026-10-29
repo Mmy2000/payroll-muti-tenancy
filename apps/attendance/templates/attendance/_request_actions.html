@@ -1,0 +1,16 @@
+{% load i18n ui %}{# Approve / reject / cancel a request. Include with item= (a request), basename= (its API route name). #}
+<div class="flex justify-end gap-1">
+  {% if item.status == "pending" %}
+  <form data-api-form data-method="POST" data-endpoint="{% url basename|add:'-approve' item.pk %}" data-success="{% translate 'Approved.' %}">
+    <button type="submit" class="btn btn-secondary h-8 px-2.5 text-xs text-emerald-700">{% icon "check" "size-4" %}{% translate "Approve" %}</button>
+  </form>
+  <form data-api-form data-method="POST" data-endpoint="{% url basename|add:'-reject' item.pk %}" data-success="{% translate 'Rejected.' %}">
+    <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs text-red-700">{% translate "Reject" %}</button>
+  </form>
+  {% endif %}
+  {% if item.status == "pending" or item.status == "approved" %}
+  <form data-api-form data-method="POST" data-endpoint="{% url basename|add:'-cancel' item.pk %}" data-success="{% translate 'Cancelled.' %}">
+    <button type="submit" class="btn btn-ghost h-8 px-2.5 text-xs text-slate-500">{% translate "Cancel" %}</button>
+  </form>
+  {% endif %}
+</div>

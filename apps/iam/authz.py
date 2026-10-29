@@ -1,0 +1,147 @@
+"""Authorization checks.
+
+`Actor` is what a request, job or import acts as: a member plus the effective permission map
+of all their role assignments. `actor.can(code, branch)` is the one question everything asks:
+DRF permission classes, web views, services (`actor.require`) and templates (`{% can %}`).
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from decimal import Decimal
+from functools import wraps
+
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.shortcuts import render
+from django.utils.translation import gettext as _
+
+from apps.core.errors import PermissionDenied
+
+from .catalog import AUTHENTICATED, WILDCARD, limits
+
+ALL_BRANCHES = None  # scope value meaning "every branch"
+
+
+def _merge(current, new):
+    if current is ALL_BRANCHES or new is ALL_BRANCHES:
+        return ALL_BRANCHES
+    return current | new
+
+
+@dataclass
+class Actor:
+    user: object
+    membership: object
+    grants: dict[str, frozenset[int] | None] = field(default_factory=dict)
+    limit_values: dict[str, Decimal] = field(default_factory=dict)
+    # Permissions owned by features switched off for this client (console → Features): not
+    # granted to anyone, Owners included. See apps.platform.tenants.features.
+    disabled: frozenset[str] = frozenset()
+
+    def _scopes(self, code: str):
+        for key in (code, WILDCARD):
+            if key in self.grants:
+                yield self.grants[key]
+
+    def can(self, code: str, branch=None) -> bool:
+        if code == AUTHENTICATED:
+            return True
+        if code in self.disabled:
+            return False
+        branch_id = getattr(branch, "pk", branch)
+        for scope in self._scopes(code):
+            if scope is ALL_BRANCHES or branch_id is None or branch_id in scope:
+                return True
+        return False
+
+    def feature_off(self, code: str) -> bool:
+        return code in self.disabled
+
+    def require(self, code: str, branch=None) -> None:
+        if self.feature_off(code):
+            raise PermissionDenied(_("This feature is not available in your plan."),
+                                   code="FEATURE_DISABLED")
+        if not self.can(code, branch):
+            raise PermissionDenied(_("You do not have permission to do this."),
+                                   code="PERMISSION_DENIED")
+
+    def branch_ids(self, code: str) -> frozenset[int] | None:
+        """Branches where `code` is granted (None = all). Used to scope list queries."""
+        result: frozenset[int] | None = frozenset()
+        for scope in self._scopes(code):
+            result = _merge(result, scope)
+        return result
+
+    def limit(self, key: str) -> Decimal:
+        """A member's numeric limit (e.g. max discount rate). Explicit values win; Owners
+        (wildcard) are otherwise unlimited (1 = 100 %); everyone else gets the default."""
+        if key in self.limit_values:
+            return self.limit_values[key]
+        if WILDCARD in self.grants:
+            return Decimal(1)
+        return Decimal(limits()[key].default)
+
+
+def build_actor(membership) -> Actor:
+    from .models import MembershipRole
+
+    grants: dict[str, frozenset[int] | None] = {}
+    assignments = (
+        MembershipRole.objects.filter(membership=membership)
+        .select_related("role")
+        .prefetch_related("role__grants", "branches")
+    )
+    for assignment in assignments:
+        scope = (ALL_BRANCHES if assignment.all_branches
+                 else frozenset(b.branch_id for b in assignment.branches.all()))
+        for grant in assignment.role.grants.all():
+            grants[grant.permission] = (_merge(grants[grant.permission], scope)
+                                        if grant.permission in grants else scope)
+
+    limit_values = {lim.key: lim.value for lim in membership.limits.all()}
+    from apps.platform.tenants.features import disabled_permissions
+
+    return Actor(user=membership.user, membership=membership, grants=grants,
+                 limit_values=limit_values,
+                 disabled=disabled_permissions(membership.tenant_id))
+
+
+def members_who_can(code: str, branch=None):
+    """Active members who may `code` in `branch` (any branch when None): the people to tell
+    about something they can act on. One query over role grants, without building actors."""
+    from django.db.models import Q
+
+    from apps.core.tenancy.context import require_current_tenant_id
+    from apps.platform.tenants.features import disabled_permissions
+
+    from .models import Membership, MembershipRole, MembershipStatus
+
+    if code in disabled_permissions(require_current_tenant_id()):
+        return Membership.objects.none()
+    assignments = MembershipRole.objects.filter(role__grants__permission__in=(code, WILDCARD))
+    branch_id = getattr(branch, "pk", branch)
+    if branch_id is not None:
+        assignments = assignments.filter(Q(all_branches=True) | Q(branches__branch_id=branch_id))
+    return Membership.objects.filter(status=MembershipStatus.ACTIVE, user__is_active=True,
+                                     pk__in=assignments.values("membership_id"))
+
+
+def permission_required(code: str):
+    """Web-view decorator: login, active membership, and `code` in any branch."""
+
+    def decorator(view):
+        @wraps(view)
+        @login_required
+        def wrapped(request, *args, **kwargs):
+            actor = getattr(request, "actor", None)
+            if actor is not None and actor.feature_off(code):
+                return render(request, "feature_off.html", status=403)
+            if actor is None or not actor.can(code):
+                raise DjangoPermissionDenied
+            return view(request, *args, **kwargs)
+
+        wrapped.required_permission = code
+        return wrapped
+
+    return decorator

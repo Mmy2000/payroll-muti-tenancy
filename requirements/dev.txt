@@ -1,0 +1,6 @@
+-r base.txt
+pytest==9.2.0
+pytest-django==4.14.0
+hypothesis==6.170.13
+ruff==0.17.3
+polib==1.2.0        # converting PayRole's ui_en.json into .po files (no GNU gettext needed)

@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Employees" %}{% endblock %}
+{% block page_header %}
+{% can "employees.employee.manage" as can_manage %}{% can "employees.salary.manage" as can_pay %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Employees" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Your team: their jobs, pay and working hours." %}</p>
+  </div>
+  <div class="flex gap-2">
+    {% if can_import %}<a href="{% url 'employee-import' %}" class="btn btn-secondary">{% icon "file-spreadsheet" "size-4" %}{% translate "Import from Excel" %}</a>{% endif %}
+    {% if can_manage and can_pay %}<a href="{% url 'employee-new' %}" class="btn btn-primary">{% icon "user-plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th class="w-16">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Branch" %}</th>
+        <th>{% translate "Department" %}</th><th>{% translate "Hiring date" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for e in page.object_list %}
+        <tr>
+          <td><span class="num text-slate-500">{{ e.code }}</span></td>
+          <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'employee' e.pk %}">{{ e.name }}</a>
+            {% if e.job_title %}<div class="text-xs text-slate-500">{{ e.job_title }}</div>{% endif %}</td>
+          <td>{{ e.branch.name }}</td>
+          <td>{{ e.department.name|default:"—" }}</td>
+          <td><span class="num">{{ e.hired_on|date:"Y-m-d" }}</span></td>
+          <td>{% if e.is_active %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Working" %}</span>{% else %}<span class="badge badge-neutral"><span class="badge-dot"></span>{% translate "Left" %}</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-ghost text-xs" href="{% url 'employee' e.pk %}">{% translate "Open" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% if filters.active %}
+      {% translate "No employees match" as empty_title %}
+      {% include "components/empty_state.html" with icon="search" title=empty_title %}
+    {% else %}
+      {% translate "No employees yet" as empty_title %}
+      {% translate "Add your team one by one, or import them from Excel." as empty_text %}
+      {% include "components/empty_state.html" with icon="users" title=empty_title text=empty_text %}
+    {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

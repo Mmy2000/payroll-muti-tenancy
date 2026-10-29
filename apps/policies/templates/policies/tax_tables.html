@@ -1,0 +1,44 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Income tax" %}{% endblock %}
+{% block page_header %}
+{% can "policies.tax.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Income tax" %}</h1>
+    <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Tax tables by the date they start. A month's tax is worked out on the yearly income (the month × 12, less the exemption), bracket by bracket, then divided by 12." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'tax-table-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New tax table" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "policies.tax.manage" as can_manage %}
+<div class="space-y-4">
+{% for table in tables %}
+  <section class="card overflow-hidden">
+    <div class="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-3">
+      <h2 class="font-semibold text-slate-900">{% blocktranslate trimmed with day=table.effective_from|date:"DATE_FORMAT" %}From {{ day }}{% endblocktranslate %}</h2>
+      {% if forloop.first %}<span class="badge badge-brand">{% translate "Latest" %}</span>{% endif %}
+      <span class="text-sm text-slate-500">{% translate "Yearly exemption" %}: <span class="num">{{ table.annual_exemption|num:2 }}</span></span>
+      {% if table.note %}<span class="text-sm text-slate-500">· {{ table.note }}</span>{% endif %}
+      {% if can_manage %}<a class="btn btn-ghost ms-auto text-xs" href="{% url 'tax-table-edit' table.pk %}">{% translate "Edit" %}</a>{% endif %}
+    </div>
+    <table class="table">
+      <thead><tr><th>{% translate "Yearly income up to" %}</th><th class="text-end">{% translate "Rate" %}</th></tr></thead>
+      <tbody>
+      {% for bracket in table.brackets.all %}
+        <tr><td>{% if bracket.up_to is None %}<span class="text-slate-500">{% translate "Above that" %}</span>{% else %}<span class="num">{{ bracket.up_to|num:2 }}</span>{% endif %}</td>
+          <td class="text-end"><span class="num">{{ bracket.rate|num:2 }}%</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% empty %}
+  <section class="card">
+    {% translate "No tax tables yet" as empty_title %}
+    {% translate "Without a tax table, payroll deducts no income tax." as empty_text %}
+    {% include "components/empty_state.html" with icon="landmark" title=empty_title text=empty_text %}
+  </section>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% load i18n ui attendance %}{# Correct one employee's day. Include with employee=, result= (DayResult), work_date=, kinds. #}
+<div class="flex flex-wrap items-center gap-2">
+  <form id="day-{{ employee.pk }}-{{ work_date|date:'Ymd' }}" class="flex flex-wrap items-center gap-2" data-api-form
+        data-endpoint="{% url 'attendance-day-list' %}" data-method="POST" data-success="{% translate 'Saved.' %}" novalidate>
+    <input type="hidden" name="employee_id" value="{{ employee.pk }}">
+    <input type="hidden" name="work_date" value="{{ work_date|date:'Y-m-d' }}">
+    <select name="kind" class="form-input h-9 w-auto py-1 text-sm" data-native aria-label="{% translate 'What happened' %}">
+      {% for value, label in kinds %}<option value="{{ value }}" {% if value == result|entry_kind %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <input type="time" name="check_in" data-empty="null" class="form-input h-9 w-28 py-1 text-sm" value="{{ result.check_in|time:'H:i' }}" aria-label="{% translate 'Came' %}">
+    <input type="time" name="check_out" data-empty="null" class="form-input h-9 w-28 py-1 text-sm" value="{{ result.check_out|time:'H:i' }}" aria-label="{% translate 'Left' %}">
+    <button type="submit" class="btn btn-secondary h-9 px-2.5" aria-label="{% translate 'Save' %}" title="{% translate 'Save' %}">{% icon "check" "size-4" %}</button>
+  </form>
+  {% if result.source == "manual" %}
+  <form data-api-form data-endpoint="{% url 'attendance-day-clear' %}" data-method="POST" data-success="{% translate 'Saved.' %}">
+    <input type="hidden" name="employee_id" value="{{ employee.pk }}">
+    <input type="hidden" name="work_date" value="{{ work_date|date:'Y-m-d' }}">
+    <button type="submit" class="btn btn-ghost h-9 px-2 text-slate-500" title="{% translate 'Remove the entry: the clock counts again' %}" aria-label="{% translate 'Remove the entry: the clock counts again' %}">{% icon "undo-2" "size-4" %}</button>
+  </form>
+  {% endif %}
+</div>

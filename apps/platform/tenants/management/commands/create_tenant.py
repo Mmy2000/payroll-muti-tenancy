@@ -1,0 +1,53 @@
+from getpass import getpass
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
+from apps.core.errors import AppError
+from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
+
+
+class Command(BaseCommand):
+    help = "Provision a tenant: domain, profile, head-office branch and owner membership."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--slug", required=True)
+        parser.add_argument("--name", required=True)
+        parser.add_argument("--domain", help="Defaults to <slug>.TENANT_BASE_DOMAIN (as the "
+                                              "console does)")
+        parser.add_argument("--owner-username", required=True)
+        parser.add_argument("--owner-email")
+        parser.add_argument("--owner-password", help="Prompted for when omitted.")
+        parser.add_argument("--link-existing-owner", action="store_true",
+                            help="The owner's email already has a login: add this tenant to it "
+                                 "(it keeps its password; no password is asked).")
+        parser.add_argument("--currency", default="EGP")
+        parser.add_argument("--timezone", default="Africa/Cairo")
+        parser.add_argument("--locale", default="ar", choices=["ar", "en"])
+        parser.add_argument("--country", default="EG")
+
+    def handle(self, *args, **opts):
+        password = None
+        if not opts["link_existing_owner"]:
+            password = opts["owner_password"] or getpass("Owner password: ")
+            if not password:
+                raise CommandError("An owner password is required.")
+        try:
+            tenant = provision_tenant(
+                ProvisionTenantCommand(
+                    slug=opts["slug"],
+                    name=opts["name"],
+                    domain=opts["domain"] or f"{opts['slug']}.{settings.TENANT_BASE_DOMAIN}",
+                    owner_username=opts["owner_username"],
+                    owner_email=opts["owner_email"],
+                    owner_password=password,
+                    link_existing_owner=opts["link_existing_owner"],
+                    functional_currency=opts["currency"],
+                    timezone=opts["timezone"],
+                    locale=opts["locale"],
+                    country=opts["country"],
+                )
+            )
+        except AppError as exc:
+            raise CommandError(exc.message) from exc
+        self.stdout.write(self.style.SUCCESS(f"Tenant '{tenant.slug}' is {tenant.status}."))

@@ -1,0 +1,51 @@
+{% load i18n %}{# Pay fields. Include with prefix="pay." (new employee) or prefix="" (a change), pay=current values or None, id= a unique id prefix. #}
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
+  <div class="sm:col-span-2">
+    <label class="form-label" for="{{ id }}-basis">{% translate "Paid" %}</label>
+    <select id="{{ id }}-basis" name="{{ prefix }}basis" class="form-input">
+      {% for value, label in bases %}<option value="{{ value }}" {% if pay.basis == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="{{ prefix }}basis"></p>
+  </div>
+  <div class="sm:col-span-2">
+    <label class="form-label" for="{{ id }}-salary">{% translate "Salary or wage" %}</label>
+    <input id="{{ id }}-salary" name="{{ prefix }}salary" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.salary|default_if_none:'' }}" required>
+    <p class="mt-1.5 text-xs text-slate-500">{% translate "The month's salary, the week's wage or the day's wage." %}</p>
+    <p class="form-error" data-error-for="{{ prefix }}salary"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-hours">{% translate "Hours a day" %}</label>
+    <input id="{{ id }}-hours" name="{{ prefix }}hours_per_day" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.hours_per_day|default_if_none:'8' }}">
+    <p class="form-error" data-error-for="{{ prefix }}hours_per_day"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-ot">{% translate "Overtime ×" %}</label>
+    <input id="{{ id }}-ot" name="{{ prefix }}overtime_multiplier" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.overtime_multiplier|default_if_none:'1.5' }}">
+    <p class="form-error" data-error-for="{{ prefix }}overtime_multiplier"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-abs">{% translate "Absent day ×" %}</label>
+    <input id="{{ id }}-abs" name="{{ prefix }}absence_multiplier" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.absence_multiplier|default_if_none:'1' }}">
+    <p class="form-error" data-error-for="{{ prefix }}absence_multiplier"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-hol">{% translate "Holiday work ×" %}</label>
+    <input id="{{ id }}-hol" name="{{ prefix }}holiday_multiplier" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.holiday_multiplier|default_if_none:'1' }}">
+    <p class="form-error" data-error-for="{{ prefix }}holiday_multiplier"></p>
+  </div>
+  <div class="sm:col-span-2">
+    <label class="form-label" for="{{ id }}-insured">{% translate "Insured salary" %}</label>
+    <input id="{{ id }}-insured" name="{{ prefix }}insured_salary" data-empty="null" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.insured_salary|default_if_none:'' }}" placeholder="{% translate 'Not insured' %}">
+    <p class="form-error" data-error-for="{{ prefix }}insured_salary"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-leave">{% translate "Annual leave days" %}</label>
+    <input id="{{ id }}-leave" name="{{ prefix }}annual_leave_days" class="form-input num w-full text-start" inputmode="numeric" value="{{ pay.annual_leave_days|default_if_none:'21' }}">
+    <p class="form-error" data-error-for="{{ prefix }}annual_leave_days"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-perm">{% translate "Permission hours a month" %}</label>
+    <input id="{{ id }}-perm" name="{{ prefix }}permission_hours" class="form-input num w-full text-start" inputmode="decimal" value="{{ pay.permission_hours|default_if_none:'0' }}">
+    <p class="form-error" data-error-for="{{ prefix }}permission_hours"></p>
+  </div>
+</div>

@@ -1,0 +1,180 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{{ employee.name }}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'employees' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Employees" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ employee.name }}</h1>
+    <span class="badge badge-neutral num">#{{ employee.code }}</span>
+    {% if employee.is_active %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Working" %}</span>{% else %}<span class="badge badge-neutral"><span class="badge-dot"></span>{% translate "Left" %}</span>{% endif %}
+    <span class="ms-auto flex gap-2">
+      {% include "audit/_history_link.html" with table="employees_employee" row=employee.pk %}
+      {% if can_see_attendance %}<a class="btn btn-secondary" href="{% url 'attendance-employee' employee.pk %}">{% icon "clock" "size-4" %}{% translate "Attendance" %}</a>{% endif %}
+      {% if can_manage %}<a class="btn btn-secondary" href="{% url 'employee-edit' employee.pk %}">{% icon "pencil" "size-4" %}{% translate "Edit" %}</a>{% endif %}
+    </span>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <div class="space-y-6 xl:col-span-2">
+
+    {% if can_see_pay %}
+    <section class="card overflow-hidden">
+      <div class="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-900">{% translate "Pay" %}</h2>
+        {% if pay %}<span class="text-sm text-slate-500">{% blocktranslate trimmed with day=pay.effective_from|date:"DATE_FORMAT" %}since {{ day }}{% endblocktranslate %}</span>{% endif %}
+      </div>
+      {% if pay %}
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-4 px-5 py-4 text-sm sm:grid-cols-4">
+        <div><dt class="text-slate-500">{{ pay.get_basis_display }}</dt><dd class="mt-1 text-lg font-semibold text-slate-900 num">{{ pay.salary|num:2 }}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Day" %}</dt><dd class="mt-1 font-medium num">{{ pay.daily|num:2 }}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Hour" %}</dt><dd class="mt-1 font-medium num">{{ pay.hourly|num:2 }}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Insured salary" %}</dt><dd class="mt-1 font-medium num">{% if pay.insured_salary is None %}—{% else %}{{ pay.insured_salary|num:2 }}{% endif %}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Hours a day" %}</dt><dd class="mt-1 num">{{ pay.hours_per_day|num:2 }}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Overtime ×" %}</dt><dd class="mt-1 num">{{ pay.overtime_multiplier|num:2 }}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Absent day ×" %}</dt><dd class="mt-1 num">{{ pay.absence_multiplier|num:2 }}</dd></div>
+        <div><dt class="text-slate-500">{% translate "Annual leave days" %}</dt><dd class="mt-1 num">{{ pay.annual_leave_days }}</dd></div>
+      </dl>
+      {% endif %}
+      {% if pay_history|length > 1 or can_change_pay %}
+      <div class="overflow-x-auto border-t border-slate-100">
+        <table class="table">
+          <thead><tr><th>{% translate "From" %}</th><th>{% translate "Paid" %}</th><th class="text-end">{% translate "Salary or wage" %}</th><th class="text-end">{% translate "Hour" %}</th><th>{% translate "Note" %}</th><th></th></tr></thead>
+          <tbody>
+          {% for row in pay_history %}
+            <tr>
+              <td><span class="num">{{ row.effective_from|date:"Y-m-d" }}</span></td>
+              <td>{{ row.get_basis_display }}</td>
+              <td class="text-end"><span class="num">{{ row.salary|num:2 }}</span></td>
+              <td class="text-end"><span class="num">{{ row.hourly|num:2 }}</span></td>
+              <td class="text-sm text-slate-500">{{ row.note }}</td>
+              <td class="text-end">{% if can_change_pay and not forloop.last %}
+                <form data-api-form data-method="DELETE" data-endpoint="{% url 'pay-change-detail' row.pk %}" data-success="{% translate 'Deleted.' %}">
+                  <button type="submit" class="btn btn-ghost h-8 px-2 text-slate-400 hover:text-red-600" aria-label="{% translate 'Remove this change' %}" title="{% translate 'Remove this change' %}">{% icon "trash-2" "size-4" %}</button>
+                </form>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+      {% if can_change_pay %}
+      <details class="border-t border-slate-100" {% if not pay %}open{% endif %}>
+        <summary class="cursor-pointer px-5 py-3 text-sm font-medium text-brand-700 hover:bg-slate-50">{% translate "Change pay from a date" %}</summary>
+        <form class="space-y-5 px-5 pb-5" data-api-form data-shape="nested" data-endpoint="{{ endpoint }}pay/" data-method="POST" data-success="{% translate 'Saved.' %}" novalidate>
+          <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
+            <div>
+              <label class="form-label" for="pc-from">{% translate "From" %}</label>
+              <input id="pc-from" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+              <p class="form-error" data-error-for="effective_from"></p>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="form-label" for="pc-note">{% translate "Reason" %}</label>
+              <input id="pc-note" name="note" class="form-input" maxlength="300" placeholder="{% translate 'e.g. yearly raise' %}">
+            </div>
+          </div>
+          {% include "employees/_pay_fields.html" with prefix="" id="pc" %}
+          <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save the change" %}</button>
+        </form>
+      </details>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="card overflow-hidden">
+      <div class="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-900">{% translate "Working hours" %}</h2>
+        {% if schedule %}<span class="text-sm text-slate-500">{% blocktranslate trimmed with day=schedule.effective_from|date:"DATE_FORMAT" %}since {{ day }}{% endblocktranslate %}</span>{% endif %}
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>{% translate "From" %}</th><th>{% translate "Shift" %}</th><th>{% translate "Days off" %}</th><th>{% translate "Lateness" %}</th><th>{% translate "Overtime" %}</th><th></th></tr></thead>
+          <tbody>
+          {% for row in schedules %}
+            <tr>
+              <td><span class="num">{{ row.effective_from|date:"Y-m-d" }}</span>{% if row == schedule %} <span class="badge badge-brand">{% translate "Now" %}</span>{% endif %}</td>
+              <td><span class="num">{{ row.starts_at|time:"H:i" }}–{{ row.ends_at|time:"H:i" }}</span></td>
+              <td class="text-sm">{% for value, label in week %}{% if value in row.days_off %}<span class="me-1">{{ label }}</span>{% endif %}{% empty %}—{% endfor %}</td>
+              <td class="text-sm">{{ row.lateness_policy.name|default:_("Exact time") }}</td>
+              <td class="text-sm">{{ row.overtime_policy.name|default:_("None") }}</td>
+              <td class="text-end">{% if can_manage and not forloop.last %}
+                <form data-api-form data-method="DELETE" data-endpoint="{% url 'schedule-change-detail' row.pk %}" data-success="{% translate 'Deleted.' %}">
+                  <button type="submit" class="btn btn-ghost h-8 px-2 text-slate-400 hover:text-red-600" aria-label="{% translate 'Remove this change' %}" title="{% translate 'Remove this change' %}">{% icon "trash-2" "size-4" %}</button>
+                </form>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if can_manage %}
+      <details class="border-t border-slate-100">
+        <summary class="cursor-pointer px-5 py-3 text-sm font-medium text-brand-700 hover:bg-slate-50">{% translate "Change hours from a date" %}</summary>
+        <form class="space-y-5 px-5 pb-5" data-api-form data-shape="nested" data-endpoint="{{ endpoint }}schedule/" data-method="POST" data-success="{% translate 'Saved.' %}" novalidate>
+          <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
+            <div>
+              <label class="form-label" for="sc-from">{% translate "From" %}</label>
+              <input id="sc-from" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+              <p class="form-error" data-error-for="effective_from"></p>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="form-label" for="sc-note">{% translate "Reason" %}</label>
+              <input id="sc-note" name="note" class="form-input" maxlength="300">
+            </div>
+          </div>
+          {% include "employees/_schedule_fields.html" with prefix="" id="sc" %}
+          <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save the change" %}</button>
+        </form>
+      </details>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <dl class="card-body space-y-3 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Branch" %}</dt><dd class="text-end font-medium">{{ employee.branch.name }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Department" %}</dt><dd class="text-end">{{ employee.department.name|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Job title" %}</dt><dd class="text-end">{{ employee.job_title|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Hiring date" %}</dt><dd class="num">{{ employee.hired_on|date:"Y-m-d" }}</dd></div>
+        {% if employee.left_on %}<div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Last day" %}</dt><dd class="num">{{ employee.left_on|date:"Y-m-d" }}</dd></div>{% endif %}
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Phone" %}</dt><dd class="num">{{ employee.phone|default:"—" }}</dd></div>
+        {% if can_manage %}<div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "National ID" %}</dt><dd class="num">{{ employee.national_id|default:"—" }}</dd></div>{% endif %}
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{% translate "Insurance number" %}</dt><dd class="num">{{ employee.insurance_number|default:"—" }}</dd></div>
+      </dl>
+    </section>
+
+    {% if can_manage %}
+    <section class="card">
+      <div class="card-body space-y-4">
+        <h2 class="text-base font-semibold text-slate-900">{% translate "Employment" %}</h2>
+        {% if employee.left_on %}
+          <p class="text-sm text-slate-600">{% blocktranslate trimmed with day=employee.left_on|date:"DATE_FORMAT" %}Left on {{ day }}.{% endblocktranslate %} {{ employee.leave_reason }}</p>
+          <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}reinstate/" data-success="{% translate 'Saved.' %}">
+            <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+            <button type="submit" class="btn btn-secondary w-full">{% translate "Undo: still working here" %}</button>
+          </form>
+        {% else %}
+          <form class="space-y-3" data-api-form data-method="POST" data-endpoint="{{ endpoint }}leave/" data-success="{% translate 'Saved.' %}" novalidate>
+            <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+            <div>
+              <label class="form-label" for="lv-date">{% translate "Last working day" %}</label>
+              <input id="lv-date" type="date" name="left_on" class="form-input" required>
+              <p class="form-error" data-error-for="left_on"></p>
+            </div>
+            <div>
+              <label class="form-label" for="lv-reason">{% translate "Reason" %}</label>
+              <input id="lv-reason" name="reason" class="form-input" maxlength="300">
+            </div>
+            <button type="submit" class="btn btn-secondary w-full">{% icon "log-out" "size-4" %}{% translate "End employment" %}</button>
+          </form>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz attendance %}
+{% block title %}{% translate "Hourly leave" %}{% endblock %}
+{% block page_header %}
+{% can "attendance.hourly.request" as can_request %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Hourly leave" %}</h1>
+    <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "A few hours away within a work day. Approved hours are not deducted, up to each employee's monthly allowance." %}</p>
+  </div>
+  {% if can_request %}<a href="{% url 'hourly-leave-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New hourly leave" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+<div class="mb-4 flex flex-wrap gap-1">{% for tab in filters.tabs %}<a href="?{{ tab.query }}" class="tab{% if tab.active %} tab-active{% endif %}"{% if tab.active %} aria-current="true"{% endif %}>{{ tab.label }}</a>{% endfor %}</div>
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report>
+      <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Day" %}</th><th>{% translate "From" %}</th><th>{% translate "To" %}</th>
+        <th class="text-end">{% translate "Hours" %}</th><th>{% translate "Reason" %}</th><th>{% translate "Status" %}</th>{% if can_approve %}<th></th>{% endif %}</tr></thead>
+      <tbody>
+      {% for item in page.object_list %}
+        <tr>
+          <td><a class="font-medium text-slate-900 hover:underline" href="?{{ filters.query }}&party={{ item.employee_id }}">{{ item.employee.name }}</a></td>
+          <td><span class="num">{{ item.work_date|date:"Y-m-d" }}</span></td>
+          <td><span class="num">{{ item.starts_at|time:"H:i" }}</span></td>
+          <td><span class="num">{{ item.ends_at|time:"H:i" }}</span></td>
+          <td class="text-end"><span class="num">{{ item.minutes|hours }}</span></td>
+          <td class="text-sm text-slate-600">{{ item.reason }}{% if item.decision_note %}<div class="text-xs text-slate-500">{{ item.decision_note }}</div>{% endif %}</td>
+          <td>{% request_badge item %}</td>
+          {% if can_approve %}<td>{% include "attendance/_request_actions.html" with basename="hourly-leave" %}</td>{% endif %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% else %}
+    {% translate "No hourly leave here" as empty_title %}
+    {% include "components/empty_state.html" with icon="calendar-clock" title=empty_title %}
+  {% endif %}
+</section>
+{% endblock %}

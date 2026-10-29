@@ -1,0 +1,63 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "New leave request" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'leave-requests' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Leave" %}</a>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New leave request" %}</h1>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-endpoint="{% url 'leave-request-list' %}" data-method="POST"
+      data-redirect="{% url 'leave-requests' %}?status=all" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-employee">{% translate "Employee" %}</label>
+          <select id="f-employee" name="employee_id" class="form-input" required>
+            <option value="">—</option>
+            {% for e in employees %}<option value="{{ e.pk }}" {% if selected == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="employee_id"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-type">{% translate "Type" %}</label>
+          <select id="f-type" name="leave_type_id" class="form-input">
+            {% for t in leave_types %}<option value="{{ t.pk }}">{{ t.name }}{% if not t.paid %} · {% translate "unpaid" %}{% endif %}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="leave_type_id"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-start">{% translate "First day" %}</label>
+          <input id="f-start" type="date" name="start_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+          <p class="form-error" data-error-for="start_date"></p>
+        </div>
+        <div>
+          <label class="form-label" for="f-end">{% translate "Last day" %}</label>
+          <input id="f-end" type="date" name="end_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+          <p class="form-error" data-error-for="end_date"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-reason">{% translate "Reason" %}</label>
+          <input id="f-reason" name="reason" class="form-input" maxlength="300">
+        </div>
+        {% if can_approve %}
+        <label class="flex items-center gap-3 sm:col-span-2">
+          <input type="checkbox" name="approve" class="size-4 rounded border-slate-300 accent-brand-600" checked>
+          <span class="text-sm text-slate-700">{% translate "Approve it now" %}</span>
+        </label>
+        {% endif %}
+        <p class="text-sm text-slate-500 sm:col-span-2">{% translate "Weekly days off and public holidays in the range don't count as leave days." %}</p>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'leave-requests' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% endblock %}

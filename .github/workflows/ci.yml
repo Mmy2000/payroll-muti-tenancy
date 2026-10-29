@@ -1,0 +1,95 @@
+# Quality gates for every pull request and every push to main. The same checks run locally with
+# `python ops/check.py` (docs/standards/testing.md).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays: new advisories against unchanged dependencies
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, translations, migrations, tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      # Tests connect as payroll_owner (never a superuser: superusers bypass row-level security).
+      DATABASE_OWNER_URL: postgres://payroll_owner:ci-owner@localhost:5432/payroll
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+      - run: pip install -r requirements/dev.txt
+      - name: Database roles (ops/db/bootstrap.sql, as in README.md)
+        env:
+          PGPASSWORD: postgres
+        run: >-
+          psql -h localhost -U postgres -d postgres -f ops/db/bootstrap.sql
+          -v dbname=payroll -v owner_pw=ci-owner -v rw_pw=ci-rw -v platform_pw=ci-platform
+      - run: python ops/check.py
+
+  assets:
+    name: Committed CSS and icons are up to date
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Keep the committed CSS to compare with
+        run: cp static/core/css/app.css "$RUNNER_TEMP/committed.css"
+      - run: npm ci
+      - run: npm run build
+      - name: The CSS matches a fresh build
+        # Not byte for byte: Windows and Linux round precomputed colours differently in the last
+        # digit, so numbers are compared with a tolerance (ops/compare_css.py).
+        run: |
+          python3 ops/compare_css.py "$RUNNER_TEMP/committed.css" static/core/css/app.css
+          git checkout -- static/core/css/app.css
+      - name: Icons and vendored files are exactly what the build makes
+        run: |
+          changes="$(git status --porcelain -- static apps/core/ui_icons.json)"
+          if [ -n "$changes" ]; then
+            echo "$changes"
+            echo "::error::Run 'npm run build' and commit the result."
+            exit 1
+          fi
+
+  dependencies:
+    name: Known vulnerabilities (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install pip-audit
+      - run: pip-audit -r requirements/base.txt -r requirements/dev.txt
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm audit --audit-level=high

@@ -1,0 +1,9 @@
+{% load i18n ui %}{# One tax bracket (static/core/js/structured.js rows). #}
+<div data-row>
+  <div class="grid grid-cols-[1fr_1fr_auto] items-center gap-3">
+    <input class="form-input num w-full text-start" inputmode="decimal" data-field="up_to" data-empty="null" value="{{ bracket.up_to|default_if_none:'' }}" placeholder="{% translate 'No limit' %}" aria-label="{% translate 'Yearly income up to' %}">
+    <input class="form-input num w-full text-start" inputmode="decimal" data-field="rate" value="{{ bracket.rate|default_if_none:'' }}" aria-label="{% translate 'Rate' %}">
+    <button type="button" class="btn btn-ghost h-9 w-8 px-0 text-slate-400 hover:text-red-600" data-remove-row aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+  </div>
+  <p class="form-error" data-row-error></p>
+</div>

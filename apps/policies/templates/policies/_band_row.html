@@ -1,0 +1,10 @@
+{% load i18n ui %}{# One band of a lateness or overtime policy (static/core/js/structured.js rows). #}
+<div data-row>
+  <div class="grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-3">
+    <input class="form-input num w-full text-start" inputmode="numeric" data-field="from_minutes" value="{{ band.from|default_if_none:'' }}" aria-label="{% translate 'From minute' %}">
+    <input class="form-input num w-full text-start" inputmode="numeric" data-field="to_minutes" value="{{ band.to|default_if_none:'' }}" aria-label="{% translate 'To minute' %}">
+    <input class="form-input num w-full text-start" inputmode="decimal" data-field="hours" value="{{ band.hours|default_if_none:'' }}" aria-label="{% translate 'Hours' %}">
+    <button type="button" class="btn btn-ghost h-9 w-8 px-0 text-slate-400 hover:text-red-600" data-remove-row aria-label="{% translate 'Remove' %}">{% icon "trash-2" "size-4" %}</button>
+  </div>
+  <p class="form-error" data-row-error></p>
+</div>

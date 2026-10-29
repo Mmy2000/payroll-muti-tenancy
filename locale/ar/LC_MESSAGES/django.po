@@ -1,0 +1,2411 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gweb-platform\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+
+msgid "%(count)s employees imported."
+msgstr "تم استيراد %(count)s موظف."
+
+msgid "%(count)s rows imported."
+msgstr "تم استيراد %(count)s صف."
+
+msgid "%(counter)s document"
+msgid_plural "%(counter)s documents"
+msgstr[0] "لا مستندات"
+msgstr[1] "مستند واحد"
+msgstr[2] "مستندان"
+msgstr[3] "%(counter)s مستندات"
+msgstr[4] "%(counter)s مستندًا"
+msgstr[5] "%(counter)s مستند"
+
+msgid "%(counter)s failed sign-in in the last 24 hours."
+msgid_plural "%(counter)s failed sign-ins in the last 24 hours."
+msgstr[0] "لا محاولات دخول فاشلة في آخر 24 ساعة."
+msgstr[1] "محاولة دخول فاشلة واحدة في آخر 24 ساعة."
+msgstr[2] "محاولتا دخول فاشلتان في آخر 24 ساعة."
+msgstr[3] "%(counter)s محاولات دخول فاشلة في آخر 24 ساعة."
+msgstr[4] "%(counter)s محاولة دخول فاشلة في آخر 24 ساعة."
+msgstr[5] "%(counter)s محاولة دخول فاشلة في آخر 24 ساعة."
+
+msgid "%(counter)s permission"
+msgid_plural "%(counter)s permissions"
+msgstr[0] "بلا صلاحيات"
+msgstr[1] "صلاحية واحدة"
+msgstr[2] "صلاحيتان"
+msgstr[3] "%(counter)s صلاحيات"
+msgstr[4] "%(counter)s صلاحية"
+msgstr[5] "%(counter)s صلاحية"
+
+msgid "%(counter)s user"
+msgid_plural "%(counter)s users"
+msgstr[0] "لا مستخدمين"
+msgstr[1] "مستخدم واحد"
+msgstr[2] "مستخدمان"
+msgstr[3] "%(counter)s مستخدمين"
+msgstr[4] "%(counter)s مستخدمًا"
+msgstr[5] "%(counter)s مستخدم"
+
+msgid "%(name)s has no working hours on that day."
+msgstr "%(name)s ليس له مواعيد عمل في ذلك اليوم."
+
+msgid "%(name)s was not employed on that day."
+msgstr "%(name)s لم يكن على رأس العمل في ذلك اليوم."
+
+msgid "'%(slug)s' is reserved."
+msgstr "الاسم «%(slug)s» محجوز."
+
+msgid "(hidden)"
+msgstr "(مخفي)"
+
+msgid "A few hours away within a day, up to a monthly allowance."
+msgstr "ساعات قليلة خلال اليوم، في حدود رصيد شهري."
+
+msgid ""
+"A few hours away within a work day. Approved hours are not deducted, up to "
+"each employee's monthly allowance."
+msgstr ""
+"ساعات قليلة خلال يوم العمل. الساعات المعتمدة لا تُخصم، في حدود الرصيد الشهري"
+" لكل موظف."
+
+msgid "A platform staff login."
+msgstr "حساب من فريق المنصة."
+
+msgid "A role can apply to every branch or only to some."
+msgstr "يمكن أن يسري الدور على كل الفروع أو على بعضها فقط."
+
+msgid "A4 landscape"
+msgstr "A4 عرضي"
+
+msgid "A4 portrait"
+msgstr "A4 طولي"
+
+msgid "Above that"
+msgstr "ما فوق ذلك"
+
+msgid "Absent"
+msgstr "غائب"
+
+msgid "Absent day ×"
+msgstr "يوم الغياب ×"
+
+msgid "Accent colour"
+msgstr "اللون المميز"
+
+msgid "Access denied"
+msgstr "غير مسموح بالدخول"
+
+msgid "Account"
+msgstr "الحساب"
+
+msgid "Account number"
+msgstr "رقم الحساب"
+
+msgid "Account role"
+msgstr "صفة الحساب"
+
+msgid "Active"
+msgstr "نشط"
+
+msgid "Activity"
+msgstr "النشاط"
+
+msgid "Actual time"
+msgstr "الوقت الفعلي"
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Add a band"
+msgstr "إضافة شريحة"
+
+msgid "Add a bracket"
+msgstr "إضافة شريحة"
+
+msgid "Add a holiday"
+msgstr "إضافة إجازة رسمية"
+
+msgid ""
+"Add allowances such as transport or meals, and deductions such as uniform "
+"costs."
+msgstr "أضف بدلات مثل الانتقالات أو الوجبات، واستقطاعات مثل تكلفة الزي."
+
+msgid "Add and edit employees, their hours and departures"
+msgstr "إضافة الموظفين وتعديلهم وتعديل مواعيدهم وتسجيل تركهم العمل"
+
+msgid "Add at least one bracket."
+msgstr "أضف شريحة واحدة على الأقل."
+
+msgid ""
+"Add the year's holidays so payroll pays them and attendance doesn't count "
+"them as absences."
+msgstr ""
+"أضف إجازات السنة حتى تُحسب مدفوعة في المرتبات ولا تُعد غيابًا في الحضور."
+
+msgid "Add your team one by one, or import them from Excel."
+msgstr "أضف فريقك واحدًا تلو الآخر، أو استوردهم من ملف إكسل."
+
+msgid "added"
+msgstr "أضاف"
+
+msgid "Addition"
+msgstr "إضافة"
+
+msgid "Address"
+msgstr "العنوان"
+
+msgid "Administration"
+msgstr "الإدارة"
+
+msgid "Agreed statement"
+msgstr "مطابقة كشف حساب"
+
+msgid "All"
+msgstr "الكل"
+
+msgid "All branches"
+msgstr "كل الفروع"
+
+msgid "All departments"
+msgstr "كل الأقسام"
+
+msgid "All pages"
+msgstr "كل الصفحات"
+
+msgid "All your branches, one set of books"
+msgstr "كل فروعك في دفاتر واحدة"
+
+msgid ""
+"Allowances and other additions and deductions given to employees for a "
+"month."
+msgstr "البدلات وغيرها من الإضافات والاستقطاعات التي تُمنح للموظفين عن شهر."
+
+msgid ""
+"Allowances and other additions and deductions, fixed or per day worked."
+msgstr "البدلات وغيرها من الإضافات والاستقطاعات، ثابتة أو عن كل يوم عمل."
+
+msgid "Allowances and pay items"
+msgstr "البدلات وبنود الراتب"
+
+msgid "Already has a login."
+msgstr "لديه حساب بالفعل."
+
+msgid "Amount per day worked"
+msgstr "مبلغ عن كل يوم عمل"
+
+msgid "An Egyptian national ID has 14 digits."
+msgstr "الرقم القومي المصري مكوّن من 14 رقمًا."
+
+msgid "Annual leave"
+msgstr "إجازة اعتيادية"
+
+msgid "Annual leave can't run into the next year; make two requests."
+msgstr "الإجازة الاعتيادية لا تمتد إلى السنة التالية؛ قدّم طلبين."
+
+msgid "Annual leave days"
+msgstr "أيام الإجازة السنوية"
+
+msgid "Annual leave left"
+msgstr "المتبقي من الإجازة الاعتيادية"
+
+msgid "Another employee has this code."
+msgstr "يوجد موظف آخر بهذا الكود."
+
+msgid "Another employee has this national ID."
+msgstr "يوجد موظف آخر بهذا الرقم القومي."
+
+msgid "Another item has this code."
+msgstr "يوجد بند آخر بهذا الكود."
+
+msgid "Another item has this name."
+msgstr "يوجد بند آخر بهذا الاسم."
+
+msgid "Another leave type has this code."
+msgstr "يوجد نوع إجازة آخر بهذا الكود."
+
+msgid "Another leave type has this name."
+msgstr "يوجد نوع إجازة آخر بهذا الاسم."
+
+msgid "Another policy has this name."
+msgstr "توجد لائحة أخرى بهذا الاسم."
+
+msgid "Another request already covers some of these days."
+msgstr "يوجد طلب آخر يشمل بعض هذه الأيام."
+
+msgid "Another table starts on this date."
+msgstr "يوجد جدول آخر يبدأ في هذا التاريخ."
+
+msgid "Anyone"
+msgstr "أي شخص"
+
+msgid "Appearance"
+msgstr "المظهر"
+
+msgid "Applies from"
+msgstr "يسري من"
+
+msgid "Apply"
+msgstr "تطبيق"
+
+msgid "Approve"
+msgstr "اعتماد"
+
+msgid "Approve it now"
+msgstr "اعتماده الآن"
+
+msgid "Approve, reject and cancel hourly leave"
+msgstr "اعتماد الأذونات ورفضها وإلغاؤها"
+
+msgid "Approve, reject and cancel leave"
+msgstr "اعتماد الإجازات ورفضها وإلغاؤها"
+
+msgid "Approved"
+msgstr "معتمد"
+
+msgid "Approved."
+msgstr "تم الاعتماد."
+
+msgid "Archived"
+msgstr "مؤرشف"
+
+msgid "Ask your workspace owner to give your role the needed permission."
+msgstr "اطلب من مالك الحساب منح دورك الصلاحية المطلوبة."
+
+msgid ""
+"At least 10 characters. Share it privately; the user can change it later."
+msgstr "10 أحرف على الأقل. أرسلها للمستخدم بشكل خاص، ويمكنه تغييرها لاحقًا."
+
+msgid "At least one day must be a working day."
+msgstr "يجب أن يكون يوم واحد على الأقل يوم عمل."
+
+msgid "At most %(count)s rows per file."
+msgstr "بحد أقصى %(count)s صف في الملف الواحد."
+
+msgid "Attendance"
+msgstr "الحضور والانصراف"
+
+msgid "Attendance import"
+msgstr "استيراد الحضور"
+
+msgid "Automatic"
+msgstr "تلقائي"
+
+msgid "Back to the dashboard"
+msgstr "العودة إلى لوحة التحكم"
+
+msgid "Back to top"
+msgstr "اطلع لأعلى الصفحة"
+
+msgid "Background job cancelled"
+msgstr "إلغاء مهمة في الخلفية"
+
+msgid "Background job run again"
+msgstr "إعادة تشغيل مهمة في الخلفية"
+
+msgid "Bands"
+msgstr "الشرائح"
+
+msgid "Bank"
+msgstr "البنك"
+
+msgid "Bank account"
+msgstr "حساب بنكي"
+
+msgid "Bank account branch"
+msgstr "فرع الحساب البنكي"
+
+msgid "Barcode"
+msgstr "الباركود"
+
+msgid "Being set up"
+msgstr "قيد الإعداد"
+
+msgid "Being this many minutes late or less is not deducted."
+msgstr "التأخير بهذا العدد من الدقائق أو أقل لا يُخصم."
+
+msgid "Birth date"
+msgstr "تاريخ الميلاد"
+
+msgid "Blind count"
+msgstr "مطابقة جرد"
+
+msgid "Blue"
+msgstr "أزرق"
+
+msgid "Brackets"
+msgstr "الشرائح"
+
+msgid "Branch"
+msgstr "الفرع"
+
+msgid "Branches"
+msgstr "الفروع"
+
+msgid "Browser"
+msgstr "المتصفح"
+
+msgid "Built-in"
+msgstr "أساسي"
+
+msgid "Built-in roles cannot be deleted."
+msgstr "لا يمكن حذف الأدوار الأساسية."
+
+msgid "Bundles of permissions you give to users."
+msgstr "مجموعات صلاحيات تمنحها للمستخدمين."
+
+msgid "Buy price / g"
+msgstr "سعر الشراء / جم"
+
+msgid "Came"
+msgstr "الحضور"
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Cancelled"
+msgstr "ملغاة"
+
+msgid "Cancelled ones are not added up."
+msgstr "الملغاة لا تُحسب في الإجمالي."
+
+msgid "Cancelled."
+msgstr "تم الإلغاء."
+
+msgid "Caps Lock is on"
+msgstr "مفتاح الأحرف الكبيرة (Caps Lock) مفعّل"
+
+msgid "Carats"
+msgstr "القيراط"
+
+msgid "Card terminal"
+msgstr "ماكينة الدفع"
+
+msgid "Cash box"
+msgstr "الخزينة"
+
+msgid "Category"
+msgstr "المجموعة"
+
+msgid "Category making charge"
+msgstr "مصنعية الصنف"
+
+msgid "Certificate no."
+msgstr "رقم الشهادة"
+
+msgid "Change hours from a date"
+msgstr "تغيير المواعيد من تاريخ"
+
+msgid "Change password"
+msgstr "تغيير كلمة المرور"
+
+msgid "Change pay from a date"
+msgstr "تغيير الراتب من تاريخ"
+
+msgid "changed"
+msgstr "عدّل"
+
+msgid "Changes to master data appear here as they happen."
+msgstr "تظهر هنا التعديلات على البيانات الأساسية فور حدوثها."
+
+msgid "Children"
+msgstr "عدد الأبناء"
+
+msgid "Choose addition or deduction."
+msgstr "اختر إضافة أو استقطاع."
+
+msgid "Choose an active branch."
+msgstr "اختر فرعًا نشطًا."
+
+msgid "Choose an active department."
+msgstr "اختر قسمًا نشطًا."
+
+msgid "Choose an active leave type."
+msgstr "اختر نوع إجازة نشطًا."
+
+msgid "Choose an active policy."
+msgstr "اختر لائحة نشطة."
+
+msgid "Choose an Excel file."
+msgstr "اختر ملف إكسل."
+
+msgid "Choose days of the week."
+msgstr "اختر أيامًا من الأسبوع."
+
+msgid "Choose from the list."
+msgstr "اختر من القائمة."
+
+msgid "Choose how the amount is counted."
+msgstr "اختر طريقة حساب المبلغ."
+
+msgid "Choose how the employee is paid."
+msgstr "اختر طريقة صرف أجر الموظف."
+
+msgid "Choose what happened that day."
+msgstr "اختر ما حدث في ذلك اليوم."
+
+msgid "Choose what to print. To get a PDF, pick “Save as PDF” as the printer."
+msgstr "اختر ما تريد طباعته. للحصول على ملف PDF اختر «حفظ كملف PDF» كطابعة."
+
+msgid "Clarity"
+msgstr "النقاء"
+
+msgid "Clean up old jobs"
+msgstr "تنظيف المهام القديمة"
+
+msgid "Clear"
+msgstr "مسح"
+
+msgid "client"
+msgstr "العميل"
+
+msgid "Client created"
+msgstr "إنشاء عميل"
+
+msgid "Clock times from an Excel file."
+msgstr "أوقات الحضور من ملف إكسل."
+
+msgid "Close menu"
+msgstr "إغلاق القائمة"
+
+msgid "Code"
+msgstr "الكود"
+
+msgid "Collapse or expand the menu"
+msgstr "طي القائمة الجانبية أو توسيعها"
+
+msgid "Column"
+msgstr "العمود"
+
+msgid "Columns"
+msgstr "الأعمدة"
+
+msgid "Commission"
+msgstr "العمولة"
+
+msgid "Company"
+msgstr "شركة"
+
+msgid "Company settings changed"
+msgstr "تعديل إعدادات الشركة"
+
+msgid "Completed"
+msgstr "أدّى الخدمة"
+
+msgid "Contact %(name)s to add it to your workspace."
+msgstr "تواصل مع %(name)s لإضافتها إلى مساحة عملك."
+
+msgid "Correct"
+msgstr "تصحيح"
+
+msgid "Cost"
+msgstr "التكلفة"
+
+msgid "Could not load every page. Try again."
+msgstr "تعذّر تحميل كل الصفحات. حاول مرة أخرى."
+
+msgid "Could not reach the server. Check your connection and try again."
+msgstr "تعذّر الاتصال بالخادم. تحقق من الاتصال وحاول مرة أخرى."
+
+msgid "Count"
+msgstr "العدد"
+
+msgid "Counted"
+msgstr "طريقة الحساب"
+
+msgid "Currency"
+msgstr "العملة"
+
+msgid "Customer details"
+msgstr "بيانات العميل"
+
+msgid "Customer or supplier"
+msgstr "عميل أو مورد"
+
+msgid "Cut"
+msgstr "القطع"
+
+msgid "Daily attendance"
+msgstr "الحضور اليومي"
+
+msgid "Daily wage"
+msgstr "أجر يومي"
+
+msgid "Dark"
+msgstr "داكن"
+
+msgid "Dashboard"
+msgstr "لوحة التحكم"
+
+msgid "Date"
+msgstr "التاريخ"
+
+msgid "Day"
+msgstr "اليوم"
+
+msgid "Day off"
+msgstr "راحة"
+
+msgid "Day off or holiday"
+msgstr "راحة أو إجازة رسمية"
+
+msgid "Day-to-day operations in every module."
+msgstr "العمليات اليومية في كل الأقسام."
+
+msgid "Days"
+msgstr "الأيام"
+
+msgid "Days away: requests, approvals and what's left of the yearly balance."
+msgstr "أيام الغياب المسموح بها: الطلبات والاعتماد والمتبقي من الرصيد السنوي."
+
+msgid "Days off"
+msgstr "أيام الراحة"
+
+msgid "Deactivate"
+msgstr "إيقاف"
+
+msgid "Decimals"
+msgstr "الكسور العشرية"
+
+msgid "Deducted from the employee's pay."
+msgstr "يُخصم من أجر الموظف."
+
+msgid "Deduction"
+msgstr "استقطاع"
+
+msgid "Default"
+msgstr "افتراضية"
+
+msgid "Default branch"
+msgstr "الفرع الافتراضي"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "Delete these rates"
+msgstr "حذف هذه النسب"
+
+msgid "Delete this role"
+msgstr "حذف هذا الدور"
+
+msgid "Delete this table"
+msgstr "حذف هذا الجدول"
+
+msgid "deleted"
+msgstr "حذف"
+
+msgid "Deleted."
+msgstr "تم الحذف."
+
+msgid "Department"
+msgstr "القسم"
+
+msgid "Departments"
+msgstr "الأقسام"
+
+msgid "Departments group employees for reports and payroll runs."
+msgstr "الأقسام تجمع الموظفين للتقارير وتشغيل المرتبات."
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Details"
+msgstr "البيانات"
+
+msgid "Display name"
+msgstr "الاسم الظاهر"
+
+msgid "Divorced"
+msgstr "مطلق"
+
+msgid "Document design"
+msgstr "تصميم المستند"
+
+msgid "Domain added"
+msgstr "إضافة نطاق"
+
+msgid "Domain removed"
+msgstr "حذف نطاق"
+
+msgid "Download the template"
+msgstr "تحميل النموذج"
+
+msgid "Draft"
+msgstr "مسودة"
+
+msgid "e.g. the law it follows"
+msgstr "مثلًا: القانون المطبَّق"
+
+msgid "e.g. yearly raise"
+msgstr "مثلًا: العلاوة السنوية"
+
+msgid "Early"
+msgstr "انصراف مبكر"
+
+msgid "Early leave allowed (minutes)"
+msgstr "الانصراف المبكر المسموح (دقائق)"
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "Edit branch"
+msgstr "تعديل فرع"
+
+msgid "Edit department"
+msgstr "تعديل القسم"
+
+msgid "Edit employee"
+msgstr "تعديل الموظف"
+
+msgid "Edit insurance rates"
+msgstr "تعديل نسب التأمينات"
+
+msgid "Edit pay item"
+msgstr "تعديل بند الراتب"
+
+msgid "Edit role"
+msgstr "تعديل دور"
+
+msgid "Edit tax table"
+msgstr "تعديل جدول الضريبة"
+
+msgid "Edit user"
+msgstr "تعديل مستخدم"
+
+msgid "Effective from"
+msgstr "ساري من"
+
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+msgid "Emerald"
+msgstr "زمردي"
+
+msgid "Employee"
+msgstr "الموظف"
+
+msgid "Employee and employer insurance rates on the insured salary."
+msgstr "نسب تأمينات الموظف وصاحب العمل على الأجر التأميني."
+
+msgid "Employee share"
+msgstr "حصة الموظف"
+
+msgid "Employees"
+msgstr "الموظفون"
+
+msgid "Employer"
+msgstr "صاحب العمل"
+
+msgid "Employer share"
+msgstr "حصة صاحب العمل"
+
+msgid "Employment"
+msgstr "الخدمة"
+
+msgid "End employment"
+msgstr "إنهاء الخدمة"
+
+msgid "Enter a code from 1."
+msgstr "أدخل كودًا يبدأ من 1."
+
+msgid "Enter a date as YYYY-MM-DD."
+msgstr "أدخل التاريخ بصيغة YYYY-MM-DD."
+
+msgid "Enter a name."
+msgstr "أدخل اسمًا."
+
+msgid "Enter a number."
+msgstr "أدخل رقمًا."
+
+msgid "Enter a rate from 0 to 100."
+msgstr "أدخل نسبة من 0 إلى 100."
+
+msgid "Enter a time as HH:MM."
+msgstr "أدخل الوقت بصيغة HH:MM."
+
+msgid "Enter a valid email address."
+msgstr "أدخل بريدًا إلكترونيًا صحيحًا."
+
+msgid "Enter a valid national ID."
+msgstr "أدخل رقمًا قوميًا صحيحًا."
+
+msgid "Enter a whole number."
+msgstr "أدخل عددًا صحيحًا."
+
+msgid "Enter and correct attendance"
+msgstr "إدخال الحضور وتصحيحه"
+
+msgid "Enter hourly leave"
+msgstr "إدخال الأذونات"
+
+msgid "Enter hours from more than 0 to 24."
+msgstr "أدخل عدد ساعات أكبر من 0 وحتى 24."
+
+msgid "Enter leave requests"
+msgstr "إدخال طلبات الإجازة"
+
+msgid "Enter the date the change starts."
+msgstr "أدخل تاريخ بدء التغيير."
+
+msgid "Enter the date."
+msgstr "أدخل التاريخ."
+
+msgid "Enter the hiring date."
+msgstr "أدخل تاريخ التعيين."
+
+msgid "Enter the salary."
+msgstr "أدخل الراتب."
+
+msgid "Enter the time they came."
+msgstr "أدخل وقت الحضور."
+
+msgid "Entered by hand"
+msgstr "مُدخل يدويًا"
+
+msgid ""
+"Every change to prices, customers and suppliers, pieces, users, roles, cash "
+"boxes and settings: who made it, when, and what it was before."
+msgstr ""
+"كل تعديل على الأسعار والعملاء والموردين والقطع والمستخدمين والأدوار والخزائن"
+" والإعدادات: من قام به، ومتى، وما كانت القيمة قبله."
+
+msgid "every change, who made it and when."
+msgstr "كل تعديل، ومن قام به ومتى."
+
+msgid ""
+"Every sign-in to this workspace, every wrong password and every sign-out: "
+"who, when, from which address and on which browser."
+msgstr ""
+"كل دخول إلى مساحة العمل، وكل كلمة مرور خاطئة، وكل خروج: من، ومتى، ومن أي "
+"عنوان، وبأي متصفح."
+
+msgid "Everything"
+msgstr "الكل"
+
+msgid "Exact time"
+msgstr "الوقت الفعلي"
+
+msgid "Excel file (.xlsx)"
+msgstr "ملف إكسل (.xlsx)"
+
+msgid "Excel import"
+msgstr "استيراد إكسل"
+
+msgid "Exchange rate"
+msgstr "سعر الصرف"
+
+msgid "Excused"
+msgstr "غياب بإذن"
+
+msgid "Excused absence"
+msgstr "غياب بإذن"
+
+msgid "Exempt"
+msgstr "معفى"
+
+msgid "Expense category"
+msgstr "بند المصروف"
+
+msgid "External system"
+msgstr "نظام خارجي"
+
+msgid "Extra"
+msgstr "إضافي"
+
+msgid "Extra (h)"
+msgstr "الإضافي (س)"
+
+msgid "Feature"
+msgstr "الخاصية"
+
+msgid "Feature changed for a client"
+msgstr "تم تغيير خاصية لعميل"
+
+msgid "feature set for this client (over its plan)"
+msgstr "ميزة مضبوطة لهذا العميل (بدلاً من باقته)"
+
+msgid "Features in effect"
+msgstr "الميزات المفعّلة فعلياً"
+
+msgid "features set for this client (over its plan)"
+msgstr "ميزات مضبوطة لهذا العميل (بدلاً من باقته)"
+
+msgid "Fee"
+msgstr "العمولة"
+
+msgid "Female"
+msgstr "أنثى"
+
+msgid "Filters"
+msgstr "التصفية"
+
+msgid "Fine gold"
+msgstr "الذهب الصافي"
+
+msgid "Fineness"
+msgstr "العيار (نقاوة)"
+
+msgid "Fingerprint device"
+msgstr "جهاز البصمة"
+
+msgid "First day"
+msgstr "أول يوم"
+
+msgid "Fixed amount for the month"
+msgstr "مبلغ ثابت عن الشهر"
+
+msgid "For the ticked employees:"
+msgstr "للموظفين المحددين:"
+
+msgid "Friday"
+msgstr "الجمعة"
+
+msgid "From"
+msgstr "من"
+
+msgid "From %(day)s"
+msgstr "من %(day)s"
+
+msgid "From minute"
+msgstr "من دقيقة"
+
+msgid ""
+"From the hiring date. Later changes are made from the employee's page, from "
+"a date."
+msgstr ""
+"من تاريخ التعيين. التغييرات اللاحقة تتم من صفحة الموظف، اعتبارًا من تاريخ."
+
+msgid ""
+"From the lowest up. Leave the last limit empty for everything above it."
+msgstr "من الأدنى إلى الأعلى. اترك الحد الأخير فارغًا لكل ما يزيد عليه."
+
+msgid "Full access"
+msgstr "صلاحيات كاملة"
+
+msgid "Full access to everything, including users and roles."
+msgstr "صلاحيات كاملة على كل شيء، بما فيها المستخدمون والأدوار."
+
+msgid "Full name"
+msgstr "الاسم الكامل"
+
+msgid "Gender"
+msgstr "النوع"
+
+msgid "Give the member at least one role."
+msgstr "امنح المستخدم دورًا واحدًا على الأقل."
+
+msgid "Go to a screen…"
+msgstr "انتقل إلى شاشة…"
+
+msgid "Go to the bottom"
+msgstr "انزل لأسفل الصفحة"
+
+msgid "Gold"
+msgstr "ذهب"
+
+msgid "Gold price"
+msgstr "سعر الذهب"
+
+msgid "Gold price board"
+msgstr "لوحة أسعار الذهب"
+
+msgid ""
+"Gold prices, stock, sales and balances in grams and money, always in step."
+msgstr ""
+"أسعار الذهب والمخزون والمبيعات والأرصدة بالجرام والنقدية، متطابقة دائمًا."
+
+msgid "Grace minutes"
+msgstr "دقائق السماح"
+
+msgid "Graphite"
+msgstr "جرافيت"
+
+msgid "Groups of employees, across your branches."
+msgstr "مجموعات الموظفين عبر فروعك."
+
+msgid "h"
+msgstr "س"
+
+msgid "Head office"
+msgstr "الفرع الرئيسي"
+
+msgid "Hide password"
+msgstr "إخفاء كلمة المرور"
+
+msgid "Hired on"
+msgstr "تاريخ التعيين"
+
+msgid "Hiring date"
+msgstr "تاريخ التعيين"
+
+msgid "History"
+msgstr "السجل"
+
+msgid "Holiday"
+msgstr "إجازة رسمية"
+
+msgid "Holiday work ×"
+msgstr "العمل في الإجازة ×"
+
+msgid "Hour"
+msgstr "الساعة"
+
+msgid "Hourly leave"
+msgstr "الأذونات"
+
+msgid "Hourly leave is for part of a day; use leave for more."
+msgstr "الإذن لجزء من اليوم؛ استخدم الإجازة لما هو أكثر."
+
+msgid "Hours"
+msgstr "الساعات"
+
+msgid "Hours a day"
+msgstr "ساعات اليوم"
+
+msgid "Hours deducted"
+msgstr "الساعات المخصومة"
+
+msgid "Hours paid"
+msgstr "الساعات المدفوعة"
+
+msgid ""
+"How extra time is paid: minutes worked over fall in a band that says how "
+"many hours are paid, at the employee's overtime rate."
+msgstr ""
+"طريقة احتساب الوقت الإضافي: دقائق العمل الزائدة تقع في شريحة تحدد عدد "
+"الساعات المدفوعة، بسعر الإضافي الخاص بالموظف."
+
+msgid ""
+"How late arrivals are deducted: minutes late fall in a band that says how "
+"many hours of pay are lost."
+msgstr ""
+"طريقة خصم التأخير: دقائق التأخير تقع في شريحة تحدد عدد ساعات الأجر المخصومة."
+
+msgid "IBAN"
+msgstr "رقم الآيبان"
+
+msgid ""
+"If any row has a problem, nothing is imported and every problem is listed, "
+"so you can fix the file and try again."
+msgstr ""
+"إذا كان في أي صف مشكلة فلن يُستورد شيء وستظهر كل المشاكل، لتصلح الملف وتحاول"
+" مرة أخرى."
+
+msgid "Import"
+msgstr "استيراد"
+
+msgid "Import attendance from Excel"
+msgstr "استيراد الحضور من إكسل"
+
+msgid "Import employees from Excel"
+msgstr "استيراد الموظفين من إكسل"
+
+msgid "Import from Excel"
+msgstr "استيراد من إكسل"
+
+msgid "Inactive"
+msgstr "موقوف"
+
+msgid "Income tax"
+msgstr "ضريبة الدخل"
+
+msgid "Indigo"
+msgstr "نيلي"
+
+msgid "Initial password"
+msgstr "كلمة المرور الأولى"
+
+msgid "Insurance number"
+msgstr "الرقم التأميني"
+
+msgid "Insured from"
+msgstr "مؤمَّن عليه من"
+
+msgid "Insured salary"
+msgstr "الأجر التأميني"
+
+msgid "Job"
+msgstr "الوظيفة"
+
+msgid "Job title"
+msgstr "الوظيفة"
+
+msgid "Karat"
+msgstr "العيار"
+
+msgid "Kind"
+msgstr "النوع"
+
+msgid "Lab"
+msgstr "المعمل"
+
+msgid "Label price"
+msgstr "سعر الملصق"
+
+msgid "Label template"
+msgstr "قالب الملصق"
+
+msgid "Last day"
+msgstr "آخر يوم"
+
+msgid "Last sign-in"
+msgstr "آخر دخول"
+
+msgid "Last working day"
+msgstr "آخر يوم عمل"
+
+msgid "Late"
+msgstr "تأخير"
+
+msgid "Late (h)"
+msgstr "التأخير (س)"
+
+msgid "Lateness"
+msgstr "التأخير"
+
+msgid "Lateness deductions"
+msgstr "خصومات التأخير"
+
+msgid "Lateness policies"
+msgstr "لوائح التأخير"
+
+msgid ""
+"Lateness policies with minute bands; late arrivals are deducted in payroll."
+msgstr "لوائح تأخير بشرائح دقائق؛ يُخصم التأخير في المرتبات."
+
+msgid "Lateness policy"
+msgstr "لائحة التأخير"
+
+msgid "Latest"
+msgstr "الأحدث"
+
+msgid "Leave"
+msgstr "الإجازات"
+
+msgid "Leave empty."
+msgstr "اتركها فارغة."
+
+msgid "Leave types"
+msgstr "أنواع الإجازات"
+
+msgid "Leave types, requests with approval, and the yearly balance."
+msgstr "أنواع الإجازات، والطلبات مع الاعتماد، والرصيد السنوي."
+
+msgid "Ledger account"
+msgstr "الحساب في الدفاتر"
+
+msgid "Left"
+msgstr "ترك العمل"
+
+msgid "Left on %(day)s."
+msgstr "ترك العمل في %(day)s."
+
+msgid "Legal name"
+msgstr "الاسم القانوني"
+
+msgid "Letters, digits and @/./+/-/_ only."
+msgstr "حروف وأرقام و ‎@/./+/-/_‎ فقط."
+
+msgid "Light"
+msgstr "فاتح"
+
+msgid "Limit"
+msgstr "الحد"
+
+msgid "Loading pages…"
+msgstr "جارٍ تحميل الصفحات…"
+
+msgid "Loading…"
+msgstr "جارٍ التحميل…"
+
+msgid "Log out"
+msgstr "تسجيل الخروج"
+
+msgid "Logo"
+msgstr "الشعار"
+
+msgid "Lowercase letters, digits and hyphens."
+msgstr "حروف إنجليزية صغيرة وأرقام وشرطات."
+
+msgid "Main"
+msgstr "الرئيسية"
+
+msgid "Making cost / g"
+msgstr "تكلفة المصنعية / جم"
+
+msgid "Male"
+msgstr "ذكر"
+
+msgid "Manage branches"
+msgstr "إدارة الفروع"
+
+msgid "Manage company settings"
+msgstr "إدارة إعدادات الشركة"
+
+msgid "Manage departments"
+msgstr "إدارة الأقسام"
+
+msgid "Manage income tax tables"
+msgstr "إدارة جداول ضريبة الدخل"
+
+msgid "Manage lateness policies"
+msgstr "إدارة لوائح التأخير"
+
+msgid "Manage leave types"
+msgstr "إدارة أنواع الإجازات"
+
+msgid "Manage overtime policies"
+msgstr "إدارة لوائح الإضافي"
+
+msgid "Manage pay items"
+msgstr "إدارة بنود الراتب"
+
+msgid "Manage public holidays"
+msgstr "إدارة الإجازات الرسمية"
+
+msgid "Manage roles"
+msgstr "إدارة الأدوار"
+
+msgid "Manage social insurance rates"
+msgstr "إدارة نسب التأمينات الاجتماعية"
+
+msgid "Manage users and their roles"
+msgstr "إدارة المستخدمين وأدوارهم"
+
+msgid "Manager"
+msgstr "مدير"
+
+msgid "Marital status"
+msgstr "الحالة الاجتماعية"
+
+msgid "Married"
+msgstr "متزوج"
+
+msgid "Maximum insured"
+msgstr "الحد الأقصى التأميني"
+
+msgid "Maximum insured salary"
+msgstr "الحد الأقصى للأجر التأميني"
+
+msgid "Meaning"
+msgstr "المعنى"
+
+msgid "Metal"
+msgstr "المعدن"
+
+msgid "Migrating"
+msgstr "قيد الترحيل"
+
+msgid "Military service"
+msgstr "الخدمة العسكرية"
+
+msgid "Minimum insured"
+msgstr "الحد الأدنى التأميني"
+
+msgid "Minimum insured salary"
+msgstr "الحد الأدنى للأجر التأميني"
+
+msgid ""
+"Minutes late from–to, and the hours of pay deducted. Without bands, the "
+"exact time missed is deducted."
+msgstr ""
+"دقائق التأخير من–إلى، وساعات الأجر المخصومة. بدون شرائح يُخصم الوقت الضائع "
+"كما هو."
+
+msgid ""
+"Minutes over from–to, and the hours paid. Without bands, the time actually "
+"worked over is paid."
+msgstr ""
+"الدقائق الزائدة من–إلى، والساعات المدفوعة. بدون شرائح يُدفع الوقت الزائد "
+"الفعلي."
+
+msgid "Missing columns: %(names)s"
+msgstr "أعمدة ناقصة: %(names)s"
+
+msgid "Mobile app"
+msgstr "تطبيق الموبايل"
+
+msgid "Model classes"
+msgstr "تصنيفات الموديل"
+
+msgid "Monday"
+msgstr "الاثنين"
+
+msgid "Monthly"
+msgstr "شهرياً"
+
+msgid "Monthly salary"
+msgstr "الراتب الشهري"
+
+msgid "Must be before the hiring date."
+msgstr "يجب أن يكون قبل تاريخ التعيين."
+
+msgid "Must not be after the day they left."
+msgstr "يجب ألا يكون بعد تاريخ ترك العمل."
+
+msgid "Must not be before the first day."
+msgstr "يجب ألا يكون قبل أول يوم."
+
+msgid "Must not be before the hiring date."
+msgstr "يجب ألا يكون قبل تاريخ التعيين."
+
+msgid "Must not be in the future."
+msgstr "يجب ألا يكون في المستقبل."
+
+msgid "Must not be less than the minimum."
+msgstr "يجب ألا يقل عن الحد الأدنى."
+
+msgid "Must not be negative."
+msgstr "يجب ألا يكون سالبًا."
+
+msgid "Name"
+msgstr "الاسم"
+
+msgid "Name on screens and receipts"
+msgstr "الاسم على الشاشات والإيصالات"
+
+msgid "Name, code, phone or job"
+msgstr "الاسم أو الكود أو الهاتف أو الوظيفة"
+
+msgid "National ID"
+msgstr "الرقم القومي"
+
+msgid "Natural or lab-grown"
+msgstr "طبيعي أو معملي"
+
+msgid "New branch"
+msgstr "فرع جديد"
+
+msgid "New department"
+msgstr "قسم جديد"
+
+msgid "New employee"
+msgstr "موظف جديد"
+
+msgid "New hourly leave"
+msgstr "إذن جديد"
+
+msgid "New insurance rates"
+msgstr "نسب تأمينات جديدة"
+
+msgid "New lateness policy"
+msgstr "لائحة تأخير جديدة"
+
+msgid "New leave request"
+msgstr "طلب إجازة جديد"
+
+msgid "New overtime policy"
+msgstr "لائحة إضافي جديدة"
+
+msgid "New password"
+msgstr "كلمة المرور الجديدة"
+
+msgid "New pay item"
+msgstr "بند راتب جديد"
+
+msgid "New rates"
+msgstr "نسب جديدة"
+
+msgid "New request"
+msgstr "طلب جديد"
+
+msgid "New role"
+msgstr "دور جديد"
+
+msgid "New tax table"
+msgstr "جدول ضريبة جديد"
+
+msgid "New user"
+msgstr "مستخدم جديد"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "Next day"
+msgstr "اليوم التالي"
+
+msgid "Next month"
+msgstr "الشهر التالي"
+
+msgid "No"
+msgstr "لا"
+
+msgid "No active branch has this code."
+msgstr "لا يوجد فرع نشط بهذا الكود."
+
+msgid "No active department has this code."
+msgstr "لا يوجد قسم نشط بهذا الكود."
+
+msgid "No changes recorded"
+msgstr "لا توجد تعديلات مسجلة"
+
+msgid "No check-out"
+msgstr "بدون انصراف"
+
+msgid "No departments yet"
+msgstr "لا توجد أقسام بعد"
+
+msgid "No employee you can manage has this code."
+msgstr "لا يوجد موظف تديره بهذا الكود."
+
+msgid "No employees match"
+msgstr "لا يوجد موظفون مطابقون"
+
+msgid "No employees were working for you on this day, with these filters."
+msgstr "لا يوجد موظفون يعملون لديك في هذا اليوم بهذه المرشحات."
+
+msgid "No employees yet"
+msgstr "لا يوجد موظفون بعد"
+
+msgid "No features registered yet."
+msgstr "لا توجد ميزات مسجلة بعد."
+
+msgid "No hourly leave here"
+msgstr "لا توجد أذونات هنا"
+
+msgid "No insurance rates yet"
+msgstr "لا توجد نسب تأمينات بعد"
+
+msgid "No limit"
+msgstr "بدون حد"
+
+msgid "No logo"
+msgstr "لا يوجد شعار"
+
+msgid "No matches"
+msgstr "لا توجد نتائج"
+
+msgid "No pay items yet"
+msgstr "لا توجد بنود راتب بعد"
+
+msgid "No policies yet"
+msgstr "لا توجد لوائح بعد"
+
+msgid "No public holidays yet"
+msgstr "لا توجد إجازات رسمية بعد"
+
+msgid "No requests here"
+msgstr "لا توجد طلبات هنا"
+
+msgid "No sign-ins found"
+msgstr "لا يوجد سجل دخول"
+
+msgid "No tax tables yet"
+msgstr "لا توجد جداول ضريبة بعد"
+
+msgid "Nobody to show"
+msgstr "لا أحد لعرضه"
+
+msgid "None"
+msgstr "لا يوجد"
+
+msgid "None: deduct the exact time missed"
+msgstr "بدون: خصم الوقت الضائع كما هو"
+
+msgid "None: no overtime"
+msgstr "بدون: لا يوجد إضافي"
+
+msgid "Not applicable"
+msgstr "لا ينطبق"
+
+msgid "Not employed"
+msgstr "ليس على رأس العمل"
+
+msgid "Not found."
+msgstr "غير موجود."
+
+msgid "Not in your plan"
+msgstr "غير متاحة في باقتك"
+
+msgid "Not insured"
+msgstr "غير مؤمَّن عليه"
+
+msgid "Not yet"
+msgstr "لم يحن بعد"
+
+msgid "Note"
+msgstr "ملاحظة"
+
+msgid "Notes"
+msgstr "ملاحظات"
+
+msgid "Nothing was imported: %(counter)s row has a problem."
+msgid_plural "Nothing was imported: %(counter)s rows have problems."
+msgstr[0] "لم يُستورد شيء: لا توجد صفوف بها مشاكل."
+msgstr[1] "لم يُستورد شيء: صف واحد به مشكلة."
+msgstr[2] "لم يُستورد شيء: صفان بهما مشاكل."
+msgstr[3] "لم يُستورد شيء: %(counter)s صفوف بها مشاكل."
+msgstr[4] "لم يُستورد شيء: %(counter)s صفًا به مشاكل."
+msgstr[5] "لم يُستورد شيء: %(counter)s صف به مشاكل."
+
+msgid "Now"
+msgstr "الحالي"
+
+msgid "Number, name or phone"
+msgstr "الرقم أو الاسم أو الهاتف"
+
+msgid "off"
+msgstr "متوقفة"
+
+msgid "off: needs %(names)s"
+msgstr "متوقفة: تحتاج %(names)s"
+
+msgid "on"
+msgstr "مفعّلة"
+
+msgid "On leave"
+msgstr "في إجازة"
+
+msgid "One employee per row, with their pay and working hours."
+msgstr "موظف واحد في كل صف، مع راتبه ومواعيد عمله."
+
+msgid ""
+"One row per employee and day: the employee's code, the date, the time they "
+"came and the time they left."
+msgstr "صف لكل موظف ويوم: كود الموظف والتاريخ ووقت الحضور ووقت الانصراف."
+
+msgid ""
+"Only %(left)s days of annual leave are left this year; this request needs "
+"%(days)s."
+msgstr ""
+"المتبقي من الإجازة الاعتيادية هذا العام %(left)s يوم فقط؛ وهذا الطلب يحتاج "
+"%(days)s."
+
+msgid "Only a day off or an excused absence can be entered ahead."
+msgstr "لا يمكن إدخال يوم مقدمًا إلا كراحة أو غياب بإذن."
+
+msgid "Only for"
+msgstr "فقط لـ"
+
+msgid "Open"
+msgstr "فتح"
+
+msgid "Open menu"
+msgstr "فتح القائمة"
+
+msgid "optional"
+msgstr "اختياري"
+
+msgid "Organisation"
+msgstr "المؤسسة"
+
+msgid "Other phone"
+msgstr "هاتف آخر"
+
+msgid "Other rates start on this date."
+msgstr "توجد نسب أخرى تبدأ في هذا التاريخ."
+
+msgid "Overtime"
+msgstr "الإضافي"
+
+msgid "Overtime policies"
+msgstr "لوائح الإضافي"
+
+msgid "Overtime policies with minute bands; extra time is paid in payroll."
+msgstr "لوائح إضافي بشرائح دقائق؛ يُدفع الوقت الإضافي في المرتبات."
+
+msgid "Overtime policy"
+msgstr "لائحة الإضافي"
+
+msgid "Overtime starts after (minutes)"
+msgstr "يبدأ الإضافي بعد (دقائق)"
+
+msgid "Overtime ×"
+msgstr "الإضافي ×"
+
+msgid "Overview"
+msgstr "نظرة عامة"
+
+msgid "Owner"
+msgstr "المالك"
+
+msgid "Page not found"
+msgstr "الصفحة غير موجودة"
+
+msgid "Pages"
+msgstr "الصفحات"
+
+msgid "Paid"
+msgstr "طريقة الأجر"
+
+msgid "Paid by the company on top of pay."
+msgstr "تدفعها الشركة بالإضافة إلى الأجر."
+
+msgid "Paid days off for every branch or one branch."
+msgstr "إجازات مدفوعة لكل الفروع أو لفرع واحد."
+
+msgid ""
+"Paid days off. A holiday for one branch only applies to that branch's "
+"employees."
+msgstr ""
+"إجازات مدفوعة الأجر. الإجازة الخاصة بفرع تسري على موظفي ذلك الفرع فقط."
+
+msgid "Paper"
+msgstr "الورق"
+
+msgid "Parent"
+msgstr "الأصل"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "Password changed. The user was signed out everywhere."
+msgstr "تم تغيير كلمة المرور وتسجيل خروج المستخدم من كل الأجهزة."
+
+msgid "Pay"
+msgstr "صرف"
+
+msgid "Pay already changes on this date."
+msgstr "يوجد تغيير في الراتب بالفعل في هذا التاريخ."
+
+msgid "Pay is recorded from an earlier date."
+msgstr "الراتب مسجل من تاريخ أقدم."
+
+msgid "Pay items"
+msgstr "بنود الراتب"
+
+msgid "Pay or hours change after this date; remove those changes first."
+msgstr ""
+"يوجد تغيير في الراتب أو المواعيد بعد هذا التاريخ؛ احذف تلك التغييرات أولًا."
+
+msgid "Pay policies"
+msgstr "لوائح الأجور"
+
+msgid "Pay setup"
+msgstr "إعداد الأجور"
+
+msgid "People"
+msgstr "عدد الموظفين"
+
+msgid "People who can sign in to this workspace, and what they may do."
+msgstr "الأشخاص الذين يمكنهم الدخول إلى هذا الحساب، وما يُسمح لهم به."
+
+msgid "Permission"
+msgstr "الصلاحية"
+
+msgid "Permission hours a month"
+msgstr "ساعات الإذن في الشهر"
+
+msgid "Personal details"
+msgstr "البيانات الشخصية"
+
+msgid "Phone"
+msgstr "الهاتف"
+
+msgid "Piece"
+msgstr "القطعة"
+
+msgid "Pin to my shortcuts"
+msgstr "تثبيت في اختصاراتي"
+
+msgid "Pinned"
+msgstr "المثبّتة"
+
+msgid "Pinned to your shortcuts."
+msgstr "تم التثبيت في اختصاراتك."
+
+msgid "plan"
+msgstr "الباقة"
+
+msgid "Plan and details changed"
+msgstr "تعديل الباقة والبيانات"
+
+msgid "Plan changed"
+msgstr "تم تعديل باقة"
+
+msgid "Plan created"
+msgstr "تم إنشاء باقة"
+
+msgid "Plan deleted"
+msgstr "تم حذف باقة"
+
+msgid "Plan features changed"
+msgstr "تم تغيير خصائص الباقة"
+
+msgid "Platform settings changed"
+msgstr "تم تغيير إعدادات المنصة"
+
+msgid "Platform staff logins can't own a workspace. Use another email."
+msgstr "حسابات فريق المنصة لا يمكن أن تملك مساحة عمل. استخدم بريداً آخر."
+
+msgid "Please correct the highlighted fields."
+msgstr "يرجى تصحيح الحقول المحددة."
+
+msgid ""
+"PNG, JPEG, WEBP, GIF or ICO, up to 2 MB. A square or wide image on a "
+"transparent background works best."
+msgstr ""
+"PNG أو JPEG أو WEBP أو GIF أو ICO، حتى 2 ميجابايت. الأفضل صورة مربعة أو "
+"عريضة بخلفية شفافة."
+
+msgid "Postable"
+msgstr "يقبل الترحيل"
+
+msgid "Posted"
+msgstr "مرحّلة"
+
+msgid "Postponed"
+msgstr "مؤجَّل"
+
+msgid "Present"
+msgstr "حاضر"
+
+msgid "Present, on their shift's times"
+msgstr "حاضر، بمواعيد ورديته"
+
+msgid "Previous"
+msgstr "السابق"
+
+msgid "Previous day"
+msgstr "اليوم السابق"
+
+msgid "Previous month"
+msgstr "الشهر السابق"
+
+msgid "Price board"
+msgstr "نشرة الأسعار"
+
+msgid "Price per carat"
+msgstr "السعر للقيراط"
+
+msgid "Print"
+msgstr "طباعة"
+
+msgid "Print table"
+msgstr "طباعة الجدول"
+
+msgid "Printed"
+msgstr "طُبع"
+
+msgid "Problem"
+msgstr "المشكلة"
+
+msgid "Progressive income tax tables, deducted from pay."
+msgstr "جداول ضريبة الدخل التصاعدية، تُخصم من الأجر."
+
+msgid "public holiday"
+msgstr "إجازة رسمية"
+
+msgid "Public holidays"
+msgstr "الإجازات الرسمية"
+
+msgid "Purged"
+msgstr "محذوف نهائيًا"
+
+msgid "Qualification"
+msgstr "المؤهل"
+
+msgid "Rate"
+msgstr "السعر"
+
+msgid ""
+"Rates by the date they start, as a percentage of each employee's insured "
+"salary."
+msgstr "النسب حسب تاريخ سريانها، كنسبة مئوية من الأجر التأميني لكل موظف."
+
+msgid "Reactivate"
+msgstr "إعادة التفعيل"
+
+msgid "Read-only access."
+msgstr "صلاحية اطلاع فقط."
+
+msgid "Reason"
+msgstr "السبب"
+
+msgid "Reject"
+msgstr "رفض"
+
+msgid "Rejected"
+msgstr "مرفوض"
+
+msgid "Rejected."
+msgstr "تم الرفض."
+
+msgid "Remove"
+msgstr "إزالة"
+
+msgid "Remove from my shortcuts"
+msgstr "إزالة من اختصاراتي"
+
+msgid "Remove the current logo"
+msgstr "حذف الشعار الحالي"
+
+msgid "Remove the entry: the clock counts again"
+msgstr "حذف الإدخال: تعود أوقات البصمة للاحتساب"
+
+msgid "Remove this change"
+msgstr "حذف هذا التغيير"
+
+msgid "Remove this role from its members first."
+msgstr "أزل هذا الدور من المستخدمين أولًا."
+
+msgid "Removed from your shortcuts."
+msgstr "تمت الإزالة من اختصاراتك."
+
+msgid "Request limit changed"
+msgstr "تم تغيير حد الطلبات"
+
+msgid "Required"
+msgstr "مطلوب"
+
+msgid "Reserved."
+msgstr "محجوز."
+
+msgid "Restore"
+msgstr "استعادة"
+
+msgid "Restore access"
+msgstr "استعادة الدخول"
+
+msgid "Role"
+msgstr "الدور"
+
+msgid "Role deleted."
+msgstr "تم حذف الدور."
+
+msgid "Role permission"
+msgstr "صلاحية الدور"
+
+msgid "Roles"
+msgstr "الأدوار"
+
+msgid "Rose"
+msgstr "وردي"
+
+msgid "Row"
+msgstr "الصف"
+
+msgid "Rows"
+msgstr "الصفوف"
+
+msgid "Run every branch of your jewelry business from one place."
+msgstr "أدِر كل فروع محلات المجوهرات من مكان واحد."
+
+msgid "Salary or wage"
+msgstr "الراتب أو الأجر"
+
+msgid "Sale making / g"
+msgstr "مصنعية البيع / جم"
+
+msgid "Saturday"
+msgstr "السبت"
+
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Save the change"
+msgstr "حفظ التغيير"
+
+msgid "Saved."
+msgstr "تم الحفظ."
+
+msgid "Scrap buy price / g"
+msgstr "سعر شراء الكسر / جم"
+
+msgid "Search"
+msgstr "بحث"
+
+msgid "Searching…"
+msgstr "جارٍ البحث…"
+
+msgid "Search…"
+msgstr "بحث…"
+
+msgid "See employees' pay"
+msgstr "الاطلاع على رواتب الموظفين"
+
+msgid "See the history of changes (who changed what, and when)"
+msgstr "عرض سجل التعديلات (من عدّل ماذا ومتى)"
+
+msgid "See who signed in, when and from where, and failed attempts"
+msgstr "معرفة من دخل ومتى ومن أين، والمحاولات الفاشلة"
+
+msgid "Selected branches"
+msgstr "فروع محددة"
+
+msgid "Sell price / g"
+msgstr "سعر البيع / جم"
+
+msgid "Send an Idempotency-Key header with this request."
+msgstr "أرسل ترويسة Idempotency-Key مع هذا الطلب."
+
+msgid "Set a new password"
+msgstr "تعيين كلمة مرور جديدة"
+
+msgid "Set and change employees' pay"
+msgstr "تحديد رواتب الموظفين وتغييرها"
+
+msgid "Setting type"
+msgstr "نوع التركيب"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+msgid "Shift"
+msgstr "الوردية"
+
+msgid "Shift ends"
+msgstr "نهاية الوردية"
+
+msgid "Shift starts"
+msgstr "بداية الوردية"
+
+msgid "Short name"
+msgstr "اسم مختصر"
+
+msgid "Show"
+msgstr "عرض"
+
+msgid "Show everyone"
+msgstr "عرض الكل"
+
+msgid "Show password"
+msgstr "إظهار كلمة المرور"
+
+msgid "Show them"
+msgstr "عرضها"
+
+msgid "Showing %(start)s–%(end)s of %(total)s"
+msgstr "عرض %(start)s–%(end)s من %(total)s"
+
+msgid "Sick leave"
+msgstr "إجازة مرضية"
+
+msgid "Sign in"
+msgstr "تسجيل الدخول"
+
+msgid "Sign in to your workspace"
+msgstr "تسجيل الدخول إلى حسابك"
+
+msgid "Sign-ins"
+msgstr "سجل الدخول"
+
+msgid "Sign-ins are recorded from now on. Try other filters."
+msgstr "يُسجَّل الدخول من الآن فصاعدًا. جرّب عوامل تصفية أخرى."
+
+msgid "Signed in"
+msgstr "دخول"
+
+msgid "Signed out"
+msgstr "خروج"
+
+msgid "Signing in…"
+msgstr "جارٍ تسجيل الدخول…"
+
+msgid "since %(day)s"
+msgstr "منذ %(day)s"
+
+msgid "Single"
+msgstr "أعزب"
+
+msgid "Social insurance"
+msgstr "التأمينات الاجتماعية"
+
+msgid "Source"
+msgstr "المصدر"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Status changed"
+msgstr "تغيير الحالة"
+
+msgid "Staying this many minutes after the shift or less is not overtime."
+msgstr "البقاء بعد الوردية بهذا العدد من الدقائق أو أقل لا يُعد إضافيًا."
+
+msgid "Stone code"
+msgstr "كود الحجر"
+
+msgid "Stone details"
+msgstr "بيانات الأحجار"
+
+msgid "Stone grade"
+msgstr "درجة حجر"
+
+msgid "Stones (ct)"
+msgstr "الأحجار (قيراط)"
+
+msgid "Stones' cost"
+msgstr "تكلفة الأحجار"
+
+msgid "Subject to income tax"
+msgstr "خاضع لضريبة الدخل"
+
+msgid "Sunday"
+msgstr "الأحد"
+
+msgid "Supplier"
+msgstr "مورد"
+
+msgid "Supplier details"
+msgstr "بيانات المورد"
+
+msgid "Suspend"
+msgstr "إيقاف"
+
+msgid "Suspend access"
+msgstr "إيقاف الدخول"
+
+msgid "Suspended"
+msgstr "موقوف"
+
+msgid "Symbol"
+msgstr "الرمز"
+
+msgid "System"
+msgstr "حسب الجهاز"
+
+msgid "Tables"
+msgstr "الجداول"
+
+msgid "Tax registration no."
+msgstr "رقم التسجيل الضريبي"
+
+msgid ""
+"Tax tables by the date they start. A month's tax is worked out on the yearly"
+" income (the month × 12, less the exemption), bracket by bracket, then "
+"divided by 12."
+msgstr ""
+"جداول الضريبة حسب تاريخ سريانها. تُحسب ضريبة الشهر على الدخل السنوي (الشهر ×"
+" 12 مطروحًا منه الإعفاء) شريحة بشريحة، ثم تُقسم على 12."
+
+msgid "Taxable"
+msgstr "خاضع للضريبة"
+
+msgid "Teal"
+msgstr "أزرق مخضر"
+
+msgid "That login keeps its own password: leave the password empty."
+msgstr "هذا الحساب يحتفظ بكلمة مروره: اترك كلمة المرور فارغة."
+
+msgid ""
+"That username or email and password do not match. Check them and try again."
+msgstr ""
+"اسم المستخدم أو البريد الإلكتروني وكلمة المرور غير متطابقين. تأكد منهما "
+"وحاول مرة أخرى."
+
+msgid "The employee isn't employed on all these days."
+msgstr "الموظف ليس على رأس العمل في كل هذه الأيام."
+
+msgid "The employee isn't employed on that day."
+msgstr "الموظف ليس على رأس العمل في ذلك اليوم."
+
+msgid ""
+"The first record can't be removed: it is what the employee started with. "
+"Change the values from a later date instead."
+msgstr ""
+"لا يمكن حذف السجل الأول: فهو ما بدأ به الموظف. غيّر القيم من تاريخ لاحق "
+"بدلًا من ذلك."
+
+msgid "The first row holds these names. Dates are YYYY-MM-DD, times HH:MM."
+msgstr ""
+"الصف الأول يحتوي هذه الأسماء. التواريخ بصيغة YYYY-MM-DD والأوقات بصيغة "
+"HH:MM."
+
+msgid "The head office cannot be deactivated."
+msgstr "لا يمكن إيقاف الفرع الرئيسي."
+
+msgid "The hours already change on this date."
+msgstr "يوجد تغيير في المواعيد بالفعل في هذا التاريخ."
+
+msgid "The image must be 2 MB or smaller."
+msgstr "يجب ألا يزيد حجم الصورة عن 2 ميجابايت."
+
+msgid ""
+"The logo appears in the sidebar, on the sign-in page and in the browser tab."
+" Only your company can see your files."
+msgstr ""
+"يظهر الشعار في القائمة الجانبية وصفحة تسجيل الدخول وتبويب المتصفح. ملفاتك لا"
+" يراها إلا شركتك."
+
+msgid "The month's salary, the week's wage or the day's wage."
+msgstr "راتب الشهر أو أجر الأسبوع أو أجر اليوم."
+
+msgid "The Owner role cannot be changed."
+msgstr "لا يمكن تعديل دور المالك."
+
+msgid "The page you are looking for does not exist or was moved."
+msgstr "الصفحة المطلوبة غير موجودة أو تم نقلها."
+
+msgid "The same request is still being processed."
+msgstr "الطلب نفسه ما زال قيد التنفيذ."
+
+msgid "The shift must end at another time than it starts."
+msgstr "يجب أن تنتهي الوردية في وقت غير وقت بدايتها."
+
+msgid "The user can no longer sign in. Their history is kept."
+msgstr "لن يتمكن المستخدم من الدخول، مع الاحتفاظ بسجله."
+
+msgid "The user can sign in again with their roles."
+msgstr "سيتمكن المستخدم من الدخول مرة أخرى بأدواره."
+
+msgid "The workspace must keep at least one active owner."
+msgstr "يجب أن يبقى في الحساب مالك نشط واحد على الأقل."
+
+msgid "Theme"
+msgstr "السمة"
+
+msgid "There is already a holiday on this day."
+msgstr "توجد إجازة بالفعل في هذا اليوم."
+
+msgid "There is already hourly leave on that day."
+msgstr "يوجد إذن بالفعل في ذلك اليوم."
+
+msgid "These are all days off or holidays: no leave is needed."
+msgstr "كل هذه الأيام راحة أو إجازات رسمية: لا حاجة لإجازة."
+
+msgid "This email already belongs to another account."
+msgstr "هذا البريد الإلكتروني مسجل لحساب آخر."
+
+msgid ""
+"This email already has a login. Add this workspace to that login, or use "
+"another email."
+msgstr ""
+"هذا البريد له حساب بالفعل. أضف مساحة العمل هذه إلى ذلك الحساب، أو استخدم "
+"بريداً آخر."
+
+msgid "This feature is not available in your plan."
+msgstr "هذه الخاصية غير متاحة في باقتك."
+
+msgid "This feature is not in your plan"
+msgstr "هذه الخاصية غير متاحة في باقتك"
+
+msgid "This field is required."
+msgstr "هذا الحقل مطلوب."
+
+msgid "This Idempotency-Key was used for another request."
+msgstr "مفتاح Idempotency-Key هذا استُخدم لطلب آخر."
+
+msgid "This is not an Excel (.xlsx) file."
+msgstr "هذا ليس ملف إكسل (.xlsx)."
+
+msgid ""
+"This month's allowance is %(allowed)s minutes and %(used)s are used; this "
+"request needs %(minutes)s."
+msgstr ""
+"رصيد هذا الشهر %(allowed)s دقيقة واستُخدم منه %(used)s؛ وهذا الطلب يحتاج "
+"%(minutes)s."
+
+msgid "This page"
+msgstr "هذه الصفحة"
+
+msgid ""
+"This person uses the same login outside this workspace, so only they can "
+"change its password or email."
+msgstr ""
+"هذا الشخص يستخدم الحساب نفسه خارج مساحة العمل هذه، لذا يغيّر كلمة المرور أو "
+"البريد بنفسه فقط."
+
+msgid "This phone number already belongs to another account."
+msgstr "رقم الهاتف هذا مسجّل لحساب آخر."
+
+msgid "This request is %(status)s already."
+msgstr "هذا الطلب %(status)s بالفعل."
+
+msgid "This screen cannot be pinned."
+msgstr "لا يمكن تثبيت هذه الشاشة."
+
+msgid "This table has no columns to print."
+msgstr "لا توجد أعمدة للطباعة في هذا الجدول."
+
+msgid "This username is already taken in this workspace."
+msgstr "اسم المستخدم مستخدم بالفعل في هذا الحساب."
+
+msgid "Thursday"
+msgstr "الخميس"
+
+msgid "Title"
+msgstr "العنوان"
+
+msgid "To"
+msgstr "إلى"
+
+msgid "To minute"
+msgstr "إلى دقيقة"
+
+msgid "to move"
+msgstr "للتنقل"
+
+msgid "to open"
+msgstr "للفتح"
+
+msgid "today"
+msgstr "اليوم"
+
+msgid "Too many requests"
+msgstr "طلبات كثيرة جدًا"
+
+msgid "Too many requests right now"
+msgstr "طلبات كثيرة جدًا الآن"
+
+msgid "Too many requests. Please wait a minute and try again."
+msgstr "طلبات كثيرة جدًا. انتظر دقيقة ثم حاول مرة أخرى."
+
+msgid "Too many wrong passwords. Wait a few minutes, then try again."
+msgstr "كلمات مرور خاطئة كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى."
+
+msgid "Tools"
+msgstr "أدوات"
+
+msgid "Tuesday"
+msgstr "الثلاثاء"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Type to search…"
+msgstr "اكتب للبحث…"
+
+msgid "Undo: still working here"
+msgstr "تراجع: ما زال يعمل هنا"
+
+msgid "Unknown action."
+msgstr "إجراء غير معروف."
+
+msgid "Unknown branch."
+msgstr "فرع غير معروف."
+
+msgid "Unknown day: %(day)s"
+msgstr "يوم غير معروف: %(day)s"
+
+msgid "Unknown name"
+msgstr "اسم غير معروف"
+
+msgid "Unknown permissions."
+msgstr "صلاحيات غير معروفة."
+
+msgid "Unknown role."
+msgstr "دور غير معروف."
+
+msgid "Unknown status."
+msgstr "حالة غير معروفة."
+
+msgid "unpaid"
+msgstr "بدون أجر"
+
+msgid "Unpaid leave"
+msgstr "إجازة بدون أجر"
+
+msgid ""
+"Unpaid leave is deducted in payroll. Types that use the yearly balance can't"
+" take more days than are left."
+msgstr ""
+"الإجازة بدون أجر تُخصم في المرتبات. الأنواع التي تستخدم الرصيد السنوي لا "
+"تتجاوز الأيام المتبقية."
+
+msgid "Upload a PNG, JPEG, WEBP, GIF or ICO image."
+msgstr "ارفع صورة PNG أو JPEG أو WEBP أو GIF أو ICO."
+
+msgid "Use digits only."
+msgstr "استخدم أرقامًا فقط."
+
+msgid "Use the workspace colour (%(name)s)"
+msgstr "استخدام لون مساحة العمل (%(name)s)"
+
+msgid "User"
+msgstr "المستخدم"
+
+msgid "User limit"
+msgstr "حد المستخدم"
+
+msgid "User role"
+msgstr "دور المستخدم"
+
+msgid "User role branch"
+msgstr "فرع دور المستخدم"
+
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "Username or email"
+msgstr "اسم المستخدم أو البريد الإلكتروني"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Users can still pick their own in the appearance menu."
+msgstr "يمكن لكل مستخدم اختيار لونه من قائمة المظهر."
+
+msgid "Uses the yearly balance"
+msgstr "تستخدم الرصيد السنوي"
+
+msgid "Value"
+msgstr "القيمة"
+
+msgid "View attendance"
+msgstr "عرض الحضور"
+
+msgid "View branches"
+msgstr "عرض الفروع"
+
+msgid "View departments"
+msgstr "عرض الأقسام"
+
+msgid "View employees"
+msgstr "عرض الموظفين"
+
+msgid "View hourly leave"
+msgstr "عرض الأذونات"
+
+msgid "View income tax tables"
+msgstr "عرض جداول ضريبة الدخل"
+
+msgid "View lateness policies"
+msgstr "عرض لوائح التأخير"
+
+msgid "View leave requests and balances"
+msgstr "عرض طلبات الإجازات والأرصدة"
+
+msgid "View overtime policies"
+msgstr "عرض لوائح الإضافي"
+
+msgid "View pay items"
+msgstr "عرض بنود الراتب"
+
+msgid "View public holidays"
+msgstr "عرض الإجازات الرسمية"
+
+msgid "View social insurance rates"
+msgstr "عرض نسب التأمينات الاجتماعية"
+
+msgid "View users"
+msgstr "عرض المستخدمين"
+
+msgid "Viewer"
+msgstr "مُطّلع"
+
+msgid "Violet"
+msgstr "بنفسجي"
+
+msgid "Waiting for approval"
+msgstr "في انتظار الاعتماد"
+
+msgid "Wednesday"
+msgstr "الأربعاء"
+
+msgid "Weekly days off"
+msgstr "أيام الراحة الأسبوعية"
+
+msgid ""
+"Weekly days off and public holidays in the range don't count as leave days."
+msgstr ""
+"أيام الراحة الأسبوعية والإجازات الرسمية داخل المدة لا تُحسب أيام إجازة."
+
+msgid "Weekly wage"
+msgstr "أجر أسبوعي"
+
+msgid "Weight (g)"
+msgstr "الوزن (جم)"
+
+msgid "Weights and karats handled precisely"
+msgstr "أوزان وعيارات بدقة تامة"
+
+msgid "Welcome back, %(name)s"
+msgstr "مرحبًا بعودتك، %(name)s"
+
+msgid "What"
+msgstr "البيان"
+
+msgid "What happened"
+msgstr "ما حدث"
+
+msgid "WhatsApp"
+msgstr "واتساب"
+
+msgid "When"
+msgstr "متى"
+
+msgid "Who"
+msgstr "من"
+
+msgid ""
+"Who came and when: the daily sheet, manual entries, absences and days off."
+msgstr "من حضر ومتى: كشف الحضور اليومي والإدخال اليدوي والغياب والراحات."
+
+msgid "Widowed"
+msgstr "أرمل"
+
+msgid "Without a tax table, payroll deducts no income tax."
+msgstr "بدون جدول ضريبة لن تُخصم ضريبة دخل في المرتبات."
+
+msgid "Without rates, payroll deducts no social insurance."
+msgstr "بدون نسب لن تُخصم تأمينات اجتماعية في المرتبات."
+
+msgid "Worked"
+msgstr "ساعات العمل"
+
+msgid "Worked (h)"
+msgstr "ساعات العمل (س)"
+
+msgid "Working"
+msgstr "يعمل"
+
+msgid "Working hours"
+msgstr "مواعيد العمل"
+
+msgid "Wrong name or password"
+msgstr "اسم أو كلمة مرور خاطئة"
+
+msgid "Yearly"
+msgstr "سنوياً"
+
+msgid "Yearly exemption"
+msgstr "الإعفاء السنوي"
+
+msgid "Yearly income up to"
+msgstr "الدخل السنوي حتى"
+
+msgid "Yes"
+msgstr "نعم"
+
+msgid "yes"
+msgstr "نعم"
+
+msgid "you"
+msgstr "أنت"
+
+msgid "You can only grant permissions you have yourself."
+msgstr "لا يمكنك منح صلاحيات لا تملكها."
+
+msgid "You can pin up to %(count)s screens. Unpin one first."
+msgstr "يمكنك تثبيت %(count)s شاشة كحد أقصى. أزل واحدة أولًا."
+
+msgid "You cannot suspend yourself."
+msgstr "لا يمكنك إيقاف نفسك."
+
+msgid "You do not have permission to do this."
+msgstr "ليست لديك صلاحية لتنفيذ هذا الإجراء."
+
+msgid "You don't have access to this page"
+msgstr "ليست لديك صلاحية لفتح هذه الصفحة"
+
+msgid "Your data kept private to your company"
+msgstr "بياناتك خاصة بشركتك وحدها"
+
+msgid "Your name, logo and colour on every screen."
+msgstr "اسمك وشعارك ولونك على كل الشاشات."
+
+msgid "Your plan allows %(limit)s branches. Contact us to add more."
+msgstr "باقتك تسمح بـ %(limit)s فروع. تواصل معنا لإضافة المزيد."
+
+msgid "Your plan allows %(limit)s users. Contact us to add more."
+msgstr "باقتك تسمح بـ %(limit)s مستخدمين. تواصل معنا لإضافة المزيد."
+
+msgid "Your shops and offices."
+msgstr "محلاتك ومكاتبك."
+
+msgid "Your shortcuts"
+msgstr "اختصاراتك"
+
+msgid "Your team: their jobs, pay and working hours."
+msgstr "فريقك: وظائفهم ورواتبهم ومواعيد عملهم."
+
+msgid ""
+"Your workspace has reached its request limit for this minute. Try again in "
+"%(seconds)s seconds."
+msgstr ""
+"وصلت مساحة العمل إلى حد الطلبات لهذه الدقيقة. حاول مرة أخرى بعد %(seconds)s "
+"ثانية."

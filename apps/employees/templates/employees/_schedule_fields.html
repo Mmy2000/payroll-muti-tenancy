@@ -1,0 +1,51 @@
+{% load i18n %}{# Working-hours fields. Include with prefix="schedule." (new employee) or prefix="" (a change), schedule=current values or None, id= a unique id prefix. #}
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
+  <div>
+    <label class="form-label" for="{{ id }}-start">{% translate "Shift starts" %}</label>
+    <input id="{{ id }}-start" type="time" name="{{ prefix }}starts_at" class="form-input" value="{{ schedule.starts_at|time:'H:i'|default:'09:00' }}" required>
+    <p class="form-error" data-error-for="{{ prefix }}starts_at"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-end">{% translate "Shift ends" %}</label>
+    <input id="{{ id }}-end" type="time" name="{{ prefix }}ends_at" class="form-input" value="{{ schedule.ends_at|time:'H:i'|default:'17:00' }}" required>
+    <p class="form-error" data-error-for="{{ prefix }}ends_at"></p>
+  </div>
+  <div class="sm:col-span-2">
+    <label class="form-label" for="{{ id }}-early">{% translate "Early leave allowed (minutes)" %}</label>
+    <input id="{{ id }}-early" name="{{ prefix }}early_leave_minutes" class="form-input num w-full text-start" inputmode="numeric" value="{{ schedule.early_leave_minutes|default_if_none:'0' }}">
+    <p class="form-error" data-error-for="{{ prefix }}early_leave_minutes"></p>
+  </div>
+  <fieldset class="sm:col-span-4" data-number>
+    <legend class="form-label">{% translate "Weekly days off" %}</legend>
+    <div class="flex flex-wrap gap-2">
+      {% for value, label in week %}
+      <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm has-checked:border-brand-400 has-checked:bg-brand-50">
+        <input type="checkbox" data-multi="{{ prefix }}days_off" value="{{ value }}" class="size-4 rounded border-slate-300 accent-brand-600"
+               {% if schedule and value in schedule.days_off %}checked{% elif not schedule and value == 4 %}checked{% endif %}>
+        {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+    <p class="form-error" data-error-for="{{ prefix }}days_off"></p>
+  </fieldset>
+  {% if lateness_policies %}
+  <div class="sm:col-span-2">
+    <label class="form-label" for="{{ id }}-late">{% translate "Lateness policy" %}</label>
+    <select id="{{ id }}-late" name="{{ prefix }}lateness_policy_id" class="form-input" data-empty="null">
+      <option value="">{% translate "None: deduct the exact time missed" %}</option>
+      {% for policy in lateness_policies %}<option value="{{ policy.pk }}" {% if schedule.lateness_policy_id == policy.pk %}selected{% endif %}>{{ policy.name }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="{{ prefix }}lateness_policy_id"></p>
+  </div>
+  {% endif %}
+  {% if overtime_policies %}
+  <div class="sm:col-span-2">
+    <label class="form-label" for="{{ id }}-ot-policy">{% translate "Overtime policy" %}</label>
+    <select id="{{ id }}-ot-policy" name="{{ prefix }}overtime_policy_id" class="form-input" data-empty="null">
+      <option value="">{% translate "None: no overtime" %}</option>
+      {% for policy in overtime_policies %}<option value="{{ policy.pk }}" {% if schedule.overtime_policy_id == policy.pk %}selected{% endif %}>{{ policy.name }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="{{ prefix }}overtime_policy_id"></p>
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,66 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui %}
+{% block title %}{% if item %}{% translate "Edit pay item" %}{% else %}{% translate "New pay item" %}{% endif %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <a href="{% url 'pay-items' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Pay items" %}</a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if item %}{{ item.name }}{% else %}{% translate "New pay item" %}{% endif %}</h1>
+    {% if item and not item.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
+    {% if item %}<span class="ms-auto">{% include "audit/_history_link.html" with table="compensation_payitem" row=item.pk %}</span>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-endpoint="{{ endpoint }}" data-method="{{ method }}"
+      data-redirect="{% url 'pay-items' %}" data-success="{% translate 'Saved.' %}" novalidate>
+  <div class="space-y-6 lg:col-span-2">
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+    <section class="card">
+      <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-4">
+        <div>
+          <label class="form-label" for="f-code">{% translate "Code" %}</label>
+          <input id="f-code" name="code" class="form-input num w-full text-start" inputmode="numeric" value="{{ item.code|default:next_code }}" required>
+          <p class="form-error" data-error-for="code"></p>
+        </div>
+        <div class="sm:col-span-3">
+          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <input id="f-name" name="name" class="form-input" value="{{ item.name|default:'' }}" required maxlength="120">
+          <p class="form-error" data-error-for="name"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-kind">{% translate "Kind" %}</label>
+          <select id="f-kind" name="kind" class="form-input">
+            {% for value, label in kinds %}<option value="{{ value }}" {% if item.kind == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="kind"></p>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="form-label" for="f-basis">{% translate "Counted" %}</label>
+          <select id="f-basis" name="basis" class="form-input">
+            {% for value, label in bases %}<option value="{{ value }}" {% if item.basis == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <p class="form-error" data-error-for="basis"></p>
+        </div>
+        <label class="flex items-center gap-3 sm:col-span-4">
+          <input type="checkbox" name="taxable" class="size-4 rounded border-slate-300 accent-brand-600" {% if not item or item.taxable %}checked{% endif %}>
+          <span class="text-sm text-slate-700">{% translate "Subject to income tax" %}</span>
+        </label>
+      </div>
+    </section>
+  </div>
+  <aside>
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary flex-1">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      <a href="{% url 'pay-items' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+    </div>
+  </aside>
+</form>
+{% if item %}
+<form class="mt-6" data-api-form data-method="POST" data-redirect="{% url 'pay-items' %}" data-success="{% translate 'Saved.' %}"
+      data-endpoint="{{ endpoint }}{% if item.is_active %}deactivate/{% else %}activate/{% endif %}">
+  <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 lg:w-2/3" data-form-error role="alert"></div>
+  <button type="submit" class="btn btn-secondary">{% if item.is_active %}{% translate "Deactivate" %}{% else %}{% translate "Reactivate" %}{% endif %}</button>
+</form>
+{% endif %}
+{% endblock %}

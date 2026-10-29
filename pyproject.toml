@@ -1,0 +1,24 @@
+[project]
+name = "payroll-saas"
+version = "0.1.0"
+description = "Multi-tenant payroll, attendance and HR (see docs/PLAN.md)"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["venv", "node_modules"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S608"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*.py" = ["E501", "I"]
+"**/tests/**" = ["S608"]
+"tests/**" = ["S608"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+testpaths = ["apps", "tests"]
+python_files = ["test_*.py"]
+addopts = "--strict-markers -p no:cacheprovider"
