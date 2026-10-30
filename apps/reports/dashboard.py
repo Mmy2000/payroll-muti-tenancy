@@ -41,7 +41,7 @@ def _month(day: date) -> str:
 
 def people(actor, today: date) -> dict:
     from apps.employees.services import visible_employees
-    from apps.org.models import Department
+    from apps.org.services import visible_departments
 
     staff = visible_employees(actor, PEOPLE)
     working = staff.exclude(left_on__lt=today)
@@ -50,7 +50,7 @@ def people(actor, today: date) -> dict:
                  .annotate(month=TruncMonth("hired_on")).values("month")
                  .annotate(n=Count("pk")).values_list("month", "n"))
     return {"working": working.count(),
-            "departments": Department.objects.filter(is_active=True).count(),
+            "departments": visible_departments(actor, PEOPLE).filter(is_active=True).count(),
             "hires": columns([Point(_month(m), hires.get(m, 0),
                                     title=formats.date_format(m, "F Y")) for m in months],
                                whole=True)}
@@ -84,6 +84,15 @@ def attendance(actor, today: date) -> dict:
               title=formats.date_format(d, "l j F")) for d in span], whole=True)}
 
 
+def _department(row: dict, rows) -> str:
+    """A department's name; with its branch when another branch has one of the same name."""
+    name = row["employee__department__name"]
+    if name is None:
+        return _("No department")
+    same = sum(1 for other in rows if other["employee__department__name"] == name)
+    return f"{name} · {row['employee__department__branch__name']}" if same > 1 else name
+
+
 def payroll(actor, today: date) -> dict | None:
     from apps.payroll.models import Payslip, PayslipLine, RunStatus
     from apps.payroll.selectors import visible_runs
@@ -96,7 +105,8 @@ def payroll(actor, today: date) -> dict | None:
     month = latest.period.end.replace(day=1)
     by_department = (slips.filter(run__period__end__year=month.year,
                                   run__period__end__month=month.month)
-                     .values("employee__department__name").annotate(net=Sum("net")))
+                     .values("employee__department__name",
+                             "employee__department__branch__name").annotate(net=Sum("net")))
     months = _months_back(today, 12)
     net = dict(slips.filter(run__period__end__gte=months[0])
                .annotate(month=TruncMonth("run__period__end")).values("month")
@@ -108,8 +118,8 @@ def payroll(actor, today: date) -> dict | None:
     total = sum((row["net"] for row in by_department), Decimal(0))
     return {
         "month": formats.date_format(month, "F Y"), "net": total, "net_text": compact(total),
-        "by_department": bars([Point(row["employee__department__name"] or _("No department"),
-                                     row["net"]) for row in by_department]),
+        "by_department": bars([Point(_department(row, by_department), row["net"])
+                               for row in by_department]),
         "net_months": columns([Point(_month(m), net.get(m, 0),
                                      title=formats.date_format(m, "F Y")) for m in months]),
         "overtime_months": columns([Point(_month(m), overtime.get(m) or 0,

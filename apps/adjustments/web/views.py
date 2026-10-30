@@ -14,7 +14,8 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core.listing import Choice, ListQuery
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
-from apps.org.models import Branch, Department
+from apps.org.models import Branch
+from apps.org.services import visible_departments
 
 from .. import services
 from ..domain.amounts import METHODS
@@ -71,7 +72,7 @@ def _for_employee(queryset, employee_id):
 
 def _target_names(batches) -> None:
     """`target_name` on each batch: who it was given to, in words."""
-    names = {"department": dict(Department.objects.values_list("pk", "name")),
+    names = {"department": {d.pk: d.label for d in visible_departments()},
              "branch": dict(Branch.objects.values_list("pk", "name"))}
     for batch in batches:
         if batch.corrects_id:

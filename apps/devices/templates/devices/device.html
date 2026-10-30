@@ -8,7 +8,7 @@
     <span class="ms-auto">{% history_link device %}</span>
   </div>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ device.name }}</h1>
+    <h1 class="page-title">{{ device.name }}</h1>
     {% if not device.is_active %}<span class="badge badge-neutral">{% translate "Off" %}</span>{% elif device.online %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Online" %}</span>{% else %}<span class="badge badge-warning">{% translate "Not calling" %}</span>{% endif %}
   </div>
   <p class="mt-1 text-sm text-slate-500"><span class="num">{{ device.serial }}</span> · {{ device.branch.name }} · {% translate "Last call" %} <span class="num">{{ device.last_seen_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</span>{% if device.last_ip %} · <span class="num">{{ device.last_ip }}</span>{% endif %}{% if device.info %} · <span class="num">{{ device.info }}</span>{% endif %}</p>
@@ -97,8 +97,8 @@
 <form class="card" data-api-form data-method="PUT" data-endpoint="{% url 'device-detail' device.pk %}" data-success="{% translate 'Saved.' %}" novalidate>
   <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-4">
     <h2 class="text-base font-semibold text-slate-900 sm:col-span-4">{% translate "Settings" %}</h2>
-    <div><label class="form-label" for="s-serial">{% translate "Serial number" %}</label><input id="s-serial" name="serial" class="form-input num" value="{{ device.serial }}"><p class="form-error" data-error-for="serial"></p></div>
-    <div><label class="form-label" for="s-name">{% translate "Name" %}</label><input id="s-name" name="name" class="form-input" value="{{ device.name }}"><p class="form-error" data-error-for="name"></p></div>
+    <div><label class="form-label is-required" for="s-serial">{% translate "Serial number" %}</label><input id="s-serial" name="serial" class="form-input num" value="{{ device.serial }}"><p class="form-error" data-error-for="serial"></p></div>
+    <div><label class="form-label is-required" for="s-name">{% translate "Name" %}</label><input id="s-name" name="name" class="form-input" value="{{ device.name }}"><p class="form-error" data-error-for="name"></p></div>
     <div><label class="form-label" for="s-branch">{% translate "Branch" %}</label>
       <select id="s-branch" name="branch_id" class="form-input">{% for b in branches %}<option value="{{ b.pk }}" {% if b.pk == device.branch_id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select><p class="form-error" data-error-for="branch_id"></p></div>
     <label class="flex items-end gap-3 pb-2"><input type="checkbox" name="is_active" class="size-4 rounded border-slate-300 accent-brand-600" {% if device.is_active %}checked{% endif %}><span class="text-sm text-slate-700">{% translate "Accept its calls" %}</span></label>

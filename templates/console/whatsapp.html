@@ -1,0 +1,97 @@
+{% extends "console/layout.html" %}
+{% load i18n ui %}
+{% block title %}{% translate "WhatsApp" %}{% endblock %}
+{% block page_header %}
+<div class="mb-8">
+  <h1 class="page-title">{% translate "WhatsApp" %}</h1>
+  <p class="mt-1.5 max-w-3xl text-sm text-slate-500">{% translate "The service that sends payslips from each client's own number. Everything is set here: nothing to edit on the server, nothing to restart." %}</p>
+</div>
+{% endblock %}
+{% block content %}
+{% if not installed and service.is_local %}
+<div class="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+  {% icon "triangle-alert" "size-5 shrink-0" %}
+  <div><p class="font-semibold">{% translate "The gateway is not installed on this server" %}</p>
+    <p class="mt-0.5">{% translate "It is needed once, when the server is set up:" %} <code dir="ltr">npm ci</code> {% translate "in" %} <code dir="ltr">ops/wa-gateway</code>.</p></div>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <section class="card xl:col-span-2">
+    <div class="card-header"><h2 class="card-title">{% translate "Service" %}</h2></div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="card-body space-y-5">
+        {% if form.non_field_errors %}<div class="rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        <label class="flex items-center gap-3">{{ form.enabled }}<span class="text-sm font-medium text-slate-900">{{ form.enabled.label }}</span></label>
+        {% include "console/_field.html" with field=form.url %}
+        {% include "console/_field.html" with field=form.secret %}
+      </div>
+      <div class="flex justify-end border-t border-slate-100 px-5 py-4">
+        <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+      </div>
+    </form>
+  </section>
+
+  <aside class="space-y-6">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Status" %}</h2></div>
+      <div class="card-body space-y-3 text-sm">
+        {% if state.code == "running" %}
+          <p><span class="badge badge-success"><span class="badge-dot"></span>{% translate "Running" %}</span></p>
+          <p class="text-slate-600">{% blocktranslate trimmed count n=state.sessions %}{{ n }} number connected.{% plural %}{{ n }} numbers connected.{% endblocktranslate %}</p>
+        {% elif state.code == "down" %}
+          <p><span class="badge badge-warning"><span class="badge-dot"></span>{% translate "Not answering" %}</span></p>
+          <p class="text-slate-600">{{ state.problem }}</p>
+          {% if service.is_local %}<p class="text-xs text-slate-500">{% translate "Just switched on? It takes a few seconds: reload this page." %}</p>{% endif %}
+        {% else %}
+          <p><span class="badge badge-neutral"><span class="badge-dot"></span>{% translate "Off" %}</span></p>
+          <p class="text-slate-600">{% if in_memory %}{% translate "Development: messages are kept in memory and nothing is sent." %}{% else %}{% translate "Clients cannot send WhatsApp messages." %}{% endif %}</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">{% translate "Key" %}</h2></div>
+      <div class="card-body space-y-3 text-sm">
+        <p class="text-slate-600">{% if service.key %}{% translate "Set, and stored encrypted." %}{% else %}{% translate "Made for you when the service is switched on." %}{% endif %}</p>
+        {% if service.key and service.is_local %}
+        <form method="post" action="{% url 'console-whatsapp-key' %}">{% csrf_token %}
+          <button type="submit" class="btn btn-secondary w-full">{% icon "key-round" "size-4" %}{% translate "Replace the key" %}</button>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+  </aside>
+</div>
+
+<section class="card mt-6 overflow-hidden">
+  <div class="card-header">
+    <h2 class="card-title">{% translate "Clients" %}</h2>
+    <span class="text-xs text-slate-500">{{ month|date:"F Y" }}</span>
+  </div>
+  {% if rows %}
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead><tr><th>{% translate "Client" %}</th><th>{% translate "Number" %}</th><th class="text-end">{% translate "Sent" %}</th><th class="text-end">{% translate "Failed" %}</th><th class="text-end">{% translate "Waiting" %}</th><th>{% translate "Last sent" %}</th></tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'console-tenant' row.tenant.pk %}#f-whatsapp">{{ row.tenant.name }}</a>
+            {% if not row.feature_on %}<div class="text-xs text-slate-400">{% translate "Feature off" %}</div>{% endif %}</td>
+          <td>{% if row.phone %}<span class="num">{{ row.phone }}</span>{% endif %}
+            <div class="text-xs {% if row.link_status == 'linked' %}text-emerald-700{% elif row.link_status == 'broken' %}text-red-700{% else %}text-slate-500{% endif %}">{{ row.link_label }}</div></td>
+          <td class="text-end"><span class="num">{{ row.sent }}</span></td>
+          <td class="text-end"><span class="num{% if row.failed %} text-red-700{% endif %}">{{ row.failed }}</span></td>
+          <td class="text-end"><span class="num">{{ row.waiting }}</span></td>
+          <td>{% if row.last_sent %}<span class="num text-xs">{{ row.last_sent|date:"SHORT_DATETIME_FORMAT" }}</span>{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="px-5 py-8 text-center text-sm text-slate-500">{% translate "No client has WhatsApp switched on yet. Switch it on in the client's Features, or in a plan." %}</p>
+  {% endif %}
+</section>
+{% endblock %}

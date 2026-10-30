@@ -18,6 +18,7 @@ the choice; a feature chosen on but needing one that is off says so and works on
         <p class="text-xs text-amber-700">{% icon "triangle-alert" "size-3.5 inline" %} {% translate "Off until this is on:" %} {% for needed in state.blocked_by %}<a href="#f-{{ needed.key }}" class="underline">{{ needed.label }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
         {% else %}
         <p class="truncate text-xs text-slate-500">{{ state.feature.description }}</p>
+        {% if state.needs %}<p class="text-xs text-slate-500">{% translate "Needs:" %} {% for needed in state.needs %}<a href="#f-{{ needed.key }}" class="text-brand-700 hover:underline">{{ needed.label }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
         {% endif %}
       </div>
       {% if state.custom %}
@@ -26,7 +27,8 @@ the choice; a feature chosen on but needing one that is off says so and works on
         <button type="submit" class="btn btn-ghost text-xs" title="{% if state.plan_default %}{% translate 'The plan includes it' %}{% else %}{% translate 'The plan does not include it' %}{% endif %}">{% translate "Use the plan" %}</button>
       </form>
       {% endif %}
-      <form method="post" action="{% url 'console-tenant-feature' tenant.pk %}" class="inline-flex">{% csrf_token %}
+      {% blocktranslate asvar stops_text with feature=state.feature.label others=state.stops_text %}Switching off {{ feature }} also switches off: {{ others }}.{% endblocktranslate %}
+      <form method="post" action="{% url 'console-tenant-feature' tenant.pk %}" class="inline-flex"{% if state.stops %} data-confirm-off="{{ stops_text }}"{% endif %}>{% csrf_token %}
         <input type="hidden" name="key" value="{{ state.feature.key }}"><input type="hidden" name="state" value="{{ state.chosen|yesno:'off,on' }}">
         {% include "console/_switch_button.html" with on=state.chosen label=state.feature.label %}
       </form>

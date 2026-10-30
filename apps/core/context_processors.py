@@ -167,6 +167,7 @@ def shell(request):
 
     return {
         "ui_strings": {
+            "choose_branch_first": gettext("Choose a branch first"),
             "error": gettext("Please correct the highlighted fields."),
             "network": gettext("Could not reach the server. Check your connection and try again."),
             "search": gettext("Type to search…"),

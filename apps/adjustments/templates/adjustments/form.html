@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url page_kind.plural %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{{ page_kind.title }}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ page_kind.new_label }}</h1>
+  <h1 class="mt-2 page-title">{{ page_kind.new_label }}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -23,7 +23,7 @@
           <p class="form-error" data-error-for="type_id"></p>
         </div>
         <div>
-          <label class="form-label" for="f-date">{% translate "Date" %}</label>
+          <label class="form-label is-required" for="f-date">{% translate "Date" %}</label>
           <input id="f-date" type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
           <p class="mt-1.5 text-xs text-slate-500">{% translate "It counts in this month's pay." %}</p>
           <p class="form-error" data-error-for="date"></p>
@@ -36,7 +36,7 @@
           <p class="form-error" data-error-for="method"></p>
         </div>
         <div>
-          <label class="form-label" for="f-quantity">{% translate "How much" %}</label>
+          <label class="form-label is-required" for="f-quantity">{% translate "How much" %}</label>
           <input id="f-quantity" name="quantity" class="form-input num w-full text-start" inputmode="decimal" required>
           <p class="mt-1.5 text-xs text-slate-500">{% translate "The amount, the percentage, or the number of days or hours. Each employee's amount is worked out from their pay on that date." %}</p>
           <p class="form-error" data-error-for="quantity"></p>

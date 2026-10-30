@@ -2,7 +2,7 @@
 {% load i18n ui %}
 {% block fields %}
 <div>
-  <label class="form-label" for="f-from">{% translate "From" %}</label>
+  <label class="form-label is-required" for="f-from">{% translate "From" %}</label>
   <input id="f-from" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
   <p class="form-error" data-error-for="effective_from"></p>
 </div>
@@ -13,12 +13,12 @@
   <p class="form-error" data-error-for="until"></p>
 </div>
 <div>
-  <label class="form-label" for="f-start">{% translate "Starts at" %}</label>
+  <label class="form-label is-required" for="f-start">{% translate "Starts at" %}</label>
   <input id="f-start" type="time" name="starts_at" class="form-input" required>
   <p class="form-error" data-error-for="starts_at"></p>
 </div>
 <div>
-  <label class="form-label" for="f-end">{% translate "Ends at" %}</label>
+  <label class="form-label is-required" for="f-end">{% translate "Ends at" %}</label>
   <input id="f-end" type="time" name="ends_at" class="form-input" required>
   <p class="form-error" data-error-for="ends_at"></p>
 </div>

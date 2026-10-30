@@ -300,12 +300,24 @@ def test_features_for_a_client_and_for_a_plan(staff, tenant_a, tenant_b):
     assert features.is_enabled(tenant_b.pk, "attendance")
     assert login(tenant_a).get("/attendance/").status_code in (403, 404)
 
+    # What relies on it went off with it, so nothing is left "on" that cannot work.
     page = staff.get(f"/clients/{tenant_a.pk}/").content.decode()
-    assert "Off until this is on:" in page
+    assert "Off until this is on:" not in page
+    assert TenantFeature.objects.get(tenant=tenant_a, key="overtime").enabled is False
 
     staff.post(f"/clients/{tenant_a.pk}/features/", {"key": "attendance", "state": "default"})
-    assert not TenantFeature.objects.filter(tenant=tenant_a).exists()
+    assert not TenantFeature.objects.filter(tenant=tenant_a, key="attendance").exists()
     assert features.is_enabled(tenant_a.pk, "attendance")
+
+    # A client still on its own choice whose plan loses what it needs is told why it is off.
+    TenantFeature.objects.filter(tenant=tenant_a).delete()
+    TenantFeature.objects.create(tenant=tenant_a, key="overtime", enabled=True)
+    TenantFeature.objects.create(tenant=tenant_a, key="attendance", enabled=False)
+    features.forget(tenant_a.pk)
+    page = staff.get(f"/clients/{tenant_a.pk}/").content.decode()
+    assert "Off until this is on:" in page
+    TenantFeature.objects.filter(tenant=tenant_a).delete()
+    features.forget(tenant_a.pk)
 
     staff.post("/features/plan/", {"plan": "standard", "key": "evaluations", "enabled": "0"})
     assert PlanFeature.objects.get(plan="standard", key="evaluations").enabled is False

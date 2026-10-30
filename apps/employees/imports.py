@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 
@@ -60,8 +61,10 @@ class EmployeeImport(SheetImport):
 
     def prepare(self):
         self.branches = dict(Branch.objects.filter(is_active=True).values_list("code", "pk"))
-        self.departments = dict(Department.objects.filter(is_active=True)
-                                .values_list("code", "pk"))
+        self.departments = defaultdict(dict)  # a department's code is its branch's
+        for branch_id, code, pk in Department.objects.filter(is_active=True).values_list(
+                "branch_id", "code", "pk"):
+            self.departments[branch_id][code] = pk
 
     def _lookup(self, cells: Cells, key: str, table: dict, message: str, *, optional=False):
         code = cells.integer(key)
@@ -72,12 +75,13 @@ class EmployeeImport(SheetImport):
         return table[code]
 
     def import_row(self, cells: Cells) -> None:
+        branch_id = self._lookup(cells, "branch_code", self.branches,
+                                 _("No active branch has this code."))
         card = services.EmployeeInput(
-            code=cells.integer("code", 0), name=cells.text("name"),
-            branch_id=self._lookup(cells, "branch_code", self.branches,
-                                   _("No active branch has this code.")),
-            department_id=self._lookup(cells, "department_code", self.departments,
-                                       _("No active department has this code."), optional=True),
+            code=cells.integer("code", 0), name=cells.text("name"), branch_id=branch_id,
+            department_id=self._lookup(cells, "department_code", self.departments[branch_id],
+                                       _("This branch has no active department with this code."),
+                                       optional=True),
             hired_on=cells.required("hired_on", cells.date("hired_on"),
                                     _("Enter the hiring date.")),
             job_title=cells.text("job_title"), national_id=cells.text("national_id"),

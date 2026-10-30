@@ -1,15 +1,17 @@
 """The WhatsApp gateway (ops/wa-gateway, from Saas_ERP): the client's own number, linked by
 scanning a QR, one session per client. PayRole used a whatsapp-web.js gateway the same way.
 
-WA_GATEWAY_URL, header "X-API-KEY: <WA_GATEWAY_KEY>". POST /sessions/<id>/start, GET
+The address and key come from the console (WhatsApp; tenants.WhatsAppService), read on every
+call: header "X-API-KEY: <key>". POST /sessions/<id>/start, GET
 /sessions/<id>/status → {"status": connected | qr | starting | not_started | disconnected},
 GET /sessions/<id>/qr → {"qr": a data URL image}, DELETE /sessions/<id>, POST /send {session,
 phone, message} and POST /send-document {session, phone, message, filename, pdf_base64} →
-{"ok": true, "id"} or {"ok": false, "error"}.
+{"ok": true, "id"} or {"ok": false, "error"}. GET /health → {"ok": true, "sessions"}.
 
-With WHATSAPP_CONSOLE (development and tests) nothing is called: messages land in OUTBOX and a
-session links at once. Standard library HTTP only. Nothing here raises on a gateway problem:
-callers get Result(ok, error) with the reason in words.
+With WHATSAPP_CONSOLE (development and tests), until the service is switched on in the console,
+nothing is called: messages land in OUTBOX and a session links at once. Standard library HTTP
+only. Nothing here raises on a gateway problem: callers get Result(ok, error) with the reason
+in words.
 """
 
 from __future__ import annotations
@@ -28,6 +30,7 @@ from django.utils.translation import gettext as _
 logger = logging.getLogger(__name__)
 SEND_TIMEOUT = 60
 CHECK_TIMEOUT = 15
+HEALTH_TIMEOUT = 3
 STATES = ("connected", "qr", "starting", "not_started", "disconnected")
 
 OUTBOX: list[dict] = []  # the console's messages, for tests
@@ -41,13 +44,18 @@ class Result:
     data: dict = field(default_factory=dict)
 
 
+def _service():
+    from apps.platform.tenants.models import WhatsAppService
+
+    return WhatsAppService.load()
+
+
 def console() -> bool:
-    return bool(getattr(settings, "WHATSAPP_CONSOLE", False))
+    return bool(getattr(settings, "WHATSAPP_CONSOLE", False)) and not _service().enabled
 
 
 def ready() -> bool:
-    return console() or bool(getattr(settings, "WA_GATEWAY_URL", "")
-                             and getattr(settings, "WA_GATEWAY_KEY", ""))
+    return console() or _service().ready
 
 
 def phone_digits(phone: str) -> str:
@@ -68,12 +76,13 @@ def phone_digits(phone: str) -> str:
 
 def _call(method: str, path: str, payload: dict | None = None, *,
           timeout: int = CHECK_TIMEOUT) -> tuple[int, dict]:
-    headers = {"X-API-KEY": settings.WA_GATEWAY_KEY, "Accept": "application/json"}
+    service = _service()
+    headers = {"X-API-KEY": service.secret, "Accept": "application/json"}
     body = None
     if payload is not None:
         headers["Content-Type"] = "application/json"
         body = json.dumps(payload).encode()
-    url = settings.WA_GATEWAY_URL.rstrip("/") + path
+    url = service.url.rstrip("/") + path
     request = Request(url, data=body, headers=headers, method=method)
     try:
         with urlopen(request, timeout=timeout) as response:  # noqa: S310 (configured URL)
@@ -102,6 +111,12 @@ def _problem(status: int, text: str = "") -> str:
         return _("This number is not on WhatsApp.")
     return text[:300] or _("The WhatsApp service answered with an error (%(status)s).") % {
         "status": status}
+
+
+def health() -> Result:
+    """Whether the gateway answers, with this key: for the console."""
+    status, data = _call("GET", "/health", timeout=HEALTH_TIMEOUT)
+    return Result(True, data=data) if status == 200 else Result(False, _problem(status))
 
 
 def _not_set_up() -> Result:

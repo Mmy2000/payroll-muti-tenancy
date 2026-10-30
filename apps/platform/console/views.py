@@ -29,13 +29,11 @@ from apps.core.tenancy import tenant_context
 from apps.platform.tenants import features as feature_registry
 from apps.platform.tenants.models import (
     Plan,
-    PlanFeature,
     PlatformEvent,
     PlatformLink,
     PlatformSettings,
     Tenant,
     TenantDomain,
-    TenantFeature,
     TenantStatus,
 )
 from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
@@ -503,6 +501,17 @@ def platform_settings(request):
 
 # ---- Features (apps.platform.tenants.features) ----
 
+def _along_with(others) -> dict:
+    return {"also": ", ".join(f.key for f in others)} if others else {}
+
+
+def _say_along_with(request, others, on: bool) -> None:
+    if others:
+        messages.info(request, (_("Also switched on, because it is needed: %(names)s.") if on else
+                                _("Also switched off, because they rely on it: %(names)s."))
+                      % {"names": feature_registry.labels(others)})
+
+
 @staff_required
 def features(request):
     """Every feature, which plans include it by default, and how many clients have it on."""
@@ -514,13 +523,15 @@ def features(request):
             if key in usage:
                 usage[key] += 1
     plans = [(p.code, p.label) for p in Plan.objects.all()]
+    in_effect = {code: feature_registry.effective(defaults.get(code, {})) for code, _l in plans}
     groups: dict[str, list] = {}
     for feature in feature_registry.FEATURES:
         groups.setdefault(str(feature.group), []).append({
             "feature": feature, "used_by": usage[feature.key],
-            "requires": [feature_registry.BY_KEY[k] for k in feature.requires
-                         if k in feature_registry.BY_KEY],
-            "plans": [(value, label, defaults.get(value, {}).get(feature.key, False))
+            "requires": feature_registry.needs(feature.key),
+            "plans": [(value, label, in_effect[value].get(feature.key, False),
+                       feature_registry.labels(feature_registry.knock_on(
+                           defaults.get(value, {}), feature.key, False)))
                       for value, label in plans]})
     return render(request, "console/features.html", {
         "groups": groups, "plans": plans, "clients": len(live), "section": "features"})
@@ -534,14 +545,15 @@ def plan_feature(request):
     if key not in feature_registry.BY_KEY or plan_row is None:
         raise Http404
     enabled = request.POST.get("enabled") == "1"
-    PlanFeature.objects.update_or_create(plan=plan_row, key=key,
-                                         defaults={"enabled": enabled})
-    feature_registry.forget()
-    record(request, "feature.plan", None, plan=plan, feature=key, enabled=enabled)
+    with transaction.atomic():
+        others = feature_registry.set_for_plan(plan_row, key, enabled)
+    record(request, "feature.plan", None, plan=plan, feature=key, enabled=enabled,
+           **_along_with(others))
     feature = feature_registry.BY_KEY[key]
     messages.success(request, (_("%(feature)s is now included in %(plan)s.") if enabled else
                                _("%(feature)s is no longer included in %(plan)s."))
                      % {"feature": feature.label, "plan": plan_row.label})
+    _say_along_with(request, others, enabled)
     return _back(request, reverse("console-features"), f"#f-{key}")
 
 
@@ -552,19 +564,17 @@ def tenant_feature(request, pk):
     key, state = request.POST.get("key", ""), request.POST.get("state", "")
     if key not in feature_registry.BY_KEY or state not in ("on", "off", "default"):
         raise Http404
-    if state == "default":
-        TenantFeature.objects.filter(tenant=tenant, key=key).delete()
-    else:
-        TenantFeature.objects.update_or_create(tenant=tenant, key=key,
-                                               defaults={"enabled": state == "on"})
-    feature_registry.forget(tenant.pk)
-    record(request, "feature.client", tenant, feature=key, state=state)
+    with transaction.atomic():
+        others = feature_registry.set_for_client(tenant, key,
+                                                 None if state == "default" else state == "on")
+    record(request, "feature.client", tenant, feature=key, state=state, **_along_with(others))
     feature = feature_registry.BY_KEY[key]
     messages.success(request, {
         "on": _("%(feature)s is on for %(name)s."),
         "off": _("%(feature)s is off for %(name)s."),
         "default": _("%(feature)s follows the plan again for %(name)s."),
     }[state] % {"feature": feature.label, "name": tenant.name})
+    _say_along_with(request, others, feature_registry.is_enabled(tenant.pk, key))
     return _back(request, reverse("console-tenant", args=[pk]), f"#f-{key}")
 
 
@@ -578,7 +588,9 @@ def plans(request):
     defaults = feature_registry.plan_defaults()
     total = len(feature_registry.FEATURES)
     return render(request, "console/plans.html", {
-        "plans": [{"plan": p, "features_on": sum(defaults.get(p.code, {}).values()),
+        "plans": [{"plan": p,
+                   "features_on": sum(feature_registry.effective(
+                       defaults.get(p.code, {})).values()),
                    "features_total": total} for p in rows],
         "section": "plans"})
 

@@ -11,16 +11,26 @@
   <p class="form-error" data-error-for="target_kind"></p>
 </fieldset>
 <div class="sm:col-span-2" data-show-when="target_kind=employee">
-  <label class="form-label" for="t-employee">{% translate "Employee" %}</label>
+  <label class="form-label is-required" for="t-employee">{% translate "Employee" %}</label>
   <select id="t-employee" name="target_id" class="form-input">
     <option value="">—</option>
     {% for e in target_employees %}<option value="{{ e.pk }}" {% if selected == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}
   </select>
 </div>
-<div class="sm:col-span-2" data-show-when="target_kind=department" hidden>
-  <label class="form-label" for="t-department">{% translate "Department" %}</label>
-  <select id="t-department" name="target_id" class="form-input">
-    {% for d in target_departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}
+{% if target_branches|length > 1 %}
+<div data-show-when="target_kind=department" hidden>
+  <label class="form-label" for="t-department-branch">{% translate "Branch" %}</label>
+  <select id="t-department-branch" name="target_department_branch" class="form-input">
+    <option value="">—</option>
+    {% for b in target_branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}
+  </select>
+</div>
+{% endif %}
+<div class="{% if target_branches|length <= 1 %}sm:col-span-2{% endif %}" data-show-when="target_kind=department" hidden>
+  <label class="form-label is-required" for="t-department">{% translate "Department" %}</label>
+  <select id="t-department" name="target_id" class="form-input" data-depends-on="target_department_branch">
+    <option value="">—</option>
+    {% for d in target_departments %}<option value="{{ d.pk }}" data-parent="{{ d.branch_id }}">{{ d.name }}</option>{% endfor %}
   </select>
 </div>
 <div class="sm:col-span-2" data-show-when="target_kind=branch" hidden>

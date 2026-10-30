@@ -8,7 +8,7 @@
     <span class="ms-auto">{% history_link batch %}</span>
   </div>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ batch.adjustment_type.name }} · <span class="num">{{ batch.date|date:"Y-m-d" }}</span></h1>
+    <h1 class="page-title">{{ batch.adjustment_type.name }} · <span class="num">{{ batch.date|date:"Y-m-d" }}</span></h1>
     {% include "adjustments/_status.html" %}
   </div>
   <p class="mt-1 text-sm text-slate-500">
@@ -109,11 +109,11 @@
         <div><label class="form-label" for="d-type">{% translate "Type" %}</label>
           <select id="d-type" name="type_id" class="form-input">{% for t in types %}<option value="{{ t.pk }}" {% if t.pk == batch.adjustment_type_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select>
           <p class="form-error" data-error-for="type_id"></p></div>
-        <div><label class="form-label" for="d-date">{% translate "Date" %}</label>
+        <div><label class="form-label is-required" for="d-date">{% translate "Date" %}</label>
           <input id="d-date" type="date" name="date" class="form-input" value="{{ batch.date|date:'Y-m-d' }}"><p class="form-error" data-error-for="date"></p></div>
         <div><label class="form-label" for="d-method">{% translate "Counted as" %}</label>
           <select id="d-method" name="method" class="form-input">{% for m in methods %}<option value="{{ m.key }}" {% if m.key == batch.method %}selected{% endif %}>{{ m.label }} ({{ m.unit }})</option>{% endfor %}</select></div>
-        <div><label class="form-label" for="d-quantity">{% translate "How much" %}</label>
+        <div><label class="form-label is-required" for="d-quantity">{% translate "How much" %}</label>
           <input id="d-quantity" name="quantity" class="form-input num text-start" inputmode="decimal" value="{{ batch.quantity|stringformat:'s' }}">
           <p class="mt-1.5 text-xs text-slate-500">{% translate "Every employee takes this quantity again." %}</p><p class="form-error" data-error-for="quantity"></p></div>
         <div class="sm:col-span-2"><label class="form-label" for="d-reason">{% translate "Reason" %}</label>
@@ -146,7 +146,7 @@
         <p class="mt-1 text-sm text-slate-500">{% translate "Enter what each employee's quantity should have been (0 takes it back). Only the difference is paid or taken back, in the payroll of the date below; the original stays as it was." %}</p>
       </div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div><label class="form-label" for="c-date">{% translate "Settled on" %}</label>
+        <div><label class="form-label is-required" for="c-date">{% translate "Settled on" %}</label>
           <input id="c-date" type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}"><p class="form-error" data-error-for="date"></p></div>
         <div class="sm:col-span-2"><label class="form-label" for="c-reason">{% translate "Why" %}</label>
           <input id="c-reason" name="reason" class="form-input" maxlength="300" required><p class="form-error" data-error-for="reason"></p></div>

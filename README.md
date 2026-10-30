@@ -159,7 +159,8 @@ From "PayRole — the four gaps" (decisions of 2026-10-29).
 - **WhatsApp** (`apps/messaging`, gateway in `ops/wa-gateway`): payslips from the client's own
   number, linked by QR; one job per payslip, spaced out and retried, the PDF made when sent,
   never twice; every message logged with its result. Feature `whatsapp`. Without a gateway
-  (development, tests) messages stay in memory (`WHATSAPP_CONSOLE`).
+  (development, tests) messages stay in memory (`WHATSAPP_CONSOLE`) until the service is
+  switched on in the console.
 
 ### Phase 7: evaluations, the dashboard, the bell
 
@@ -207,6 +208,12 @@ server and document-design pages):
   `{ on_demand_tls { ask https://admin.example.com/tls/allowed/ } }` and a site block
   `https:// { tls { on_demand } reverse_proxy 127.0.0.1:8000 }`. The client points the domain
   at the server (DNS) before it is added.
+- **WhatsApp** is run from the console (`console/whatsapp.py`, `tenants.WhatsAppService`), not
+  from `.env`: on or off, the address, the key (made for you, encrypted, never shown), whether
+  the gateway answers, and each client's number and messages this month. `manage.py
+  run_wa_gateway` (started by `ops/dev.py`; one service in production) keeps the gateway in line
+  with those settings: it starts, stops and restarts it on its own. The only step outside the
+  console is installing it once: `npm ci` in `ops/wa-gateway`.
 - **Suspension** stops the workspace, the mobile app and the fingerprint devices at once
   (403); background jobs skip the client; the data is kept.
 - **Plans** (prices, limits, trial days, features), **Features** (which plan includes what, and
@@ -265,12 +272,16 @@ Requirements: Python 3.13, PostgreSQL 15 or later, Node.js 22 or later.
 6. **Run it**
 
    ```powershell
-   .\venv\Scripts\python.exe manage.py runserver
+   .\venv\Scripts\python.exe ops\dev.py
    ```
 
-   - The client's workspace: http://demo.localhost:8000/ (sign in as `admin`).
-   - The platform admin: http://admin.localhost:8000/ (clients, plans, features).
-   - Background jobs: `.\venv\Scripts\python.exe manage.py run_worker`.
+   This starts everything in one terminal: the web server, the background worker, the CSS
+   watcher and the WhatsApp gateway's supervisor (it runs the gateway once it is switched on in
+   the console). Ctrl+C stops them all. Add `--migrate`
+   to apply new migrations first, or `--port 8001` for another port.
+
+   - The client's workspace: http://demo.localhost:8000/ (sign in as `owner`).
+   - The platform console: http://admin.localhost:8000/ (sign in as `admin@platform.test`).
 
 ## Frontend assets
 

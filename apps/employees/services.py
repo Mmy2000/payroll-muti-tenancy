@@ -119,9 +119,12 @@ def _check_card(data: EmployeeInput, employee: Employee) -> dict:
         errors["code"] = [_("Another employee has this code.")]
     if not Branch.objects.filter(pk=data.branch_id, is_active=True).exists():
         errors["branch_id"] = [_("Choose an active branch.")]
-    if data.department_id is not None and not Department.objects.filter(
-            pk=data.department_id, is_active=True).exists():
-        errors["department_id"] = [_("Choose an active department.")]
+    if data.department_id is not None:
+        department = Department.objects.filter(pk=data.department_id, is_active=True).first()
+        if department is None:
+            errors["department_id"] = [_("Choose an active department.")]
+        elif department.branch_id != data.branch_id:
+            errors["department_id"] = [_("This department isn't in the employee's branch.")]
     for name, choices in (("gender", Gender), ("marital_status", MaritalStatus),
                           ("military_status", MilitaryStatus)):
         value = getattr(data, name)

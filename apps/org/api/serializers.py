@@ -11,6 +11,8 @@ class BranchSerializer(serializers.ModelSerializer):
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
+    branch_name = serializers.CharField(source="branch.name", read_only=True)
+
     class Meta:
         model = Department
-        fields = ["id", "code", "name", "is_active"]
+        fields = ["id", "branch", "branch_name", "code", "name", "is_active"]

@@ -5,12 +5,13 @@ loan's installments…). The audited tables come from apps/audit/catalog.py."""
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime, time
 
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import render
+from django.utils import formats, timezone
 from django.utils.translation import gettext as _
 
 from apps.core.templatetags.ui import num
@@ -38,6 +39,24 @@ def _date(value: str):
         return date.fromisoformat(value) if value else None
     except ValueError:
         return None
+
+
+def _when(field, value) -> str | None:
+    """A date or time as the trail recorded it (ISO, UTC) in the page's own format and the
+    client's clock; None when `value` isn't one."""
+    try:
+        if isinstance(field, models.DateTimeField):  # before DateField: it is one
+            moment = datetime.fromisoformat(value)
+            if timezone.is_aware(moment):
+                moment = timezone.localtime(moment)
+            return formats.date_format(moment, "SHORT_DATETIME_FORMAT")
+        if isinstance(field, models.DateField):
+            return formats.date_format(date.fromisoformat(value), "SHORT_DATE_FORMAT")
+        if isinstance(field, models.TimeField):
+            return formats.time_format(time.fromisoformat(value), "TIME_FORMAT")
+    except (TypeError, ValueError):
+        pass
+    return None
 
 
 class _Labels:
@@ -92,7 +111,7 @@ def _describe(events) -> list[dict]:
             return num(value, min(field.decimal_places, 4))
         if isinstance(value, (dict, list)):
             return "…" if value else "—"
-        return str(value)
+        return _when(field, value) or str(value)
 
     rows = []
     for event in events:

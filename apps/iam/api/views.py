@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
 from rest_framework import serializers, status, viewsets
@@ -41,6 +42,15 @@ class MeView(APIView):
         data = MeSerializer(request.membership).data
         data["permissions"] = granted
         return Response(data)
+
+
+def _link_employee(membership, data, actor) -> None:
+    """The user form also says which employee the user is: saved with the user, in the same
+    transaction. The rules are the mobile app's (apps.mobile.access), imported here only."""
+    if "employee" in data:
+        from apps.mobile.access import link_member
+
+        link_member(membership.pk, data["employee"], actor=actor)
 
 
 def _member_input(data) -> services.MemberInput:
@@ -91,16 +101,20 @@ class MemberViewSet(viewsets.GenericViewSet):
         if not payload.validated_data.get("password"):
             raise ValidationError(_("Please correct the highlighted fields."),
                                   fields={"password": [_("This field is required.")]})
-        membership = services.create_member(_member_input(payload.validated_data),
-                                            payload.validated_data["password"],
-                                            actor=request.actor)
+        with transaction.atomic():
+            membership = services.create_member(_member_input(payload.validated_data),
+                                                payload.validated_data["password"],
+                                                actor=request.actor)
+            _link_employee(membership, payload.validated_data, request.actor)
         return self._respond(membership, status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         payload = MemberWriteSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
-        membership = services.update_member(int(pk), _member_input(payload.validated_data),
-                                            actor=request.actor)
+        with transaction.atomic():
+            membership = services.update_member(int(pk), _member_input(payload.validated_data),
+                                                actor=request.actor)
+            _link_employee(membership, payload.validated_data, request.actor)
         return self._respond(membership)
 
     @action(detail=True, methods=["post"])

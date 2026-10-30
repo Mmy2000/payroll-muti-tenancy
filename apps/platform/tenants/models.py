@@ -3,12 +3,16 @@ plus the host lookup in TenantResolutionMiddleware."""
 
 from __future__ import annotations
 
+import secrets
+from urllib.parse import urlsplit
+
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.crypto import decrypt, encrypt
 from apps.core.media import PlatformUploadPath, validate_image
 from apps.core.models import TimeStampedModel
 
@@ -212,6 +216,8 @@ EVENT_LABELS = {
     "job.cancelled": _("Background job cancelled"),
     "traffic.limit": _("Request limit changed"),
     "platform.settings": _("Platform settings changed"),
+    "whatsapp.settings": _("WhatsApp service changed"),
+    "whatsapp.key": _("WhatsApp key replaced"),
     "feature.client": _("Feature changed for a client"),
     "feature.plan": _("Plan features changed"),
     "plan.created": _("Plan created"),
@@ -353,6 +359,53 @@ class PlatformLink(models.Model):
 
         cache.delete(PlatformSettings.CACHE_KEY)
         return super().delete(*args, **kwargs)
+
+
+class WhatsAppService(models.Model):
+    """The WhatsApp gateway, run from the console (WhatsApp). One row (pk=1), so a change needs no
+    file edit and no restart: apps.messaging reads it on every call, and run_wa_gateway starts,
+    stops or restarts the gateway to match. The key is encrypted here, and never shown."""
+
+    LOCAL_HOSTS = ("127.0.0.1", "localhost")
+
+    enabled = models.BooleanField(default=False)
+    url = models.URLField(default="http://127.0.0.1:3002")
+    key = models.TextField(blank=True)  # apps.core.crypto
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "WhatsApp service"
+
+    def __str__(self):
+        return self.url
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls) -> WhatsAppService:
+        return cls.objects.filter(pk=1).first() or cls(pk=1)
+
+    @property
+    def secret(self) -> str:
+        return decrypt(self.key)
+
+    @secret.setter
+    def secret(self, value: str) -> None:
+        self.key = encrypt(value)
+
+    def new_secret(self) -> None:
+        self.secret = secrets.token_urlsafe(32)
+
+    @property
+    def ready(self) -> bool:
+        return bool(self.enabled and self.url and self.key)
+
+    @property
+    def is_local(self) -> bool:
+        """On this server: run_wa_gateway runs it. Elsewhere, it is only called."""
+        return urlsplit(self.url).hostname in self.LOCAL_HOSTS
 
 
 class PlanFeature(models.Model):

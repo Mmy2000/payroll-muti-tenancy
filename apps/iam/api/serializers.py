@@ -20,6 +20,9 @@ class MemberWriteSerializer(serializers.Serializer):
     roles = RoleAssignmentSerializer(many=True)
     password = serializers.CharField(required=False, allow_blank=True, write_only=True,
                                      trim_whitespace=False)
+    # The employee this user is (apps.mobile.access.link_member); null unlinks, absent leaves
+    # the link as it is.
+    employee = serializers.IntegerField(required=False, allow_null=True)
 
 
 class PasswordSerializer(serializers.Serializer):

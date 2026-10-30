@@ -5,7 +5,7 @@
 {% can "policies.tax.manage" as can_manage %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Income tax" %}</h1>
+    <h1 class="page-title">{% translate "Income tax" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Tax tables by the date they start. A month's tax is worked out on the yearly income (the month × 12, less the exemption), bracket by bracket, then divided by 12." %}</p>
   </div>
   {% if can_manage %}<a href="{% url 'tax-table-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New tax table" %}</a>{% endif %}

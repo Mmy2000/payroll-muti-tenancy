@@ -202,8 +202,6 @@ if env("MOBILE_JWT_KEY", default=""):  # otherwise SimpleJWT signs with SECRET_K
     SIMPLE_JWT["SIGNING_KEY"] = env("MOBILE_JWT_KEY")
 
 # WhatsApp (apps/messaging, ops/wa-gateway): the gateway keeping each client's linked number.
-WA_GATEWAY_URL = env("WA_GATEWAY_URL", default="")
-WA_GATEWAY_KEY = env("WA_GATEWAY_KEY", default="")
 WHATSAPP_CONSOLE = env.bool("WHATSAPP_CONSOLE", default=False)  # messages kept in memory
 
 SPECTACULAR_SETTINGS = {

@@ -3,7 +3,7 @@
 {% block title %}{% translate "Salary advances" %}{% endblock %}
 {% block page_header %}
 <div class="mb-6">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Salary advances" %}</h1>
+  <h1 class="page-title">{% translate "Salary advances" %}</h1>
   <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Part of a month's pay given early. The payroll of that month recovers it. A month's advances can't come to more than a month's pay." %}</p>
 </div>
 {% endblock %}
@@ -49,19 +49,19 @@
         <h2 class="text-base font-semibold text-slate-900">{% translate "Give an advance" %}</h2>
         <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
         <div>
-          <label class="form-label" for="a-employee">{% translate "Employee" %}</label>
+          <label class="form-label is-required" for="a-employee">{% translate "Employee" %}</label>
           <select id="a-employee" name="employee_id" class="form-input" required><option value="">—</option>
             {% for e in employees %}<option value="{{ e.pk }}">{{ e.code }} · {{ e.name }}</option>{% endfor %}</select>
           <p class="form-error" data-error-for="employee_id"></p>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="form-label" for="a-date">{% translate "Date" %}</label>
+            <label class="form-label is-required" for="a-date">{% translate "Date" %}</label>
             <input id="a-date" type="date" name="date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
             <p class="form-error" data-error-for="date"></p>
           </div>
           <div>
-            <label class="form-label" for="a-amount">{% translate "Amount" %}</label>
+            <label class="form-label is-required" for="a-amount">{% translate "Amount" %}</label>
             <input id="a-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal" required>
             <p class="form-error" data-error-for="amount"></p>
           </div>

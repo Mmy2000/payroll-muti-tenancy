@@ -33,6 +33,12 @@ class Choice:
     apply: object = None  # callable(queryset, value) -> queryset
     value: str = ""  # the default when the address has none
     tabs: bool = False  # shown as tabs above the list (the page renders filters.tabs)
+    depends_on: str = ""  # the filter chosen first (selects.js `data-depends-on`), e.g. "branch"
+    parents: dict = field(default_factory=dict)  # {value: the parent's value it belongs to}
+
+    @property
+    def rows(self) -> list:
+        return [(value, label, self.parents.get(value, "")) for value, label in self.options]
 
 
 @dataclass

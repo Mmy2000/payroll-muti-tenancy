@@ -5,7 +5,7 @@
 {% can "org.branch.manage" as can_manage %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Branches" %}</h1>
+    <h1 class="page-title">{% translate "Branches" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% translate "Your shops and offices." %}</p>
   </div>
   {% if can_manage %}<a href="{% url 'branch-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New branch" %}</a>{% endif %}
@@ -18,7 +18,7 @@
     <table class="table" data-report>
       <thead><tr>
         <th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th>
-        <th>{% translate "Phone" %}</th><th>{% translate "Type" %}</th><th>{% translate "Status" %}</th><th></th>
+        <th>{% translate "Phone" %}</th><th class="text-end">{% translate "Departments" %}</th><th>{% translate "Type" %}</th><th>{% translate "Status" %}</th><th></th>
       </tr></thead>
       <tbody>
       {% for branch in branches %}
@@ -26,6 +26,7 @@
           <td><span class="num text-slate-500">{{ branch.code|stringformat:"02d" }}</span></td>
           <td class="font-medium text-slate-900">{{ branch.name }}</td>
           <td><span class="num">{{ branch.phone|default:"—" }}</span></td>
+          <td class="text-end"><a class="num text-brand-700 hover:underline" href="{% url 'departments' %}?branch={{ branch.pk }}">{{ branch.department_count }}</a></td>
           <td>
             {% if branch.is_head_office %}<span class="badge badge-brand">{% translate "Head office" %}</span>{% endif %}
           </td>

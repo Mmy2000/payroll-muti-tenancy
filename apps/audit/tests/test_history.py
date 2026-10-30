@@ -60,7 +60,8 @@ def test_each_history_page_shows_its_own_record(tenant_a, make_employee):
         loan = loans.grant_loan(loans.LoanInput(
             employee_id=second.pk, granted_on=date(2026, 6, 1), amount=Decimal(1200),
             installments=3, first_month=date(2026, 7, 1)))
-        department = org.save_department(org.DepartmentInput(code=7, name="Warehouse"))
+        department = org.save_department(org.DepartmentInput(
+            branch_id=Branch.objects.get(code=1).pk, code=7, name="Warehouse"))
         branch = Branch.objects.get(code=1)
     client = login(tenant_a, language="en")
 
@@ -92,3 +93,37 @@ def test_no_template_names_a_table():
 
     for path in Path("apps").rglob("*.html"):
         assert '_history_link.html" with' not in path.read_text(encoding="utf-8"), path
+
+
+def test_every_new_record_page_opens(tenant_a):
+    """A form for a new record has no history link (nothing saved yet) and must still open."""
+    from django.urls import get_resolver
+
+    pages = sorted({f"/{pattern.pattern}" for pattern in get_resolver().url_patterns
+                    if str(pattern.pattern).endswith("new/") and "<" not in str(pattern.pattern)})
+    assert "/branches/new/" in pages and "/settings/users/new/" in pages
+    client = login(tenant_a, language="en")
+    for url in pages:
+        assert client.get(url).status_code == 200, url
+
+
+def test_dates_and_times_read_like_the_rest_of_the_page(tenant_a):
+    from django.utils import timezone
+
+    from apps.audit.models import AuditEvent
+    from apps.audit.views import _describe
+
+    def shown(table, column, old, new):
+        event = AuditEvent(table_name=table, row_id=1, action="U", changes={column: [old, new]})
+        change = _describe([event])[0]["changes"][0]
+        return change["old"], change["new"]
+
+    with tenant_context(tenant_a.id), timezone.override("Africa/Cairo"):
+        # On the client's clock, not UTC, with or without Postgres's trimmed fractions.
+        assert shown("messaging_whatsapplink", "linked_at", "2026-10-29T13:20:51.167038+00:00",
+                     "2026-10-30T11:33:22.31+00:00") == ("29/10/2026 16:20", "30/10/2026 13:33")
+        assert shown("employees_employee", "left_on", None, "2026-03-05") == ("—", "05/03/2026")
+        assert shown("employees_workschedule", "starts_at", "09:00:00", "09:30:00") == (
+            "09:00", "09:30")
+        # Something that is not a date is shown as it is, not lost.
+        assert shown("messaging_whatsapplink", "linked_at", "soon", None) == ("soon", "—")

@@ -13,7 +13,8 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
-from apps.org.models import Branch, Department
+from apps.org.models import Branch
+from apps.org.services import visible_departments
 
 from .. import printing, services
 from ..models import Frequency, MonthlyRule, PeriodKind, RunStatus, ScopeKind
@@ -34,8 +35,8 @@ def _scope_names(runs) -> dict:
            for kind in (ScopeKind.BRANCH, ScopeKind.DEPARTMENT)}
     names = {(ScopeKind.BRANCH, b.pk): b.name
              for b in Branch.objects.filter(pk__in=ids[ScopeKind.BRANCH])}
-    names.update({(ScopeKind.DEPARTMENT, d.pk): d.name
-                  for d in Department.objects.filter(pk__in=ids[ScopeKind.DEPARTMENT])})
+    names.update({(ScopeKind.DEPARTMENT, d.pk): d.label
+                  for d in visible_departments().filter(pk__in=ids[ScopeKind.DEPARTMENT])})
     return names
 
 
@@ -79,7 +80,7 @@ def run_new(request):
         # A member limited to some branches runs payroll branch by branch.
         "all_branches": allowed is None,
         "branches": branches if allowed is None else branches.filter(pk__in=allowed),
-        "departments": Department.objects.filter(is_active=True).order_by("code"),
+        "departments": visible_departments().filter(is_active=True),
     })
 
 

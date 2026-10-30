@@ -1,4 +1,4 @@
 {% load i18n %}{# What a report covers, for the screen and the PDF: its period, year or month, and who. #}
 {% if params.date_from %}<p><bdi dir="ltr"><span class="num">{{ params.date_from|date:"SHORT_DATE_FORMAT" }}</span> → <span class="num">{{ params.date_to|date:"SHORT_DATE_FORMAT" }}</span></bdi></p>{% endif %}
 {% if params.year %}<p><span class="num">{{ params.year }}</span></p>{% endif %}
-<p>{% if params.employee %}{{ params.employee.name }}{% elif params.department %}{{ params.department.name }}{% if params.branch %} · {{ params.branch.name }}{% endif %}{% elif params.branch %}{{ params.branch.name }}{% else %}{% translate "All branches" %}{% endif %}</p>
+<p>{% if params.employee %}{{ params.employee.name }}{% elif params.department %}{{ params.department.label }}{% elif params.branch %}{{ params.branch.name }}{% else %}{% translate "All branches" %}{% endif %}</p>

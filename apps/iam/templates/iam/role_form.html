@@ -6,7 +6,7 @@
 <div class="mb-8">
   <a href="{% url 'roles' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Roles" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if role %}{{ role.label }}{% else %}{% translate "New role" %}{% endif %}</h1>
+    <h1 class="page-title">{% if role %}{{ role.label }}{% else %}{% translate "New role" %}{% endif %}</h1>
     <span class="ms-auto">{% history_link role %}</span>
   </div>
 </div>
@@ -19,7 +19,7 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5">
         <div>
-          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <label class="form-label is-required" for="f-name">{% translate "Name" %}</label>
           <input id="f-name" name="name" class="form-input" value="{{ role.name|default:'' }}" required maxlength="100">
           <p class="form-error" data-error-for="name"></p>
         </div>

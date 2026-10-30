@@ -18,6 +18,7 @@ NOT_TENANT_SCOPED = {
     "tenants.TenantRouteTraffic",
     "tenants.PlatformSettings",  # the platform's own branding (console settings)
     "tenants.PlatformLink",
+    "tenants.WhatsAppService",  # the platform's WhatsApp gateway (console → WhatsApp)
     "tenants.Plan",  # commercial plans (console → Plans)
     "tenants.PlanFeature",  # feature switches (console)
     "tenants.TenantFeature",

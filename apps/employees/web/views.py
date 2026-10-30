@@ -15,6 +15,7 @@ from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
 from apps.employees import imports, services
 from apps.employees.models import (
+    Compensation,
     Gender,
     MaritalStatus,
     MilitaryStatus,
@@ -25,7 +26,9 @@ from apps.employees.models import (
 from apps.employees.services import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
 from apps.employees.web.targets import group_page
 from apps.iam.authz import permission_required
-from apps.org.models import Branch, Department
+from apps.org.models import Branch
+from apps.org.services import visible_departments
+from apps.platform.tenants.limits import is_app_login
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 # Saturday first: the working week of the clients this was built for.
@@ -45,12 +48,13 @@ def _by_status(queryset, value):
 
 @permission_required(VIEW)
 def employees(request):
-    departments = list(Department.objects.order_by("code").values_list("pk", "name"))
+    departments = list(visible_departments(request.actor, VIEW))
     found = ListQuery(
         request, permission=VIEW, search=("name", "code", "phone", "job_title"),
         search_label=_("Name, code, phone or job"), date_field="",
         choices=[Choice("department", _("Department"), [("", _("All departments"))]
-                        + departments, "department_id"),
+                        + [(d.pk, d.label) for d in departments], "department_id",
+                        depends_on="branch", parents={d.pk: d.branch_id for d in departments}),
                  Choice("status", _("Status"), STATUSES, apply=_by_status, value="active")])
     rows = found.apply(services.visible_employees(request.actor).select_related(
         "branch", "department"))
@@ -68,7 +72,7 @@ def _choices(request) -> dict:
         branches = branches.filter(pk__in=allowed)
     return {
         "branches": branches,
-        "departments": Department.objects.filter(is_active=True).order_by("code"),
+        "departments": visible_departments(actor, MANAGE).filter(is_active=True),
         "lateness_policies": (LatenessPolicy.objects.filter(is_active=True)
                               if actor.can("policies.lateness.view") else []),
         "overtime_policies": (OvertimePolicy.objects.filter(is_active=True)
@@ -86,6 +90,7 @@ def employee_new(request):
         raise Http404  # a new employee starts with their pay
     return render(request, "employees/employee_form.html", {
         **_choices(request), "employee": None, "next_code": services.next_code(),
+        "new_pay": Compensation(),  # the form starts from the model's defaults
         "today": timezone.localdate(), "endpoint": reverse("employee-list"), "method": "POST",
     })
 
@@ -116,6 +121,9 @@ def employee(request, pk):
         "can_manage": actor.can(MANAGE, branch=person.branch_id),
         "can_app_login": actor.can("mobile.signin") and actor.can("admin.users.manage")
         and actor.can(MANAGE, branch=person.branch_id),
+        # Linked to a user who also works in the office (not a login made for the app only).
+        "linked_user": person.member if person.member_id and not is_app_login(
+            person.member.roles.values_list("role__code", flat=True)) else None,
         "can_see_pay": actor.can(SALARY_READ, branch=person.branch_id),
         "can_change_pay": actor.can(SALARY_MANAGE, branch=person.branch_id),
         "can_see_attendance": actor.can("attendance.day.view", branch=person.branch_id),

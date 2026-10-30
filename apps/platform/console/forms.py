@@ -13,6 +13,7 @@ from apps.platform.tenants.models import (
     PlatformSettings,
     Tenant,
     TenantDomain,
+    WhatsAppService,
     slug_validator,
 )
 
@@ -238,6 +239,27 @@ PlatformLinkFormSet = forms.modelformset_factory(
     PlatformLink, form=PlatformLinkForm, extra=2, can_delete=True)
 
 
+class WhatsAppServiceForm(Styled, forms.ModelForm):
+    secret = forms.CharField(
+        label=_("Key"), required=False, strip=True,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password", "dir": "ltr"}),
+        help_text=_("Only for a gateway on another server: paste its key. On this server the key "
+                    "is made for you. It is stored encrypted and never shown."))
+
+    class Meta:
+        model = WhatsAppService
+        fields = ["enabled", "url"]
+        labels = {"enabled": _("Send WhatsApp messages"), "url": _("Gateway address")}
+        help_texts = {"url": _("Leave it as it is to run the gateway on this server.")}
+        widgets = {"url": forms.URLInput(attrs={"dir": "ltr"})}
+
+
+def registry():
+    from apps.platform.tenants import features
+
+    return features
+
+
 class PlanForm(Styled, forms.ModelForm):
     """A plan, with its features as checkboxes (saved as PlanFeature rows)."""
 
@@ -293,6 +315,13 @@ class PlanForm(Styled, forms.ModelForm):
         data = super().clean()
         if data.get("is_default") and not data.get("is_active"):
             self.add_error("is_active", _("The default plan must be offered for new clients."))
+        for feature, name in self.feature_fields:
+            missing = [f for f in registry().needs(feature.key)
+                       if data.get(name) and not data.get(f"feature_{f.key}")]
+            if missing:
+                self.add_error(None, _("%(feature)s needs %(names)s: tick it too, or untick "
+                                       "%(feature)s.") % {"feature": feature.label,
+                                                          "names": registry().labels(missing)})
         return data
 
     def feature_rows(self):

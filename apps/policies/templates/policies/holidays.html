@@ -3,7 +3,7 @@
 {% block title %}{% translate "Public holidays" %}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Public holidays" %}</h1>
+  <h1 class="page-title">{% translate "Public holidays" %}</h1>
   <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Paid days off. A holiday for one branch only applies to that branch's employees." %}</p>
 </div>
 {% endblock %}
@@ -43,12 +43,12 @@
         <h2 class="text-base font-semibold text-slate-900">{% translate "Add a holiday" %}</h2>
         <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
         <div>
-          <label class="form-label" for="f-date">{% translate "Date" %}</label>
+          <label class="form-label is-required" for="f-date">{% translate "Date" %}</label>
           <input id="f-date" type="date" name="date" class="form-input" required>
           <p class="form-error" data-error-for="date"></p>
         </div>
         <div>
-          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <label class="form-label is-required" for="f-name">{% translate "Name" %}</label>
           <input id="f-name" name="name" class="form-input" maxlength="120" required>
           <p class="form-error" data-error-for="name"></p>
         </div>

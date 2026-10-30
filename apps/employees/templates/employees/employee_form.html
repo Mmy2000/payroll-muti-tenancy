@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% if employee %}{% url 'employee' employee.pk %}{% else %}{% url 'employees' %}{% endif %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% if employee %}{{ employee.name }}{% else %}{% translate "Employees" %}{% endif %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if employee %}{% translate "Edit employee" %}{% else %}{% translate "New employee" %}{% endif %}</h1>
+  <h1 class="mt-2 page-title">{% if employee %}{% translate "Edit employee" %}{% else %}{% translate "New employee" %}{% endif %}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -18,27 +18,28 @@
         <h2 class="text-base font-semibold text-slate-900">{% translate "Job" %}</h2>
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
           <div>
-            <label class="form-label" for="f-code">{% translate "Code" %}</label>
+            <label class="form-label is-required" for="f-code">{% translate "Code" %}</label>
             <input id="f-code" name="code" class="form-input num w-full text-start" inputmode="numeric" value="{% if employee %}{{ employee.code }}{% else %}{{ next_code }}{% endif %}" required>
             <p class="form-error" data-error-for="code"></p>
           </div>
           <div class="sm:col-span-3">
-            <label class="form-label" for="f-name">{% translate "Full name" %}</label>
+            <label class="form-label is-required" for="f-name">{% translate "Full name" %}</label>
             <input id="f-name" name="name" class="form-input" value="{{ employee.name|default:'' }}" required maxlength="200">
             <p class="form-error" data-error-for="name"></p>
           </div>
           <div class="sm:col-span-2">
-            <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
+            <label class="form-label is-required" for="f-branch">{% translate "Branch" %}</label>
             <select id="f-branch" name="branch_id" class="form-input">
+              {% if not employee and branches|length > 1 %}<option value="">—</option>{% endif %}
               {% for branch in branches %}<option value="{{ branch.pk }}" {% if employee.branch_id == branch.pk %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
             </select>
             <p class="form-error" data-error-for="branch_id"></p>
           </div>
           <div class="sm:col-span-2">
             <label class="form-label" for="f-department">{% translate "Department" %}</label>
-            <select id="f-department" name="department_id" class="form-input" data-empty="null">
+            <select id="f-department" name="department_id" class="form-input" data-empty="null" data-depends-on="branch_id">
               <option value="">—</option>
-              {% for department in departments %}<option value="{{ department.pk }}" {% if employee.department_id == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
+              {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.branch_id }}" {% if employee.department_id == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
             </select>
             <p class="form-error" data-error-for="department_id"></p>
           </div>
@@ -47,7 +48,7 @@
             <input id="f-job" name="job_title" class="form-input" value="{{ employee.job_title|default:'' }}" maxlength="120">
           </div>
           <div class="sm:col-span-2">
-            <label class="form-label" for="f-hired">{% translate "Hiring date" %}</label>
+            <label class="form-label is-required" for="f-hired">{% translate "Hiring date" %}</label>
             <input id="f-hired" type="date" name="hired_on" class="form-input" value="{% if employee %}{{ employee.hired_on|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}" required>
             <p class="form-error" data-error-for="hired_on"></p>
           </div>
@@ -62,7 +63,7 @@
           <h2 class="text-base font-semibold text-slate-900">{% translate "Pay" %}</h2>
           <p class="mt-1 text-sm text-slate-500">{% translate "From the hiring date. Later changes are made from the employee's page, from a date." %}</p>
         </div>
-        {% include "employees/_pay_fields.html" with prefix="pay." pay=None id="pay" %}
+        {% include "employees/_pay_fields.html" with prefix="pay." pay=new_pay id="pay" %}
       </div>
     </section>
     <section class="card">
@@ -116,7 +117,7 @@
           </div>
           <div>
             <label class="form-label" for="f-children">{% translate "Children" %}</label>
-            <input id="f-children" name="children" class="form-input num w-full text-start" inputmode="numeric" value="{{ employee.children|default:'0' }}">
+            <input id="f-children" name="children" data-empty="omit" class="form-input num w-full text-start" inputmode="numeric" value="{{ employee.children|default:'0' }}">
           </div>
           <div class="sm:col-span-2">
             <label class="form-label" for="f-military">{% translate "Military service" %}</label>

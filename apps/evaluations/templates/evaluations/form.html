@@ -9,7 +9,7 @@
       <a class="btn btn-secondary text-xs" href="{% url 'evaluation-pdf' row.pk %}">{% icon "printer" "size-4" %}{% translate "Card (PDF)" %}</a>
       {% history_link row %}</span>{% endif %}
   </div>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% if row %}{% translate "Evaluation" %} <span class="num">#{{ row.number }}</span>{% else %}{% translate "New evaluation" %}{% endif %}</h1>
+  <h1 class="mt-2 page-title">{% if row %}{% translate "Evaluation" %} <span class="num">#{{ row.number }}</span>{% else %}{% translate "New evaluation" %}{% endif %}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -21,16 +21,16 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div class="sm:col-span-3">
-          <label class="form-label" for="f-employee">{% translate "Employee" %}</label>
+          <label class="form-label is-required" for="f-employee">{% translate "Employee" %}</label>
           <select id="f-employee" name="employee_id" class="form-input">
             <option value="">—</option>
             {% for e in employees %}<option value="{{ e.pk }}" {% if selected == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}
           </select>
           <p class="form-error" data-error-for="employee_id"></p>
         </div>
-        <div><label class="form-label" for="f-year">{% translate "Year" %}</label>
+        <div><label class="form-label is-required" for="f-year">{% translate "Year" %}</label>
           <input id="f-year" name="year" class="form-input num text-start" inputmode="numeric" value="{{ year }}"><p class="form-error" data-error-for="year"></p></div>
-        <div><label class="form-label" for="f-date">{% translate "Date" %}</label>
+        <div><label class="form-label is-required" for="f-date">{% translate "Date" %}</label>
           <input id="f-date" type="date" name="evaluated_on" class="form-input" value="{{ row.evaluated_on|default:today|date:'Y-m-d' }}"><p class="form-error" data-error-for="evaluated_on"></p></div>
         <div><span class="form-label">{% translate "Number" %}</span><p class="num py-2 text-sm text-slate-700">{{ next_number }}</p></div>
         <div class="sm:col-span-3"><label class="form-label" for="f-n1">{% translate "Note 1" %}</label>

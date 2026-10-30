@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,3 +27,15 @@ def test_template_comments_are_closed_on_their_line():
             if "{#" in line and "#}" not in line[line.index("{#"):]:
                 offenders.append(f"{path.relative_to(root)}:{number}")
     assert offenders == [], "Use {% comment %} for comments over several lines."
+
+
+def test_every_static_file_a_template_loads_exists():
+    """{% static 'x' %} names a file in static/: a missing one silently breaks the page (the user
+    and role forms once loaded an iam/js/forms.js that did not exist, so they could not save)."""
+    pattern = re.compile(r"""\{%\s*static\s+['"]([^'"]+)['"]""")
+    missing = []
+    for path in [*ROOT.glob("templates/**/*.html"), *ROOT.glob("apps/**/templates/**/*.html")]:
+        for name in pattern.findall(path.read_text(encoding="utf-8")):
+            if not (ROOT / "static" / name).exists():
+                missing.append(f"{path.relative_to(ROOT)}: {name}")
+    assert missing == []

@@ -1,8 +1,6 @@
 {% load ui %}{# A stat tile: include with label=, value=, icon=, url= (optional), note= (optional). #}
-<a href="{{ url|default:'#' }}" class="card card-body block transition hover:border-slate-300">
-  <div class="flex items-center justify-between text-sm text-slate-500">
-    <span>{{ label }}</span><span class="grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon icon "size-4" %}</span>
-  </div>
-  <p class="mt-3 text-2xl font-semibold text-slate-900">{{ value }}</p>
-  {% if note %}<p class="mt-1 text-xs text-slate-500">{{ note }}</p>{% endif %}
+<a href="{{ url|default:'#' }}" class="card stat">
+  <div class="stat-label"><span>{{ label }}</span><span class="stat-icon">{% icon icon "size-[18px]" %}</span></div>
+  <p class="stat-value">{{ value }}</p>
+  {% if note %}<p class="stat-note">{{ note }}</p>{% endif %}
 </a>

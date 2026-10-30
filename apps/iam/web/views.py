@@ -60,7 +60,20 @@ def _user_form(request, membership=None):
         "branches": Branch.objects.filter(is_active=True).order_by("code"),
         "endpoint": endpoint,
         "method": "PUT" if membership else "POST",
+        **_employee_link(request.actor, membership),
     })
+
+
+def _employee_link(actor, membership) -> dict:
+    """The employee this user is, when the mobile app is on (apps.mobile.access)."""
+    from apps.mobile import access
+
+    if not access.can_link(actor):
+        return {}
+    member_id = membership.pk if membership else None
+    linked = (access.Employee.objects.filter(member_id=member_id).first()
+              if member_id else None)
+    return {"link_employees": access.link_choices(actor, member_id), "linked_employee": linked}
 
 
 @permission_required("admin.users.manage")

@@ -20,7 +20,8 @@ from apps.employees.services import get_employee, visible_employees
 from apps.employees.targets import employed_on
 from apps.employees.web.targets import employee_choices, group_page
 from apps.iam.authz import permission_required
-from apps.org.models import Branch, Department
+from apps.org.models import Branch
+from apps.org.services import visible_departments
 
 from .. import entries, hourly, leave
 from ..domain.summary import summarize
@@ -54,7 +55,7 @@ def daily(request):
     day = _date(request.GET.get("date", ""), today)
     branches = list(_branches(actor, VIEW))
     branch = next((b for b in branches if str(b.pk) == request.GET.get("branch")), None)
-    departments = Department.objects.filter(is_active=True).order_by("code")
+    departments = list(visible_departments(actor, VIEW).filter(is_active=True))
     department = next((d for d in departments if str(d.pk) == request.GET.get("department")),
                       None)
 

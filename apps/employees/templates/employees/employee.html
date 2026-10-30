@@ -5,7 +5,7 @@
 <div class="mb-8">
   <a href="{% url 'employees' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Employees" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ employee.name }}</h1>
+    <h1 class="page-title">{{ employee.name }}</h1>
     <span class="badge badge-neutral num">#{{ employee.code }}</span>
     {% if employee.is_active %}<span class="badge badge-success"><span class="badge-dot"></span>{% translate "Working" %}</span>{% else %}<span class="badge badge-neutral"><span class="badge-dot"></span>{% translate "Left" %}</span>{% endif %}
     <span class="ms-auto flex gap-2">
@@ -67,7 +67,7 @@
           <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
             <div>
-              <label class="form-label" for="pc-from">{% translate "From" %}</label>
+              <label class="form-label is-required" for="pc-from">{% translate "From" %}</label>
               <input id="pc-from" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
               <p class="form-error" data-error-for="effective_from"></p>
             </div>
@@ -116,7 +116,7 @@
           <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
             <div>
-              <label class="form-label" for="sc-from">{% translate "From" %}</label>
+              <label class="form-label is-required" for="sc-from">{% translate "From" %}</label>
               <input id="sc-from" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
               <p class="form-error" data-error-for="effective_from"></p>
             </div>
@@ -151,7 +151,14 @@
     <section class="card">
       <div class="card-body space-y-3">
         <h2 class="text-base font-semibold text-slate-900">{% translate "Mobile app" %}</h2>
-        {% if employee.member %}
+        {% if linked_user %}
+          <p class="text-sm text-slate-600">{% translate "Linked to the user" %} <a class="num font-medium text-brand-700 hover:underline" href="{% url 'user-edit' linked_user.pk %}">{{ linked_user.username }}</a>{% if linked_user.status != "active" %} ({{ linked_user.get_status_display }}){% endif %}</p>
+          <p class="text-xs text-slate-500">{% translate "They sign in with their own login; change it on their user page." %}</p>
+          <form data-api-form data-method="DELETE" data-endpoint="{% url 'app-login-detail' employee.pk %}" data-success="{% translate 'Unlinked. The user keeps their login.' %}">
+            <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+            <button type="submit" class="btn btn-secondary w-full">{% icon "unlink" "size-4" %}{% translate "Unlink from the user" %}</button>
+          </form>
+        {% elif employee.member %}
           <p class="text-sm text-slate-600">{% translate "Signs in as" %} <span class="num font-medium">{{ employee.member.username }}</span>{% if employee.member.status != "active" %} ({{ employee.member.get_status_display }}){% endif %}</p>
           <form data-api-form data-method="DELETE" data-endpoint="{% url 'app-login-detail' employee.pk %}" data-success="{% translate 'The login no longer works.' %}">
             <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
@@ -185,7 +192,7 @@
           <form class="space-y-3" data-api-form data-method="POST" data-endpoint="{{ endpoint }}leave/" data-success="{% translate 'Saved.' %}" novalidate>
             <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
             <div>
-              <label class="form-label" for="lv-date">{% translate "Last working day" %}</label>
+              <label class="form-label is-required" for="lv-date">{% translate "Last working day" %}</label>
               <input id="lv-date" type="date" name="left_on" class="form-input" required>
               <p class="form-error" data-error-for="left_on"></p>
             </div>

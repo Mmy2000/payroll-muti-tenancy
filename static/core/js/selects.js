@@ -117,3 +117,35 @@ export function filterOptions(select, keep) {
   }
   return select.options.length;
 }
+
+// <select data-depends-on="branch_id"> with <option data-parent="…">: locked, with an empty option
+// saying what to choose first, until the form's field "branch_id" has a value; then only the
+// options of that value. A choice that no longer fits is cleared. With no such field (a client
+// with one branch has no branch to choose) every option stays open.
+function lock(select, locked) {
+  const empty = select.querySelector('option[value=""]');
+  if (empty) {
+    empty.dataset.openText ??= empty.textContent;
+    empty.textContent = locked ? strings().choose_branch_first : empty.dataset.openText;
+    select.tomselect?.updateOption("", { ...select.tomselect.options[""], text: empty.textContent });
+  }
+  select.dataset.locked = locked ? "true" : ""; // reveal.js leaves a locked select disabled
+  if (select.tomselect) select.tomselect[locked ? "disable" : "enable"]();
+  else select.disabled = locked;
+}
+
+export function initDependentSelects(root = document) {
+  root.querySelectorAll("select[data-depends-on]").forEach((select) => {
+    const parent = select.form?.elements.namedItem(select.dataset.dependsOn);
+    if (!parent) return;
+    // A choice from the address or the saved record brings its parent with it.
+    const chosen = select.selectedOptions[0]?.dataset.parent;
+    if (chosen && !parent.value) parent.value = chosen;
+    const narrow = () => {
+      filterOptions(select, (option) => option.dataset.parent === parent.value);
+      lock(select, !parent.value);
+    };
+    parent.addEventListener("change", narrow);
+    narrow();
+  });
+}

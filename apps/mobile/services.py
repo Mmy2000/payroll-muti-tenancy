@@ -349,6 +349,8 @@ def ask_leave(employee: Employee, member, start: date, end: date) -> LeaveReques
     from apps.attendance.domain.leave import leave_days
     from apps.attendance.selectors import working_day_test
 
+    if not switched_on("leave"):
+        raise AppError("leave_off", status=403)  # nobody could see or decide it
     leave_type = annual_type()
     days = leave_days(start, end, working_day_test(employee))
     left = balance(employee, start.year)

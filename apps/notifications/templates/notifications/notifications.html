@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Notifications" %}</h1>
+    <h1 class="page-title">{% translate "Notifications" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% blocktranslate trimmed count n=unread %}{{ n }} unread{% plural %}{{ n }} unread{% endblocktranslate %}</p>
   </div>
   <div class="flex gap-2">

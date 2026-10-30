@@ -7,6 +7,13 @@ built, decision needed.
 
 Checked 2026-10-29 for phases 1–4.
 
+## Departments and branches (Enp/models.py `Pfn`, Enp/views.py)
+
+| Rule | Source | Status |
+|---|---|---|
+| A department belongs to one branch; its code is the branch's own, next code per branch | `Pfn.br1`, :741, :773 | same (aligned 2026-10-30: org.0007, departments had been tenant-wide) |
+| An employee's department must be in the employee's branch | :1300–1302 | same, also when moving an employee and in the Excel import |
+
 ## Rates (Enp/salary_base.py)
 
 | Rule | Source | Status |

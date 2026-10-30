@@ -9,6 +9,7 @@ from django.urls import include, path
 from apps.core import media
 from apps.platform.console import jobs as console_jobs
 from apps.platform.console import views as console
+from apps.platform.console import whatsapp as console_whatsapp
 
 
 def healthz(request):
@@ -42,6 +43,8 @@ urlpatterns = [
     path("jobs/", console_jobs.jobs, name="console-jobs"),
     path("jobs/<int:pk>/retry/", console_jobs.job_retry, name="console-job-retry"),
     path("jobs/<int:pk>/cancel/", console_jobs.job_cancel, name="console-job-cancel"),
+    path("whatsapp/", console_whatsapp.whatsapp, name="console-whatsapp"),
+    path("whatsapp/key/", console_whatsapp.new_key, name="console-whatsapp-key"),
     path("plans/", console.plans, name="console-plans"),
     path("plans/new/", console.plan_new, name="console-plan-new"),
     path("plans/<int:pk>/", console.plan_edit, name="console-plan-edit"),

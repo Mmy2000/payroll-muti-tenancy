@@ -126,6 +126,9 @@ msgstr "تم إيقاف %(feature)s لدى %(name)s."
 msgid "%(feature)s is on for %(name)s."
 msgstr "تم تفعيل %(feature)s لدى %(name)s."
 
+msgid "%(feature)s needs %(names)s: tick it too, or untick %(feature)s."
+msgstr "%(feature)s تحتاج %(names)s: فعّلها أيضًا، أو ألغِ %(feature)s."
+
 msgid "%(ms)s ms on average"
 msgstr "%(ms)s مللي ثانية في المتوسط"
 
@@ -193,6 +196,15 @@ msgstr[5] "%(n)s موظف يعمل"
 
 msgid "%(n)s new in the last 30 days"
 msgstr "%(n)s جديد في آخر 30 يومًا"
+
+msgid "%(n)s number connected."
+msgid_plural "%(n)s numbers connected."
+msgstr[0] "%(n)s رقم متصل."
+msgstr[1] "%(n)s رقم متصل."
+msgstr[2] "%(n)s رقم متصل."
+msgstr[3] "%(n)s رقم متصل."
+msgstr[4] "%(n)s رقم متصل."
+msgstr[5] "%(n)s رقم متصل."
 
 msgid "%(n)s punch in the last 30 days, from devices, the app and by hand"
 msgid_plural ""
@@ -605,9 +617,6 @@ msgstr "تمت قراءة الكل."
 msgid "All types"
 msgstr "كل الأنواع"
 
-msgid "All your branches, one set of books"
-msgstr "كل فروعك في دفاتر واحدة"
-
 msgid ""
 "Allowances and other additions and deductions given to employees for a "
 "month."
@@ -645,8 +654,17 @@ msgid ""
 msgstr ""
 "موجودون بالفعل في مسير آخر لنفس الأيام: احذف ذلك المسير أو اعكسه لصرفهم هنا."
 
+msgid "Already linked to the user %(username)s."
+msgstr "مربوط بالفعل بالمستخدم %(username)s."
+
 msgid "Also set the weekly days off (otherwise each keeps their own)"
 msgstr "حدد أيضًا أيام الراحة الأسبوعية (وإلا يحتفظ كل موظف بأيامه)"
+
+msgid "Also switched off, because they rely on it: %(names)s."
+msgstr "تم إيقاف ما يعتمد عليها أيضًا: %(names)s."
+
+msgid "Also switched on, because it is needed: %(names)s."
+msgstr "تم تشغيل ما تحتاجه أيضًا: %(names)s."
 
 msgid "Always included"
 msgstr "متاح دائماً"
@@ -736,6 +754,12 @@ msgstr "أيام الإجازة السنوية"
 
 msgid "Annual leave left"
 msgstr "المتبقي من الإجازة الاعتيادية"
+
+msgid "Another department in this branch has this code."
+msgstr "يوجد قسم آخر في هذا الفرع بنفس الكود."
+
+msgid "Another department in this branch has this name."
+msgstr "يوجد قسم آخر في هذا الفرع بنفس الاسم."
 
 msgid "Another device has this name."
 msgstr "يوجد جهاز آخر بهذا الاسم."
@@ -1154,6 +1178,9 @@ msgstr "الملاحظات"
 msgid "Children"
 msgstr "عدد الأبناء"
 
+msgid "Choose a branch first"
+msgstr "اختر الفرع أولًا"
+
 msgid "Choose a day from 1 to 28."
 msgstr "اختر يومًا من 1 إلى 28."
 
@@ -1267,6 +1294,9 @@ msgstr "العملاء"
 
 msgid "Clients by server load"
 msgstr "العملاء حسب الحمل على الخادم"
+
+msgid "Clients cannot send WhatsApp messages."
+msgstr "لا يمكن للعملاء إرسال رسائل واتساب."
 
 msgid "Clients using it"
 msgstr "العملاء المستخدمون"
@@ -1540,6 +1570,9 @@ msgstr "القسم"
 msgid "Department code"
 msgstr "كود القسم"
 
+msgid "Department name"
+msgstr "اسم القسم"
+
 msgid "Departments"
 msgstr "الأقسام"
 
@@ -1551,6 +1584,9 @@ msgstr "الوصف"
 
 msgid "Details"
 msgstr "البيانات"
+
+msgid "Development: messages are kept in memory and nothing is sent."
+msgstr "وضع التطوير: تُحفظ الرسائل في الذاكرة ولا يُرسل شيء."
 
 msgid "Device"
 msgstr "الجهاز"
@@ -1990,6 +2026,9 @@ msgstr "بطاقة التقييم"
 msgid "Evaluations"
 msgstr "التقييمات"
 
+msgid "Every branch and department, managed together"
+msgstr "كل الفروع والأقسام تُدار معًا"
+
 msgid "Every change made from the platform console, and by whom."
 msgstr "كل تغيير تم من لوحة المنصة، ومن قام به."
 
@@ -2103,6 +2142,9 @@ msgstr "الخاصية"
 
 msgid "Feature changed for a client"
 msgstr "تم تغيير خاصية لعميل"
+
+msgid "Feature off"
+msgstr "الخاصية متوقفة"
 
 msgid "feature set for this client (over its plan)"
 msgstr "ميزة مضبوطة لهذا العميل (بدلاً من باقته)"
@@ -2246,6 +2288,9 @@ msgstr "صلاحيات كاملة على كل شيء، بما فيها المس�
 msgid "Full name"
 msgstr "الاسم الكامل"
 
+msgid "Gateway address"
+msgstr "عنوان البوابة"
+
 msgid "Gender"
 msgstr "النوع"
 
@@ -2330,8 +2375,8 @@ msgstr "تاريخ المنح"
 msgid "Graphite"
 msgstr "جرافيت"
 
-msgid "Groups of employees, across your branches."
-msgstr "مجموعات الموظفين عبر فروعك."
+msgid "Groups of employees. Each department belongs to one branch."
+msgstr "مجموعات الموظفين. كل قسم يتبع فرعًا واحدًا."
 
 msgid "h"
 msgstr "س"
@@ -2492,6 +2537,9 @@ msgstr "استيراد من إكسل"
 msgid "In"
 msgstr "حضور"
 
+msgid "in"
+msgstr "في"
+
 msgid "in %(when)s"
 msgstr "بعد %(when)s"
 
@@ -2579,6 +2627,9 @@ msgstr "مؤمَّن عليه، لكن لا توجد نسب تأمينات مح�
 msgid "It counts in this month's pay."
 msgstr "يُحسب في أجر هذا الشهر."
 
+msgid "It is needed once, when the server is set up:"
+msgstr "يلزم مرة واحدة عند إعداد الخادم:"
+
 msgid "Item"
 msgstr "البند"
 
@@ -2599,6 +2650,12 @@ msgstr "تظهر المهام هنا عندما يطلبها التطبيق."
 
 msgid "Jordan"
 msgstr "الأردن"
+
+msgid "Just switched on? It takes a few seconds: reload this page."
+msgstr "شغّلتها للتو؟ تحتاج بضع ثوانٍ: أعد تحميل الصفحة."
+
+msgid "Key"
+msgstr "المفتاح"
 
 msgid "Key pressed"
 msgstr "الزر المضغوط"
@@ -2647,6 +2704,9 @@ msgstr "آخر ساعة"
 
 msgid "Last seen"
 msgstr "آخر ظهور"
+
+msgid "Last sent"
+msgstr "آخر إرسال"
 
 msgid "Last sign-in"
 msgstr "آخر دخول"
@@ -2717,6 +2777,9 @@ msgstr "اتركها فارغة."
 
 msgid "Leave entered"
 msgstr "تسجيل إجازة"
+
+msgid "Leave it as it is to run the gateway on this server."
+msgstr "اتركه كما هو لتشغيل البوابة على هذا الخادم."
 
 msgid "Leave rejected"
 msgstr "رفض إجازة"
@@ -2812,6 +2875,9 @@ msgstr "مربوط"
 msgid "Linked at"
 msgstr "تاريخ الربط"
 
+msgid "Linked to the user"
+msgstr "مربوط بالمستخدم"
+
 msgid "Linked."
 msgstr "تم الربط."
 
@@ -2879,6 +2945,9 @@ msgstr "حروف إنجليزية صغيرة وأرقام وشرطات. لا ي�
 
 msgid "Lowest insured salary"
 msgstr "أدنى أجر تأميني"
+
+msgid "Made for you when the service is switched on."
+msgstr "يُنشأ تلقائيًا عند تشغيل الخدمة."
 
 msgid "Main"
 msgstr "الرئيسية"
@@ -3145,6 +3214,11 @@ msgstr "تم حفظ المواعيد الجديدة لـ {count} موظف."
 msgid "New insurance rates"
 msgstr "نسب تأمينات جديدة"
 
+msgid ""
+"New key in use. The gateway restarts by itself; linked numbers stay linked."
+msgstr ""
+"تم تفعيل المفتاح الجديد. تُعاد البوابة تلقائيًا، وتبقى الأرقام مربوطة."
+
 msgid "New lateness policy"
 msgstr "لائحة تأخير جديدة"
 
@@ -3198,6 +3272,9 @@ msgstr ""
 msgid "Next"
 msgstr "التالي"
 
+msgid "Next code"
+msgstr "الكود التالي"
+
 msgid "Next day"
 msgstr "اليوم التالي"
 
@@ -3210,9 +3287,6 @@ msgstr "لا"
 msgid "No active branch has this code."
 msgstr "لا يوجد فرع نشط بهذا الكود."
 
-msgid "No active department has this code."
-msgstr "لا يوجد قسم نشط بهذا الكود."
-
 msgid "No advances here"
 msgstr "لا توجد سلف هنا"
 
@@ -3221,6 +3295,11 @@ msgstr "لا توجد تعديلات مسجلة"
 
 msgid "No check-out"
 msgstr "بدون انصراف"
+
+msgid ""
+"No client has WhatsApp switched on yet. Switch it on in the client's "
+"Features, or in a plan."
+msgstr "لا يوجد عميل مفعّل له واتساب بعد. فعّله من خصائص العميل أو من الباقة."
 
 msgid "No client is on this plan."
 msgstr "لا يوجد عملاء على هذه الباقة."
@@ -3233,6 +3312,9 @@ msgstr "لا يوجد عملاء بعد"
 
 msgid "No department"
 msgstr "بدون قسم"
+
+msgid "No departments match"
+msgstr "لا توجد أقسام مطابقة"
 
 msgid "No departments yet"
 msgstr "لا توجد أقسام بعد"
@@ -3389,6 +3471,12 @@ msgstr "ليس يوم عمل لهم (%(what)s)."
 
 msgid "Not a working day for them: the time counts as work on a rest day."
 msgstr "ليس يوم عمل لهم: يُحتسب الوقت عملًا في يوم راحة."
+
+msgid "Not an employee"
+msgstr "ليس موظفًا"
+
+msgid "Not answering"
+msgstr "لا يستجيب"
 
 msgid "Not applicable"
 msgstr "لا ينطبق"
@@ -3607,8 +3695,21 @@ msgstr ""
 "لا يمكن عكس إلا المسير المعتمد الذي لم يُصرف بعد؛ صحّح المسير المصروف في "
 "مسير لاحق."
 
+msgid ""
+"Only employees still working, in your branches, and not linked to another "
+"user."
+msgstr ""
+"الموظفون الذين ما زالوا يعملون فقط، في فروعك، وغير المربوطين بمستخدم آخر."
+
 msgid "Only for"
 msgstr "فقط لـ"
+
+msgid ""
+"Only for a gateway on another server: paste its key. On this server the key "
+"is made for you. It is stored encrypted and never shown."
+msgstr ""
+"فقط لبوابة على خادم آخر: الصق مفتاحها. على هذا الخادم يُنشأ المفتاح "
+"تلقائيًا. يُحفظ مشفرًا ولا يُعرض أبدًا."
 
 msgid "Only the last bracket may have no upper limit."
 msgstr "الشريحة الأخيرة فقط يمكن أن تكون بلا حد أعلى."
@@ -3645,6 +3746,9 @@ msgstr "إضافات أخرى"
 
 msgid "Other deductions"
 msgstr "استقطاعات أخرى"
+
+msgid "Other features go off too"
+msgstr "ستتوقف خصائص أخرى أيضًا"
 
 msgid "Other rates start on this date."
 msgstr "توجد نسب أخرى تبدأ في هذا التاريخ."
@@ -3962,7 +4066,7 @@ msgid "Penalty types"
 msgstr "أنواع الجزاءات"
 
 msgid "People"
-msgstr "عدد الموظفين"
+msgstr "شؤون الموظفين"
 
 msgid "People who can sign in to this workspace, and what they may do."
 msgstr "الأشخاص الذين يمكنهم الدخول إلى هذا الحساب، وما يُسمح لهم به."
@@ -4295,6 +4399,9 @@ msgstr "أُعيد فتحها كمسودة."
 msgid "Repaid"
 msgstr "تم السداد"
 
+msgid "Replace the key"
+msgstr "استبدال المفتاح"
+
 msgid "Replace what was already entered by hand for that day"
 msgstr "استبدال ما أُدخل يدويًا لذلك اليوم"
 
@@ -4566,6 +4673,9 @@ msgstr ""
 msgid "Send payslips on WhatsApp"
 msgstr "إرسال القسائم على واتساب"
 
+msgid "Send WhatsApp messages"
+msgstr "إرسال رسائل واتساب"
+
 msgid "Sent"
 msgstr "أُرسلت"
 
@@ -4581,6 +4691,9 @@ msgstr "الرقم التسلسلي"
 msgid "Server address"
 msgstr "عنوان السيرفر"
 
+msgid "Service"
+msgstr "الخدمة"
+
 msgid "Set a new password"
 msgstr "تعيين كلمة مرور جديدة"
 
@@ -4592,6 +4705,9 @@ msgstr "إعداد أجهزة البصمة وربط مستخدميها"
 
 msgid "Set up pay calendars"
 msgstr "إعداد تقويمات الصرف"
+
+msgid "Set, and stored encrypted."
+msgstr "مضبوط ومحفوظ مشفرًا."
 
 msgid "Settings"
 msgstr "الإعدادات"
@@ -4771,6 +4887,12 @@ msgstr "إيقاف الدخول"
 msgid "Suspended"
 msgstr "موقوف"
 
+msgid "Switch off"
+msgstr "أوقف"
+
+msgid "Switching off %(feature)s also switches off: %(others)s."
+msgstr "إيقاف %(feature)s يوقف أيضًا: %(others)s."
+
 msgid "System"
 msgstr "حسب الجهاز"
 
@@ -4884,6 +5006,13 @@ msgstr "الموظف ليس على رأس العمل في كل هذه الأيا
 msgid "The employee isn't employed on that day."
 msgstr "الموظف ليس على رأس العمل في ذلك اليوم."
 
+msgid ""
+"The employee this user is. In the mobile app they then see that employee's "
+"attendance, leave and payslips."
+msgstr ""
+"الموظف الذي يمثله هذا المستخدم. في تطبيق الموبايل يرى حضور هذا الموظف "
+"وإجازاته وكشوف رواتبه."
+
 msgid "The end must be another time than the start."
 msgstr "يجب أن تختلف النهاية عن البداية."
 
@@ -4904,6 +5033,9 @@ msgid "The first row holds these names. Dates are YYYY-MM-DD, times HH:MM."
 msgstr ""
 "الصف الأول يحتوي هذه الأسماء. التواريخ بصيغة YYYY-MM-DD والأوقات بصيغة "
 "HH:MM."
+
+msgid "The gateway is not installed on this server"
+msgstr "البوابة غير مثبتة على هذا الخادم"
 
 msgid "The head office cannot be deactivated."
 msgstr "لا يمكن إيقاف الفرع الرئيسي."
@@ -5025,6 +5157,13 @@ msgstr "نفس الطلب ينتظر الجهاز بالفعل."
 msgid "The same request is still being processed."
 msgstr "الطلب نفسه ما زال قيد التنفيذ."
 
+msgid ""
+"The service that sends payslips from each client's own number. Everything is"
+" set here: nothing to edit on the server, nothing to restart."
+msgstr ""
+"الخدمة التي ترسل كشوف الرواتب من رقم كل عميل. كل شيء يُضبط من هنا: لا تعديل "
+"على الخادم ولا إعادة تشغيل."
+
 msgid "The shift must end at another time than it starts."
 msgstr "يجب أن تنتهي الوردية في وقت غير وقت بدايتها."
 
@@ -5078,6 +5217,9 @@ msgstr "ليس لهم مواعيد عمل في ذلك اليوم بعد."
 msgid "They leave on %(day)s."
 msgstr "يتركون العمل يوم %(day)s."
 
+msgid "They sign in with their own login; change it on their user page."
+msgstr "يدخل بحسابه الخاص؛ عدّله من صفحة المستخدم."
+
 msgid "This account cannot use the platform console."
 msgstr "هذا الحساب لا يملك صلاحية لوحة المنصة."
 
@@ -5096,8 +5238,20 @@ msgstr "لهذه الدفعة تصحيحات: صحّحها مرة أخرى بد�
 msgid "This batch is %(status)s."
 msgstr "هذه الدفعة %(status)s."
 
+msgid "This branch has no active department with this code."
+msgstr "لا يوجد في هذا الفرع قسم نشط بهذا الكود."
+
+msgid "This branch has no departments yet."
+msgstr "لا توجد أقسام في هذا الفرع بعد."
+
 msgid "This corrects"
 msgstr "هذا يصحّح"
+
+msgid "This department has employees: move them first."
+msgstr "هذا القسم به موظفون: انقلهم أولًا."
+
+msgid "This department isn't in the employee's branch."
+msgstr "هذا القسم ليس في فرع الموظف."
 
 msgid "This domain is already in use."
 msgstr "هذا النطاق مستخدم بالفعل."
@@ -5125,6 +5279,9 @@ msgstr "لهذا الموظف دخول بالفعل."
 msgid "This employee already has a PIN on this branch's devices."
 msgstr "لهذا الموظف رقم بالفعل على أجهزة هذا الفرع."
 
+msgid "This employee has left."
+msgstr "هذا الموظف ترك العمل."
+
 msgid "This employee has no login."
 msgstr "ليس لهذا الموظف دخول."
 
@@ -5145,6 +5302,9 @@ msgstr "هذه الخاصية غير متاحة في باقتك"
 
 msgid "This field is required."
 msgstr "هذا الحقل مطلوب."
+
+msgid "This gateway is on another server: paste its key instead."
+msgstr "هذه البوابة على خادم آخر: الصق مفتاحها بدلًا من ذلك."
 
 msgid "This Idempotency-Key was used for another request."
 msgstr "مفتاح Idempotency-Key هذا استُخدم لطلب آخر."
@@ -5355,8 +5515,14 @@ msgstr "حالة غير معروفة."
 msgid "Unlink"
 msgstr "فك الربط"
 
+msgid "Unlink from the user"
+msgstr "فك الربط بالمستخدم"
+
 msgid "Unlinked."
 msgstr "تم فك الربط."
+
+msgid "Unlinked. The user keeps their login."
+msgstr "تم فك الربط. يحتفظ المستخدم بحسابه."
 
 msgid "unpaid"
 msgstr "بدون أجر"
@@ -5553,10 +5719,14 @@ msgstr "البيان"
 msgid ""
 "What each plan includes. A client gets its plan's features unless you switch"
 " one on or off on the client's own page. A feature that is off disappears "
-"from the client's menus, pages and API."
+"from the client's menus, pages and API. Features rely on each other: "
+"switching one on also switches on what it needs, and switching one off also "
+"switches off what depends on it."
 msgstr ""
-"ما تتضمنه كل باقة. يحصل العميل على خصائص باقته إلا إذا فعّلت أو أوقفت خاصية "
-"من صفحته. الخاصية الموقوفة تختفي من قوائم العميل وصفحاته والـ API."
+"ما تشمله كل باقة. يحصل العميل على خصائص باقته ما لم تشغّل أو توقف خاصية من "
+"صفحة العميل. الخاصية المتوقفة تختفي من قوائم العميل وصفحاته وواجهاته. "
+"الخصائص تعتمد على بعضها: تشغيل خاصية يشغّل ما تحتاجه، وإيقافها يوقف ما يعتمد"
+" عليها."
 
 msgid "What happened"
 msgstr "ما حدث"
@@ -5593,11 +5763,17 @@ msgstr "واتساب غير مُجهز على المنصة."
 msgid "WhatsApp is switched off for this company."
 msgstr "واتساب متوقف لهذه الشركة."
 
+msgid "WhatsApp key replaced"
+msgstr "تم استبدال مفتاح واتساب"
+
 msgid "WhatsApp may block a number that sends many messages at once."
 msgstr "قد يحظر واتساب رقمًا يرسل رسائل كثيرة دفعة واحدة."
 
 msgid "WhatsApp number"
 msgstr "رقم واتساب"
+
+msgid "WhatsApp service changed"
+msgstr "تم تغيير خدمة واتساب"
 
 msgid "WhatsApp session"
 msgstr "جلسة واتساب"

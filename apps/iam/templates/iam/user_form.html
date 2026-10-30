@@ -6,7 +6,7 @@
 <div class="mb-8">
   <a href="{% url 'users' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Users" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if member %}{{ member.user.display_name }}{% else %}{% translate "New user" %}{% endif %}</h1>
+    <h1 class="page-title">{% if member %}{{ member.user.display_name }}{% else %}{% translate "New user" %}{% endif %}</h1>
     {% if member and not member.is_active %}<span class="badge badge-warning">{{ member.get_status_display }}</span>{% endif %}
     <span class="ms-auto">{% history_link member %}</span>
   </div>
@@ -22,12 +22,12 @@
       <div class="card-header"><h2 class="card-title">{% translate "Details" %}</h2></div>
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <label class="form-label" for="f-display">{% translate "Full name" %}</label>
+          <label class="form-label is-required" for="f-display">{% translate "Full name" %}</label>
           <input id="f-display" name="display_name" class="form-input" value="{{ member.user.display_name|default:'' }}" required maxlength="150">
           <p class="form-error" data-error-for="display_name"></p>
         </div>
         <div>
-          <label class="form-label" for="f-username">{% translate "Username" %}</label>
+          <label class="form-label is-required" for="f-username">{% translate "Username" %}</label>
           <input id="f-username" name="username" class="form-input" dir="ltr" value="{{ member.username|default:'' }}" required maxlength="150" autocomplete="off">
           <p class="form-error" data-error-for="username"></p>
         </div>
@@ -50,7 +50,7 @@
         </div>
         {% if not member %}
         <div class="sm:col-span-2">
-          <label class="form-label" for="f-password">{% translate "Initial password" %}</label>
+          <label class="form-label is-required" for="f-password">{% translate "Initial password" %}</label>
           <input id="f-password" name="password" type="password" class="form-input" autocomplete="new-password" required>
           <p class="mt-1.5 text-xs text-slate-500">{% translate "At least 10 characters. Share it privately; the user can change it later." %}</p>
           <p class="form-error" data-error-for="password"></p>
@@ -58,6 +58,26 @@
         {% endif %}
       </div>
     </section>
+
+    {% if link_employees is not None %}
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">{% translate "Employee" %}</h2>
+          <p class="mt-0.5 text-xs text-slate-500">{% translate "The employee this user is. In the mobile app they then see that employee's attendance, leave and payslips." %}</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <label class="form-label" for="f-employee">{% translate "Employee" %} <span class="font-normal text-slate-400">({% translate "optional" %})</span></label>
+        <select id="f-employee" name="employee" class="form-input" data-empty="null">
+          <option value="">{% translate "Not an employee" %}</option>
+          {% for employee in link_employees %}<option value="{{ employee.pk }}" {% if linked_employee.pk == employee.pk %}selected{% endif %}>{{ employee.code }} · {{ employee.name }}</option>{% endfor %}
+        </select>
+        <p class="mt-1.5 text-xs text-slate-500">{% translate "Only employees still working, in your branches, and not linked to another user." %}</p>
+        <p class="form-error" data-error-for="employee"></p>
+      </div>
+    </section>
+    {% endif %}
 
     <section class="card">
       <div class="card-header">

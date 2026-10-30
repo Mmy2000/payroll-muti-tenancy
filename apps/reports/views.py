@@ -10,7 +10,8 @@ from django.utils.http import content_disposition_header
 
 from apps.employees.services import visible_employees
 from apps.iam.authz import permission_required
-from apps.org.models import Branch, Department, TenantProfile
+from apps.org.models import Branch, TenantProfile
+from apps.org.services import visible_departments
 
 from .exporters import EXPORTERS, shape
 from .registry import REPORTS, SECTIONS, Report, Scope
@@ -64,7 +65,7 @@ def prepare(report: Report, query, actor):
     if allowed is not None:
         branches = branches.filter(pk__in=allowed)
     employees = visible_employees(actor, report.permission).order_by("code")
-    options = {"branches": branches, "departments": Department.objects.order_by("code"),
+    options = {"branches": branches, "departments": visible_departments(actor, report.permission),
                "employees": employees}
     params = report.parse(query, **options)
     return params, Scope(allowed, params, actor), options

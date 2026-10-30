@@ -131,7 +131,7 @@ def overview() -> PlatformOverview:
                 per_day[day] += count
     daily = columns([Point(formats.date_format(day, "j/n"), count,
                            title=formats.date_format(day, "l j F"))
-                     for day, count in sorted(per_day.items())], whole=True)
+                     for day, count in sorted(per_day.items())], width=700, whole=True)
     health: dict[str, int] = defaultdict(int)
     for usage in usages:
         health[usage.health] += 1

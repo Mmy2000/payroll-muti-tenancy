@@ -5,7 +5,7 @@
 {% block page_header %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Traffic" %}</h1>
+    <h1 class="page-title">{% translate "Traffic" %}</h1>
     <p class="mt-1.5 text-sm text-slate-500">{% translate "Requests from every client, how much server time they take, and who is being limited." %}</p>
   </div>
   <div class="flex flex-wrap items-center gap-2">{% include "console/_live_status.html" %}{% include "console/_window_switch.html" %}</div>

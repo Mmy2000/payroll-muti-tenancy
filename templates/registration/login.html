@@ -4,12 +4,10 @@
 {% block head %}<script type="module" src="{% static 'core/js/login.js' %}"></script>{% endblock %}
 {% block body %}
 <div class="flex min-h-full">
-  {# The brand panel: moving glow, a grid that fades out, and what the system does. #}
+  {# The brand panel: a soft glow, a grid that fades out, and what the system does. #}
   <section class="relative hidden w-[46%] overflow-hidden bg-ink-950 lg:flex lg:flex-col lg:justify-between lg:p-12">
     <div aria-hidden="true" class="login-glow"></div>
     <div aria-hidden="true" class="login-grid absolute inset-0"></div>
-    <div aria-hidden="true" class="login-orb login-orb-a"></div>
-    <div aria-hidden="true" class="login-orb login-orb-b"></div>
 
     <div class="login-stagger relative flex items-center gap-3">
       {% include "components/platform_mark.html" with size="size-10" radius="rounded-xl" on_dark=True %}
@@ -17,14 +15,12 @@
     </div>
 
     <div class="login-stagger relative max-w-md">
-      <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-(--accent-200) backdrop-blur">
-        {% icon "sparkles" "size-3.5" %}{{ brand.tagline }}
-      </span>
-      <h2 class="mt-5 text-[34px] leading-[1.15] font-semibold tracking-tight text-white">{% translate "Payroll and attendance for every branch, in one place." %}</h2>
+      {% if brand.tagline != brand.name %}<p class="mb-5 text-sm font-medium text-(--accent-200)">{{ brand.tagline }}</p>{% endif %}
+      <h2 class="text-[34px] leading-[1.15] font-semibold tracking-tight text-white">{% translate "Payroll and attendance for every branch, in one place." %}</h2>
       <p class="mt-4 text-base leading-relaxed text-zinc-400">{% translate "Attendance, leave, loans, incentives and payroll, always in step, with every change on record." %}</p>
-      <ul class="mt-9 space-y-3">
+      <ul class="mt-8 space-y-3.5">
         <li class="login-feature">{% icon "calculator" "login-feature-icon" %}<span>{% translate "Payslips worked out from attendance and your own rules" %}</span></li>
-        <li class="login-feature">{% icon "store" "login-feature-icon" %}<span>{% translate "All your branches, one set of books" %}</span></li>
+        <li class="login-feature">{% icon "store" "login-feature-icon" %}<span>{% translate "Every branch and department, managed together" %}</span></li>
         <li class="login-feature">{% icon "shield-check" "login-feature-icon" %}<span>{% translate "Your data kept private to your company" %}</span></li>
       </ul>
     </div>
@@ -36,7 +32,7 @@
   </section>
 
   {# The form. #}
-  <section class="login-side relative flex flex-1 flex-col overflow-hidden px-6 py-6 sm:px-12">
+  <section class="relative flex flex-1 flex-col overflow-hidden px-6 py-6 sm:px-12">
     <div class="relative flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5 lg:invisible">
         {% include "components/platform_mark.html" with size="size-8" %}

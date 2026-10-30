@@ -3,8 +3,8 @@
 {% block title %}{% translate "Features" %}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "Features" %}</h1>
-  <p class="mt-1.5 max-w-3xl text-sm text-slate-500">{% translate "What each plan includes. A client gets its plan's features unless you switch one on or off on the client's own page. A feature that is off disappears from the client's menus, pages and API." %}</p>
+  <h1 class="page-title">{% translate "Features" %}</h1>
+  <p class="mt-1.5 max-w-3xl text-sm text-slate-500">{% translate "What each plan includes. A client gets its plan's features unless you switch one on or off on the client's own page. A feature that is off disappears from the client's menus, pages and API. Features rely on each other: switching one on also switches on what it needs, and switching one off also switches off what depends on it." %}</p>
 </div>
 {% endblock %}
 {% block content %}
@@ -37,9 +37,10 @@
                 </div>
               </div>
             </td>
-            {% for plan, label, on in row.plans %}
+            {% for plan, label, on, stops in row.plans %}
             <td class="text-center">
-              <form method="post" action="{% url 'console-plan-feature' %}" class="inline-flex">{% csrf_token %}
+              {% blocktranslate asvar stops_text with feature=row.feature.label others=stops %}Switching off {{ feature }} also switches off: {{ others }}.{% endblocktranslate %}
+              <form method="post" action="{% url 'console-plan-feature' %}" class="inline-flex"{% if on and stops %} data-confirm-off="{{ stops_text }}"{% endif %}>{% csrf_token %}
                 <input type="hidden" name="plan" value="{{ plan }}"><input type="hidden" name="key" value="{{ row.feature.key }}">
                 <input type="hidden" name="enabled" value="{{ on|yesno:'0,1' }}"><input type="hidden" name="next" value="{{ request.path }}">
                 {% blocktranslate asvar switch_label with feature=row.feature.label plan=label %}{{ feature }} in {{ plan }}{% endblocktranslate %}

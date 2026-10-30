@@ -90,19 +90,27 @@ class Branch(TenantScopedModel):
 
 
 class Department(TenantScopedModel):
-    """A group of employees (PayRole: `Enp.Pfn`, "المجموعة"). Tenant-wide: one department may
-    have people in several branches."""
+    """A group of employees in one branch (PayRole: `Enp.Pfn`, "المجموعة", with its `br1`). The
+    same name may be used in several branches: each is its own department, with its own code."""
 
+    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="departments")
     code = models.PositiveIntegerField()
     name = models.CharField(max_length=120)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ["code"]
+        ordering = ["branch__code", "code"]
         constraints = [
-            models.UniqueConstraint(fields=["tenant", "code"], name="org_department_code_uniq"),
-            models.UniqueConstraint(fields=["tenant", "name"], name="org_department_name_uniq"),
+            models.UniqueConstraint(fields=["tenant", "branch", "code"],
+                                    name="org_department_code_uniq"),
+            models.UniqueConstraint(fields=["tenant", "branch", "name"],
+                                    name="org_department_name_uniq"),
         ]
 
     def __str__(self):
         return self.name
+
+    @property
+    def label(self) -> str:
+        """For lists across branches, where two departments may have the same name."""
+        return f"{self.name} · {self.branch.name}"

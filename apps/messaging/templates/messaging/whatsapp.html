@@ -4,7 +4,7 @@
 {% block head %}<script type="module" src="{% static 'messaging/js/whatsapp.js' %}"></script>{% endblock %}
 {% block page_header %}
 <div class="mb-6">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "WhatsApp" %}</h1>
+  <h1 class="page-title">{% translate "WhatsApp" %}</h1>
   <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "Payslips are sent from the company's own WhatsApp number: link it once by scanning a QR code with the phone (WhatsApp → Linked devices)." %}</p>
 </div>
 {% endblock %}
@@ -40,7 +40,7 @@
       <div><textarea name="payslip_message" rows="6" class="form-input" dir="auto">{{ link.payslip_message }}</textarea>
         <p class="mt-1.5 text-xs text-slate-500">{% translate "Replaced in each message:" %} {% for p in placeholders %}<span class="num">{{ p }}</span>{% if not forloop.last %} · {% endif %}{% endfor %} ({% translate "name, code, period start and end, net pay, company" %})</p>
         <p class="form-error" data-error-for="payslip_message"></p></div>
-      <div><label class="form-label" for="w-gap">{% translate "Seconds between two payslips" %}</label>
+      <div><label class="form-label is-required" for="w-gap">{% translate "Seconds between two payslips" %}</label>
         <input id="w-gap" name="gap_seconds" class="form-input num w-32 text-start" inputmode="numeric" value="{{ link.gap_seconds }}">
         <p class="mt-1.5 text-xs text-slate-500">{% translate "WhatsApp may block a number that sends many messages at once." %}</p>
         <p class="form-error" data-error-for="gap_seconds"></p></div>

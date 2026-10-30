@@ -5,7 +5,7 @@
 <div class="mb-6">
   <a href="{% url 'evaluations' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Evaluations" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ row.employee.name }} · <span class="num">{{ row.year }}</span></h1>
+    <h1 class="page-title">{{ row.employee.name }} · <span class="num">{{ row.year }}</span></h1>
     <a class="btn btn-secondary ms-auto text-xs" href="{% url 'evaluation-pdf' row.pk %}">{% icon "printer" "size-4" %}{% translate "Card (PDF)" %}</a>
   </div>
   <p class="mt-1 text-sm text-slate-500"><span class="num">#{{ row.number }}</span> · <span class="num">{{ row.evaluated_on|date:"Y-m-d" }}</span></p>

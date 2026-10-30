@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'leave-requests' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Leave" %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New leave request" %}</h1>
+  <h1 class="mt-2 page-title">{% translate "New leave request" %}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -15,7 +15,7 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div class="sm:col-span-2">
-          <label class="form-label" for="f-employee">{% translate "Employee" %}</label>
+          <label class="form-label is-required" for="f-employee">{% translate "Employee" %}</label>
           <select id="f-employee" name="employee_id" class="form-input" required>
             <option value="">—</option>
             {% for e in employees %}<option value="{{ e.pk }}" {% if selected == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}
@@ -30,12 +30,12 @@
           <p class="form-error" data-error-for="leave_type_id"></p>
         </div>
         <div>
-          <label class="form-label" for="f-start">{% translate "First day" %}</label>
+          <label class="form-label is-required" for="f-start">{% translate "First day" %}</label>
           <input id="f-start" type="date" name="start_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
           <p class="form-error" data-error-for="start_date"></p>
         </div>
         <div>
-          <label class="form-label" for="f-end">{% translate "Last day" %}</label>
+          <label class="form-label is-required" for="f-end">{% translate "Last day" %}</label>
           <input id="f-end" type="date" name="end_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
           <p class="form-error" data-error-for="end_date"></p>
         </div>

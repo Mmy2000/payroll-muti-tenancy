@@ -16,5 +16,5 @@ if not env("EMAIL_URL", default=""):
 SITE_SCHEME = env("SITE_SCHEME", default="http")
 SITE_PORT = env("SITE_PORT", default=":8000")
 
-# WhatsApp without a gateway: messages are kept in memory (set WA_GATEWAY_URL to really send).
-WHATSAPP_CONSOLE = env.bool("WHATSAPP_CONSOLE", default=not WA_GATEWAY_URL)  # noqa: F405
+# Until the WhatsApp service is switched on in the console, messages are kept in memory.
+WHATSAPP_CONSOLE = env.bool("WHATSAPP_CONSOLE", default=True)

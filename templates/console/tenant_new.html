@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'console-tenants' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Clients" %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">{% translate "New client" %}</h1>
+  <h1 class="mt-2 page-title">{% translate "New client" %}</h1>
   <p class="mt-1.5 text-sm text-slate-500">{% translate "Creates the workspace with its head office, karats, chart of accounts, roles and owner, ready to sign in." %}</p>
 </div>
 {% endblock %}
@@ -18,7 +18,7 @@
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
         {% include "console/_field.html" with field=form.name span="sm:col-span-2" %}
         <div class="sm:col-span-2">
-          <label class="form-label" for="{{ form.slug.id_for_label }}">{{ form.slug.label }}</label>
+          <label class="form-label is-required" for="{{ form.slug.id_for_label }}">{{ form.slug.label }}</label>
           <div class="flex items-stretch overflow-hidden rounded-lg" dir="ltr">
             {{ form.slug }}
             <span class="flex items-center rounded-e-lg border border-s-0 border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">{{ base_domain }}</span>

@@ -3,6 +3,7 @@
 import pytest
 from django.test import Client
 
+from apps.core.tenancy import tenant_context
 from apps.iam.models import User
 from apps.platform.tenants import features
 from apps.platform.tenants.features import Feature
@@ -162,3 +163,104 @@ def test_every_feature_owns_real_permissions_and_none_overlap():
         owning = [f.key for f in features.FEATURES if f.owns(code)]
         assert len(owning) <= 1, f"{code} belongs to {owning}"
     assert len({f.key for f in features.FEATURES}) == len(features.FEATURES)
+
+
+# --- features that rely on each other (real registry) ----------------------------------------
+
+
+def test_what_each_feature_relies_on():
+    needs = {key: {f.key for f in features.needs(key)} for key in features.BY_KEY}
+    assert needs["overtime"] == {"attendance"}
+    assert needs["public_holidays"] == {"attendance"}
+    assert needs["geofence"] == {"mobile_app", "attendance"}  # through the mobile app
+    assert needs["income_tax"] == set()
+    assert {"geofence", "mobile_app", "overtime", "leave"} <= {
+        f.key for f in features.needed_by("attendance")}
+
+
+def test_switching_on_for_a_client_brings_what_it_needs(tenant_a):
+    assert not features.is_enabled(tenant_a.pk, "biometric")
+    others = features.set_for_client(tenant_a, "biometric", True)
+    assert {f.key for f in others} == {"mobile_app"}  # attendance was on already
+    assert features.is_enabled(tenant_a.pk, "biometric")
+    assert features.is_enabled(tenant_a.pk, "mobile_app")
+
+
+def test_switching_off_for_a_client_takes_what_depends_on_it(tenant_a):
+    features.set_for_client(tenant_a, "biometric", True)
+    others = {f.key for f in features.set_for_client(tenant_a, "attendance", False)}
+    assert {"overtime", "leave", "mobile_app", "biometric"} <= others
+    assert "income_tax" not in others
+    chosen = {s.feature.key: s for s in features.states(tenant_a)}
+    # No "on, but it cannot work" left behind.
+    assert not any(s.chosen and s.blocked_by for s in chosen.values())
+
+
+def test_back_to_the_plan_still_makes_sense(tenant_a):
+    features.set_for_client(tenant_a, "attendance", False)
+    # The plan includes overtime: following it again needs attendance back.
+    others = features.set_for_client(tenant_a, "overtime", None)
+    assert {f.key for f in others} == {"attendance"}
+    assert features.is_enabled(tenant_a.pk, "overtime")
+
+
+def test_a_plan_cannot_hold_a_feature_without_what_it_needs(tenant_a):
+    from apps.platform.tenants.models import Plan
+
+    plan = Plan.objects.get(code=tenant_a.plan_id)
+    others = {f.key for f in features.set_for_plan(plan, "attendance", False)}
+    assert {"overtime", "leave"} <= others
+    table = features.plan_defaults()[plan.code]
+    assert table["overtime"] is False and table["income_tax"] is True
+
+    assert {f.key for f in features.set_for_plan(plan, "overtime", True)} == {"attendance"}
+    assert features.plan_defaults()[plan.code]["attendance"] is True
+    assert not features.is_enabled(tenant_a.pk, "leave")  # switched off with attendance, stays
+
+
+def test_the_consoles_switches_follow_the_rule(tenant_a):
+    from apps.platform.tenants.models import PlatformEvent, TenantFeature
+
+    User.objects.create_superuser(email="ops@platform.test", password=PASSWORD,
+                                  display_name="Ops")
+    staff = Client(HTTP_HOST="admin.localhost")
+    staff.cookies["django_language"] = "en"
+    staff.post("/login/", {"username": "ops@platform.test", "password": PASSWORD})
+
+    page = staff.get(f"/clients/{tenant_a.pk}/").content.decode()
+    assert "data-confirm-off=" in page and "also switches off" in page
+
+    response = staff.post(f"/clients/{tenant_a.pk}/features/",
+                          {"key": "geofence", "state": "on"}, follow=True)
+    assert "Also switched on, because it is needed: Mobile app." in response.content.decode()
+    assert TenantFeature.objects.get(tenant=tenant_a, key="mobile_app").enabled
+    event = PlatformEvent.objects.get(tenant=tenant_a, action="feature.client")
+    assert event.detail["also"] == "mobile_app"
+
+
+def test_a_plans_form_refuses_a_feature_without_what_it_needs():
+    from apps.platform.console.forms import PlanForm
+
+    data = {"code": "mini", "name": "Mini", "currency": "EGP", "billing_period": "monthly",
+            "position": "1", "is_active": "on",
+            **{f"feature_{f.key}": "on" for f in features.FEATURES if f.key != "attendance"}}
+    form = PlanForm(data)
+    assert not form.is_valid()
+    assert any("needs" in error for error in form.non_field_errors())
+    data["feature_attendance"] = "on"
+    assert PlanForm(data).is_valid()
+
+
+def test_a_holiday_off_is_an_ordinary_day(tenant_a):
+    from datetime import date
+
+    from apps.attendance.selectors import holidays_between
+    from apps.policies import services as policies
+
+    day = date(2026, 7, 23)
+    with tenant_context(tenant_a.id):
+        policies.save_holiday(policies.HolidayInput(date=day, name="Revolution Day"))
+        assert holidays_between(day, day)
+    features.set_for_client(tenant_a, "public_holidays", False)
+    with tenant_context(tenant_a.id):
+        assert holidays_between(day, day) == {}

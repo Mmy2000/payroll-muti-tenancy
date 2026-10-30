@@ -5,8 +5,8 @@
 {% can "org.department.manage" as can_manage %}
 <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Departments" %}</h1>
-    <p class="mt-1 text-sm text-slate-500">{% translate "Groups of employees, across your branches." %}</p>
+    <h1 class="page-title">{% translate "Departments" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Groups of employees. Each department belongs to one branch." %}</p>
   </div>
   {% if can_manage %}<a href="{% url 'department-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
 </div>
@@ -14,13 +14,15 @@
 {% block content %}
 {% can "org.department.manage" as can_manage %}
 <section class="card overflow-hidden">
-  {% if departments %}
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
   <div class="overflow-x-auto">
-    <table class="table" data-report>
-      <thead><tr><th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Branch" %}</th><th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>
-      {% for department in departments %}
+      {% for department in page.object_list %}
         <tr>
+          <td class="text-slate-600">{{ department.branch.name }}</td>
           <td><span class="num text-slate-500">{{ department.code }}</span></td>
           <td class="font-medium text-slate-900">{{ department.name }}</td>
           <td>{% if department.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
@@ -30,6 +32,10 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% elif filters.active %}
+    {% translate "No departments match" as empty_title %}
+    {% include "components/empty_state.html" with icon="search" title=empty_title %}
   {% else %}
     {% translate "No departments yet" as empty_title %}
     {% translate "Departments group employees for reports and payroll runs." as empty_text %}

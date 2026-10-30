@@ -121,7 +121,10 @@ platform admin switches them in the console (client → Features, Plans, Feature
 2. else the client's plan's setting (console → Plans), if saved;
 3. else the feature's code default.
 
-A feature is effectively on only if everything it `requires` is on as well.
+A feature is effectively on only if everything it `requires` is on as well. The console keeps the
+choices consistent: switching a feature on also switches on what it needs, and switching one off
+also switches off what depends on it (after asking); a plan's form refuses a feature without what
+it needs.
 
 **What "off" does, with no per-screen code:**
 - **Permissions:** a feature owns permission code prefixes. When it is off, those permissions

@@ -5,7 +5,7 @@
 <div class="mb-8">
   <a href="{% url 'insurance-rates' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Social insurance" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if rate %}{% translate "Edit insurance rates" %}{% else %}{% translate "New insurance rates" %}{% endif %}</h1>
+    <h1 class="page-title">{% if rate %}{% translate "Edit insurance rates" %}{% else %}{% translate "New insurance rates" %}{% endif %}</h1>
     {% if rate %}<span class="ms-auto">{% history_link rate %}</span>{% endif %}
   </div>
 </div>
@@ -18,18 +18,18 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div class="sm:col-span-2 sm:w-1/2">
-          <label class="form-label" for="f-from">{% translate "Applies from" %}</label>
+          <label class="form-label is-required" for="f-from">{% translate "Applies from" %}</label>
           <input id="f-from" type="date" name="effective_from" class="form-input" value="{{ rate.effective_from|date:'Y-m-d' }}" required>
           <p class="form-error" data-error-for="effective_from"></p>
         </div>
         <div>
-          <label class="form-label" for="f-employee">{% translate "Employee share" %} (%)</label>
+          <label class="form-label is-required" for="f-employee">{% translate "Employee share" %} (%)</label>
           <input id="f-employee" name="employee_rate" class="form-input num w-full text-start" inputmode="decimal" value="{{ rate.employee_rate|default_if_none:'' }}" required>
           <p class="mt-1.5 text-xs text-slate-500">{% translate "Deducted from the employee's pay." %}</p>
           <p class="form-error" data-error-for="employee_rate"></p>
         </div>
         <div>
-          <label class="form-label" for="f-employer">{% translate "Employer share" %} (%)</label>
+          <label class="form-label is-required" for="f-employer">{% translate "Employer share" %} (%)</label>
           <input id="f-employer" name="employer_rate" class="form-input num w-full text-start" inputmode="decimal" value="{{ rate.employer_rate|default_if_none:'' }}" required>
           <p class="mt-1.5 text-xs text-slate-500">{% translate "Paid by the company on top of pay." %}</p>
           <p class="form-error" data-error-for="employer_rate"></p>

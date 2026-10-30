@@ -1,11 +1,11 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui audit %}
+{% load i18n ui audit authz %}
 {% block title %}{% if branch %}{% translate "Edit branch" %}{% else %}{% translate "New branch" %}{% endif %}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'branches' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Branches" %}</a>
   <div class="mt-2 flex flex-wrap items-center gap-3">
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% if branch %}{{ branch.name }}{% else %}{% translate "New branch" %}{% endif %}</h1>
+    <h1 class="page-title">{% if branch %}{{ branch.name }}{% else %}{% translate "New branch" %}{% endif %}</h1>
     {% if branch and not branch.is_active %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}
     <span class="ms-auto">{% history_link branch %}</span>
   </div>
@@ -19,12 +19,12 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-4">
         <div>
-          <label class="form-label" for="f-code">{% translate "Code" %}</label>
+          <label class="form-label is-required" for="f-code">{% translate "Code" %}</label>
           <input id="f-code" name="code" class="form-input num w-full text-start" inputmode="numeric" value="{{ branch.code|default:next_code }}" required>
           <p class="form-error" data-error-for="code"></p>
         </div>
         <div class="sm:col-span-3">
-          <label class="form-label" for="f-name">{% translate "Name" %}</label>
+          <label class="form-label is-required" for="f-name">{% translate "Name" %}</label>
           <input id="f-name" name="name" class="form-input" value="{{ branch.name|default:'' }}" required maxlength="200">
           <p class="form-error" data-error-for="name"></p>
         </div>
@@ -41,7 +41,7 @@
             <input id="f-lat" name="latitude" class="form-input num text-start" inputmode="decimal" data-empty="null" value="{{ branch.latitude|default_if_none:'' }}"><p class="form-error" data-error-for="latitude"></p></div>
           <div><label class="form-label" for="f-lng">{% translate "Longitude" %}</label>
             <input id="f-lng" name="longitude" class="form-input num text-start" inputmode="decimal" data-empty="null" value="{{ branch.longitude|default_if_none:'' }}"><p class="form-error" data-error-for="longitude"></p></div>
-          <div><label class="form-label" for="f-radius">{% translate "Radius (metres)" %}</label>
+          <div><label class="form-label is-required" for="f-radius">{% translate "Radius (metres)" %}</label>
             <input id="f-radius" name="radius_m" class="form-input num text-start" inputmode="numeric" value="{{ branch.radius_m|default:200 }}"><p class="form-error" data-error-for="radius_m"></p></div>
           <p class="text-xs text-slate-500 sm:col-span-3">{% translate "Where the branch is: with the geofence on, punches from the mobile app are only accepted within this distance of it." %}</p>
         </div>
@@ -59,6 +59,29 @@
     </div>
   </aside>
 </form>
+{% can "org.department.view" as can_see_departments %}{% can "org.department.manage" as can_manage_departments %}
+{% if branch and can_see_departments %}
+<section class="card mt-6 overflow-hidden lg:w-[calc(66.667%-0.5rem)]">
+  <div class="card-header">
+    <h2 class="card-title">{% translate "Departments" %}</h2>
+    {% if can_manage_departments %}<a class="btn btn-ghost text-xs" href="{% url 'department-new' %}?branch={{ branch.pk }}">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
+  </div>
+  {% if departments %}
+  <ul class="divide-y divide-slate-100 text-sm">
+    {% for department in departments %}
+    <li class="flex items-center gap-3 px-5 py-3">
+      <span class="num w-10 text-slate-500">{{ department.code }}</span>
+      <span class="min-w-0 flex-1 truncate font-medium text-slate-900">{{ department.name }}</span>
+      {% if not department.is_active %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}
+      {% if can_manage_departments %}<a class="btn btn-ghost text-xs" href="{% url 'department-edit' department.pk %}">{% translate "Edit" %}</a>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="px-5 py-6 text-sm text-slate-500">{% translate "This branch has no departments yet." %}</p>
+  {% endif %}
+</section>
+{% endif %}
 {% if branch and not branch.is_head_office %}
 <form class="mt-6" data-api-form data-method="POST" data-redirect="{% url 'branches' %}" data-success="{% translate 'Saved.' %}"
       data-endpoint="{{ endpoint }}{% if branch.is_active %}deactivate/{% else %}activate/{% endif %}">

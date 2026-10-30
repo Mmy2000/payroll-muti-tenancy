@@ -5,7 +5,7 @@
 <div class="mb-6 flex flex-wrap items-end justify-between gap-3" data-no-print>
   <div>
     <a href="{% url 'reports' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Reports" %}</a>
-    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ report.title }}</h1>
+    <h1 class="mt-2 page-title">{{ report.title }}</h1>
     <p class="mt-1 max-w-3xl text-sm text-slate-500">{{ report.description }}</p>
   </div>
   {% if can_export %}
@@ -35,9 +35,9 @@
       {% endif %}
     {% elif spec.kind == "department" %}
       <label class="sm:w-48"><span class="form-label">{{ spec.label }}</span>
-        <select name="{{ spec.key }}" class="form-input">
+        <select name="{{ spec.key }}" class="form-input" data-depends-on="branch">
           <option value="">{% translate "All departments" %}</option>
-          {% for department in departments %}<option value="{{ department.pk }}" {% if value.pk == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
+          {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.branch_id }}" {% if value.pk == department.pk %}selected{% endif %}>{{ department.label }}</option>{% endfor %}
         </select></label>
     {% elif spec.kind == "employee" %}
       <label class="sm:w-64"><span class="form-label">{{ spec.label }}</span>

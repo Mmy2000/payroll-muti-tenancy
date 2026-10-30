@@ -36,4 +36,4 @@ register_feature(Feature(
 register_feature(Feature(
     "public_holidays", _("Public holidays"),
     _("Paid days off for every branch or one branch."),
-    PAY, "calendar-days", ("policies.holiday.",)))
+    PAY, "calendar-days", ("policies.holiday.",), requires=("attendance",)))

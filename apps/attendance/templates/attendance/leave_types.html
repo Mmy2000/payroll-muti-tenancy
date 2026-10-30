@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'leave-requests' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Leave" %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "Leave types" %}</h1>
+  <h1 class="mt-2 page-title">{% translate "Leave types" %}</h1>
   <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Unpaid leave is deducted in payroll. Types that use the yearly balance can't take more days than are left." %}</p>
 </div>
 {% endblock %}
@@ -43,8 +43,8 @@
   </div>
   {% if can_manage %}
   <form class="flex flex-wrap items-end gap-3 border-t border-slate-100 p-4" data-api-form data-method="POST" data-endpoint="{% url 'leave-type-list' %}" data-success="{% translate 'Saved.' %}" novalidate>
-    <label><span class="form-label">{% translate "Code" %}</span><input name="code" class="form-input num w-20 text-start" inputmode="numeric" required></label>
-    <label class="min-w-48 flex-1"><span class="form-label">{% translate "Name" %}</span><input name="name" class="form-input" maxlength="120" required></label>
+    <label><span class="form-label is-required">{% translate "Code" %}</span><input name="code" class="form-input num w-20 text-start" inputmode="numeric" required></label>
+    <label class="min-w-48 flex-1"><span class="form-label is-required">{% translate "Name" %}</span><input name="name" class="form-input" maxlength="120" required></label>
     <label class="flex h-10 items-center gap-2"><input type="checkbox" name="paid" class="size-4 rounded border-slate-300 accent-brand-600" checked><span class="text-sm">{% translate "Paid" %}</span></label>
     <label class="flex h-10 items-center gap-2"><input type="checkbox" name="uses_annual_balance" class="size-4 rounded border-slate-300 accent-brand-600"><span class="text-sm">{% translate "Uses the yearly balance" %}</span></label>
     <button type="submit" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Add" %}</button>

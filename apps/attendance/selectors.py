@@ -11,7 +11,9 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 
 from apps.core.history import Timeline
+from apps.core.tenancy.context import require_current_tenant_id
 from apps.employees.models import WorkSchedule
+from apps.platform.tenants import features
 from apps.policies.models import PublicHoliday
 
 from .approvals import ACTIVE
@@ -31,7 +33,10 @@ def _shift(row: WorkSchedule | None) -> Shift | None:
 
 
 def holidays_between(start: date, end: date) -> dict[tuple[date, int | None], str]:
-    """{(day, branch id or None for every branch): name}."""
+    """{(day, branch id or None for every branch): name}. None with the feature off: saved
+    holidays then count as ordinary days."""
+    if not features.is_enabled(require_current_tenant_id(), "public_holidays"):
+        return {}
     return {(h.date, h.branch_id): h.name
             for h in PublicHoliday.objects.filter(date__range=(start, end))}
 

@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'loans' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Loans" %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New loan" %}</h1>
+  <h1 class="mt-2 page-title">{% translate "New loan" %}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -15,29 +15,29 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div class="sm:col-span-2">
-          <label class="form-label" for="f-employee">{% translate "Employee" %}</label>
+          <label class="form-label is-required" for="f-employee">{% translate "Employee" %}</label>
           <select id="f-employee" name="employee_id" class="form-input" required><option value="">—</option>
             {% for e in employees %}<option value="{{ e.pk }}" {% if selected == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}</select>
           <p class="form-error" data-error-for="employee_id"></p>
         </div>
         <div>
-          <label class="form-label" for="f-amount">{% translate "Amount" %}</label>
+          <label class="form-label is-required" for="f-amount">{% translate "Amount" %}</label>
           <input id="f-amount" name="amount" class="form-input num w-full text-start" inputmode="decimal" required>
           <p class="form-error" data-error-for="amount"></p>
         </div>
         <div>
-          <label class="form-label" for="f-count">{% translate "Monthly installments" %}</label>
+          <label class="form-label is-required" for="f-count">{% translate "Monthly installments" %}</label>
           <input id="f-count" name="installments" class="form-input num w-full text-start" inputmode="numeric" value="6" required>
           <p class="mt-1.5 text-xs text-slate-500">{% blocktranslate trimmed with count=max_installments %}Equal installments; any remainder is added to the last. Up to {{ count }}.{% endblocktranslate %}</p>
           <p class="form-error" data-error-for="installments"></p>
         </div>
         <div>
-          <label class="form-label" for="f-granted">{% translate "Given on" %}</label>
+          <label class="form-label is-required" for="f-granted">{% translate "Given on" %}</label>
           <input id="f-granted" type="date" name="granted_on" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
           <p class="form-error" data-error-for="granted_on"></p>
         </div>
         <div>
-          <label class="form-label" for="f-first">{% translate "First installment in" %}</label>
+          <label class="form-label is-required" for="f-first">{% translate "First installment in" %}</label>
           <input id="f-first" type="month" name="first_month" class="form-input" value="{{ today|date:'Y-m' }}" required>
           <p class="form-error" data-error-for="first_month"></p>
         </div>

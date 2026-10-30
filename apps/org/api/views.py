@@ -72,7 +72,9 @@ class BranchViewSet(viewsets.GenericViewSet):
 
 
 class DepartmentWriteSerializer(serializers.Serializer):
-    code = serializers.IntegerField(min_value=1, max_value=9999)
+    branch = serializers.IntegerField()
+    code = serializers.IntegerField(min_value=1, max_value=9999, required=False,
+                                    allow_null=True, default=None)
     name = serializers.CharField(max_length=120)
 
 
@@ -80,7 +82,7 @@ class DepartmentViewSet(ActivateMixin, ServiceViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     write_serializer_class = DepartmentWriteSerializer
-    filterset_fields = ["is_active"]
+    filterset_fields = ["is_active", "branch"]
     required_permissions = {
         "list": "org.department.view",
         "retrieve": "org.department.view",
@@ -90,8 +92,12 @@ class DepartmentViewSet(ActivateMixin, ServiceViewSet):
         "activate": "org.department.manage",
     }
 
+    def get_queryset(self):
+        return services.visible_departments(self.request.actor)
+
     def to_input(self, data):
-        return services.DepartmentInput(**data)
+        return services.DepartmentInput(branch_id=data["branch"], code=data["code"],
+                                        name=data["name"])
 
     def save(self, data, pk, actor):
         return services.save_department(data, department_id=pk, actor=actor)

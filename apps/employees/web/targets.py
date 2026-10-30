@@ -5,7 +5,8 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.employees.services import visible_employees
 from apps.employees.targets import BRANCH, DEPARTMENT, EMPLOYEE, EMPLOYEES
-from apps.org.models import Branch, Department
+from apps.org.models import Branch
+from apps.org.services import visible_departments
 
 KINDS = [(EMPLOYEE, _("One employee")), (DEPARTMENT, _("A department")),
          (BRANCH, _("A branch"))]
@@ -42,6 +43,6 @@ def target_choices(actor, permission: str) -> dict:
     return {
         "target_kinds": KINDS,
         "target_employees": employee_choices(actor, permission),
-        "target_departments": Department.objects.filter(is_active=True).order_by("code"),
+        "target_departments": visible_departments(actor, permission).filter(is_active=True),
         "target_branches": branches if allowed is None else branches.filter(pk__in=allowed),
     }

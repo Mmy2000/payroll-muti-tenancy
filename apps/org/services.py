@@ -7,11 +7,14 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.models import Max
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, ValidationError
 
 from .models import Branch, Department
+
+DEPARTMENT_VIEW, DEPARTMENT_MANAGE = "org.department.view", "org.department.manage"
 
 
 @dataclass(frozen=True)
@@ -87,24 +90,62 @@ def set_branch_active(branch_id: int, active: bool, *, actor=None) -> Branch:
     return branch
 
 
+def visible_departments(actor=None, permission: str = DEPARTMENT_VIEW):
+    """Departments, with their branch, in the branches where the member has `permission`."""
+    departments = Department.objects.select_related("branch")
+    allowed = actor.branch_ids(permission) if actor is not None else None
+    return departments if allowed is None else departments.filter(branch_id__in=allowed)
+
+
 @dataclass(frozen=True)
 class DepartmentInput:
-    code: int
     name: str
+    branch_id: int
+    code: int | None = None  # None: the branch's next code (PayRole: `_next_code` per branch)
+
+
+def _next_department_code(branch_id: int) -> int:
+    return (Department.objects.filter(branch_id=branch_id)
+            .aggregate(top=Max("code"))["top"] or 0) + 1
+
+
+def _check_department(department: Department, data: DepartmentInput) -> dict:
+    """Code and name are unique within a branch. A department with employees stays in its
+    branch: their department must be in their own branch."""
+    from apps.employees.models import Employee
+
+    errors: dict[str, list[str]] = {}
+    neighbours = Department.objects.filter(branch_id=data.branch_id).exclude(pk=department.pk)
+    if not Branch.objects.filter(pk=data.branch_id, is_active=True).exists():
+        errors["branch"] = [_("Choose an active branch.")]
+    elif (department.pk and department.branch_id != data.branch_id
+          and Employee.objects.filter(department=department).exists()):
+        errors["branch"] = [_("This department has employees: move them first.")]
+    if data.code is not None and neighbours.filter(code=data.code).exists():
+        errors["code"] = [_("Another department in this branch has this code.")]
+    if neighbours.filter(name=data.name.strip()).exists():
+        errors["name"] = [_("Another department in this branch has this name.")]
+    return errors
 
 
 def save_department(data: DepartmentInput, *, department_id: int | None = None,
                     actor=None) -> Department:
-    """Create a department, or update one when `department_id` is given."""
+    """Create a department in its branch, or update one when `department_id` is given."""
     if actor is not None:
-        actor.require("org.department.manage")
+        actor.require(DEPARTMENT_MANAGE, branch=data.branch_id)
     if department_id is None:
         department = Department(created_by=getattr(actor, "user", None))
     else:
         department = Department.objects.filter(pk=department_id).first()
         if department is None:
             raise NotFound(_("Not found."))
-    department.code = data.code
+        if actor is not None:
+            actor.require(DEPARTMENT_MANAGE, branch=department.branch_id)
+    errors = _check_department(department, data)
+    if errors:
+        raise ValidationError(_("Please correct the highlighted fields."), fields=errors)
+    department.branch_id = data.branch_id
+    department.code = data.code or department.code or _next_department_code(data.branch_id)
     department.name = data.name.strip()
     department.updated_by = getattr(actor, "user", None)
     department._stamp_tenant()
@@ -118,11 +159,11 @@ def save_department(data: DepartmentInput, *, department_id: int | None = None,
 
 
 def set_department_active(department_id: int, active: bool, *, actor=None) -> Department:
-    if actor is not None:
-        actor.require("org.department.manage")
     department = Department.objects.filter(pk=department_id).first()
     if department is None:
         raise NotFound(_("Not found."))
+    if actor is not None:
+        actor.require(DEPARTMENT_MANAGE, branch=department.branch_id)
     department.is_active = active
     department.save(update_fields=["is_active", "updated_at"])
     return department

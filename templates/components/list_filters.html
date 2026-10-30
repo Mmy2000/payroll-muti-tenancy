@@ -18,8 +18,8 @@
   {% endif %}
   {% for choice in filters.choices %}{% if choice.tabs %}<input type="hidden" name="{{ choice.name }}" value="{{ choice.value }}">{% else %}
   <label class="lg:w-44"><span class="form-label">{{ choice.label }}</span>
-    <select name="{{ choice.name }}" class="form-input">
-      {% for value, label in choice.options %}<option value="{{ value }}" {% if choice.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <select name="{{ choice.name }}" class="form-input"{% if choice.depends_on %} data-depends-on="{{ choice.depends_on }}"{% endif %}>
+      {% for value, label, parent in choice.rows %}<option value="{{ value }}"{% if parent %} data-parent="{{ parent }}"{% endif %} {% if choice.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
   {% endif %}{% endfor %}
   {% if filters.party_id %}<input type="hidden" name="{{ filters.party_param }}" value="{{ filters.party_id }}">{% endif %}
   {% for name, value in filters.kept.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}

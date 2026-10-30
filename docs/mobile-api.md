@@ -35,7 +35,9 @@ PayRole's code (there was no other documentation); `apps/mobile/tests/` checks i
   (message "Token is expired" / "Token is invalid" / "Token has wrong type"); user inactive →
   `{"detail":"User is inactive","code":"user_inactive"}`; not found →
   `{"detail":"User not found","code":"user_not_found"}`. Wrong method: 405.
-- The signed-in user → employee: the member's linked employee, still employed; none →
+- The signed-in user → employee: the member's linked employee, still employed (an app login
+  given on the employee's page, or an existing user linked on their user form, as PayRole's
+  `Users.emp`; apps/mobile/access.py); none →
   `no_employee` (`"لا يوجد ملف موظف مرتبط بهذا المستخدم"`): **404** everywhere except
   `attendance/punch` and `DELETE leaves/<ser>` (**400**); `login` and `me` for a superuser give
   `employee: null`.
@@ -74,7 +76,7 @@ PayRole's code (there was no other documentation); `apps/mobile/tests/` checks i
 | `attendance/punch` | POST | JWT | 201 `{attendance,session,tracking}` |
 | `attendance/today` | GET | JWT | 200 `{date,check_in,check_out,records,tracking,session}` |
 | `attendance/history` | GET `?from&to` | JWT | 200 `[Attendance]` (≤500, newest first) |
-| `leaves` | GET `?year`, POST `{date?,date1,date2,days}` | JWT | 200 `[Leave]` / 201 Leave |
+| `leaves` | GET `?year`, POST `{date?,date1,date2,days}` | JWT | 200 `[Leave]` / 201 Leave; POST 403 `leave_off` while the client's Leave feature is off |
 | `leaves/<ser>` | DELETE | JWT | 204 |
 | `leaves/balance` | GET `?year` | JWT | 200 `{year,allowed,used,remaining}` |
 | `notifications` | GET `?unread=1&before=<id>` | JWT | 200 `{unread,items:[{id,kind,title,body,read,created_at}],has_more}` (30 a page) |

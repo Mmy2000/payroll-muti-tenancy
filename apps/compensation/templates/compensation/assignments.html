@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Pay items given" %} · {{ month|date:"F Y" }}</h1>
+    <h1 class="page-title">{% translate "Pay items given" %} · {{ month|date:"F Y" }}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Allowances and other items running in this month. Payroll gives each pay period its share; a per-day item is paid for each day worked." %}</p>
   </div>
   <div class="flex gap-2">

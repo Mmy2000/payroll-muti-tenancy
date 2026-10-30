@@ -408,3 +408,13 @@ def test_every_app_endpoint_needs_the_app():
                                                     for p in cls.permission_classes):
                 loose.append(route.name)
     assert loose == []
+
+
+def test_no_leave_request_while_leave_is_off(tenant_a, app):
+    """The screens to see and decide it are gone, so it would wait for nobody."""
+    _switch(tenant_a, leave=False)
+    day = timezone.localdate() + timedelta(days=7)
+    response = app.post("leaves", {"date1": day.isoformat(), "date2": day.isoformat(),
+                                 "days": 1})
+    assert response.status_code == 403 and response.json()["code"] == "leave_off"
+    assert app.get("leaves").status_code == 200  # what was asked before can still be read

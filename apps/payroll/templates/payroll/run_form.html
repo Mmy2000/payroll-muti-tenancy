@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'payroll-runs' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Payroll runs" %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New payroll run" %}</h1>
+  <h1 class="mt-2 page-title">{% translate "New payroll run" %}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -47,7 +47,7 @@
           <p class="form-error" data-error-for="end"></p>
         </div>
         <div class="sm:col-span-2" data-show-when="kind=off_cycle">
-          <label class="form-label" for="f-reason">{% translate "Reason" %}</label>
+          <label class="form-label is-required" for="f-reason">{% translate "Reason" %}</label>
           <input id="f-reason" name="reason" class="form-input" maxlength="300">
           <p class="mt-1.5 text-xs text-slate-500">{% translate "An off-cycle run pays no salary: only what is dated in its days and not paid yet (one-time pay items, incentives, penalties, advances) and lines you add." %}</p>
           <p class="form-error" data-error-for="reason"></p>
@@ -67,10 +67,19 @@
             {% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
           <p class="form-error" data-error-for="scope_id"></p>
         </div>
+        {% if branches|length > 1 %}
         <div data-show-when="scope=department">
-          <label class="form-label" for="f-department">{% translate "Department" %}</label>
-          <select id="f-department" name="scope_id" class="form-input">
-            {% for d in departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select>
+          <label class="form-label" for="f-department-branch">{% translate "Branch" %}</label>
+          <select id="f-department-branch" name="scope_department_branch" class="form-input">
+            <option value="">—</option>
+            {% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
+        </div>
+        {% endif %}
+        <div data-show-when="scope=department">
+          <label class="form-label is-required" for="f-department">{% translate "Department" %}</label>
+          <select id="f-department" name="scope_id" class="form-input" data-depends-on="scope_department_branch">
+            <option value="">—</option>
+            {% for d in departments %}<option value="{{ d.pk }}" data-parent="{{ d.branch_id }}">{{ d.name }}</option>{% endfor %}</select>
         </div>
         <div class="sm:col-span-2">
           <label class="form-label" for="f-note">{% translate "Note" %}</label>

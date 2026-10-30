@@ -13,6 +13,11 @@ Whether a feature is on for a client:
 It is then *effectively* on only if every feature it `requires` is effectively on too: switching
 off attendance also switches off overtime, lateness, devices and the mobile app.
 
+The console keeps the choices themselves consistent (`set_for_client`, `set_for_plan`): switching a
+feature on also switches on what it needs, and switching it off also switches off what depends
+on it, so "on, but it cannot work" is not a state anyone can save. `effective` still guards the
+rest (a client moved to a plan without a feature it relies on).
+
 Only the platform admin changes features; a client's own users, Owners included, cannot.
 
 Adding a module: in its `permissions.py`, register its permission codes and its feature with
@@ -115,6 +120,72 @@ class FeatureState:
     plan_default: bool
     custom: bool  # the client's own setting overrides the plan
     blocked_by: tuple[Feature, ...]  # required features that are off, when chosen but not on
+    needs: tuple[Feature, ...] = ()  # what it relies on, directly or not
+    stops: tuple[Feature, ...] = ()  # what is on and would go off with it
+
+    @property
+    def stops_text(self) -> str:
+        return labels(self.stops)
+
+
+def needs(key: str) -> tuple[Feature, ...]:
+    """What a feature relies on, directly or through another, in the registry's order."""
+    found: set[str] = set()
+
+    def walk(name: str) -> None:
+        for required in BY_KEY[name].requires if name in BY_KEY else ():
+            if required in BY_KEY and required not in found:
+                found.add(required)
+                walk(required)
+
+    walk(key)
+    return tuple(f for f in FEATURES if f.key in found)
+
+
+def needed_by(key: str) -> tuple[Feature, ...]:
+    """The features that rely on this one, directly or not."""
+    return tuple(f for f in FEATURES if BY_KEY[key] in needs(f.key))
+
+
+def labels(items) -> str:
+    return ", ".join(str(f.label) for f in items)
+
+
+def knock_on(chosen: dict[str, bool], key: str, on: bool) -> tuple[Feature, ...]:
+    """The other features that have to change for `key` to go on (what it needs) or off (what
+    depends on it)."""
+    others = needs(key) if on else needed_by(key)
+    return tuple(f for f in others if chosen.get(f.key, f.default) != on)
+
+
+def set_for_client(tenant, key: str, on: bool | None) -> tuple[Feature, ...]:
+    """Set a feature for one client (None: back to its plan), with what that brings along.
+    Returns the other features changed."""
+    from .models import TenantFeature
+
+    current = {s.feature.key: s for s in states(tenant)}
+    value = current[key].plan_default if on is None else on
+    others = knock_on({k: s.chosen for k, s in current.items()}, key, value)
+    if on is None:
+        TenantFeature.objects.filter(tenant=tenant, key=key).delete()
+    else:
+        TenantFeature.objects.update_or_create(tenant=tenant, key=key, defaults={"enabled": on})
+    for feature in others:
+        TenantFeature.objects.update_or_create(tenant=tenant, key=feature.key,
+                                               defaults={"enabled": value})
+    forget(tenant.pk)
+    return others
+
+
+def set_for_plan(plan, key: str, on: bool) -> tuple[Feature, ...]:
+    """Set a feature for a plan, with what that brings along. Returns the others changed."""
+    from .models import PlanFeature
+
+    others = knock_on(plan_defaults().get(plan.code, {}), key, on)
+    for name in (key, *(f.key for f in others)):
+        PlanFeature.objects.update_or_create(plan=plan, key=name, defaults={"enabled": on})
+    forget()
+    return others
 
 
 def states(tenant) -> list[FeatureState]:
@@ -130,6 +201,7 @@ def states(tenant) -> list[FeatureState]:
             plan_default=defaults.get(f.key, f.default), custom=f.key in own,
             blocked_by=tuple(BY_KEY[d] for d in f.requires if d in BY_KEY and not on[d])
             if chosen[f.key] and not on[f.key] else (),
+            needs=needs(f.key), stops=knock_on(chosen, f.key, False) if chosen[f.key] else (),
         )
         for f in FEATURES
     ]

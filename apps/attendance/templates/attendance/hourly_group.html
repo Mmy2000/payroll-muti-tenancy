@@ -2,7 +2,7 @@
 {% load i18n ui %}
 {% block fields %}
 <div>
-  <label class="form-label" for="f-day">{% translate "Day" %}</label>
+  <label class="form-label is-required" for="f-day">{% translate "Day" %}</label>
   <input id="f-day" type="date" name="work_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
   <p class="form-error" data-error-for="work_date"></p>
 </div>

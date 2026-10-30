@@ -3,7 +3,7 @@
 {% block title %}{% translate "Fingerprint devices" %}{% endblock %}
 {% block page_header %}
 <div class="mb-6">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{% translate "Fingerprint devices" %}</h1>
+  <h1 class="page-title">{% translate "Fingerprint devices" %}</h1>
   <p class="mt-1 max-w-3xl text-sm text-slate-500">{% translate "ZKTeco devices send their punches here as they happen. On the device: Menu → Communication → Cloud server settings: server mode ADMS, the address below, proxy off." %}</p>
   <p class="mt-2 text-sm text-slate-700">{% translate "Server address" %}: <span class="num font-medium">{{ server }}</span></p>
 </div>
@@ -39,9 +39,9 @@
 <form class="card" data-api-form data-method="POST" data-endpoint="{% url 'device-list' %}" data-redirect="{% url 'devices' %}{id}/" data-success="{% translate 'Saved.' %}" novalidate>
   <div class="card-body grid grid-cols-1 gap-4 sm:grid-cols-4">
     <h2 class="text-base font-semibold text-slate-900 sm:col-span-4">{% translate "Add a device" %}</h2>
-    <div><label class="form-label" for="d-serial">{% translate "Serial number" %}</label>
+    <div><label class="form-label is-required" for="d-serial">{% translate "Serial number" %}</label>
       <input id="d-serial" name="serial" class="form-input num" maxlength="32" required><p class="form-error" data-error-for="serial"></p></div>
-    <div><label class="form-label" for="d-name">{% translate "Name" %}</label>
+    <div><label class="form-label is-required" for="d-name">{% translate "Name" %}</label>
       <input id="d-name" name="name" class="form-input" maxlength="60" required><p class="form-error" data-error-for="name"></p></div>
     <div><label class="form-label" for="d-branch">{% translate "Branch" %}</label>
       <select id="d-branch" name="branch_id" class="form-input">{% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>

@@ -13,8 +13,10 @@ function refresh(form) {
     const [name, expected] = part.dataset.showWhen.split("=");
     const shown = valueOf(form, name) === expected;
     part.hidden = !shown;
-    part.querySelectorAll("input, select, textarea").forEach((el) => (el.disabled = !shown));
-    part.querySelectorAll(".ts-wrapper").forEach((wrapper) => wrapper.classList.toggle("disabled", !shown));
+    // A select waiting for its parent (selects.js) stays locked in a part that shows.
+    const off = (el) => !shown || el?.dataset.locked === "true";
+    part.querySelectorAll("input, select, textarea").forEach((el) => (el.disabled = off(el)));
+    part.querySelectorAll(".ts-wrapper").forEach((wrapper) => wrapper.classList.toggle("disabled", off(wrapper.previousElementSibling)));
   });
 }
 

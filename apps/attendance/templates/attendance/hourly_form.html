@@ -4,7 +4,7 @@
 {% block page_header %}
 <div class="mb-8">
   <a href="{% url 'hourly-leave' %}" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"><span class="rtl:rotate-180">←</span>{% translate "Hourly leave" %}</a>
-  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{% translate "New hourly leave" %}</h1>
+  <h1 class="mt-2 page-title">{% translate "New hourly leave" %}</h1>
 </div>
 {% endblock %}
 {% block content %}
@@ -15,7 +15,7 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-3">
         <div class="sm:col-span-3">
-          <label class="form-label" for="f-employee">{% translate "Employee" %}</label>
+          <label class="form-label is-required" for="f-employee">{% translate "Employee" %}</label>
           <select id="f-employee" name="employee_id" class="form-input" required>
             <option value="">—</option>
             {% for e in employees %}<option value="{{ e.pk }}" {% if selected == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.code }} · {{ e.name }}</option>{% endfor %}
@@ -23,17 +23,17 @@
           <p class="form-error" data-error-for="employee_id"></p>
         </div>
         <div>
-          <label class="form-label" for="f-day">{% translate "Day" %}</label>
+          <label class="form-label is-required" for="f-day">{% translate "Day" %}</label>
           <input id="f-day" type="date" name="work_date" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
           <p class="form-error" data-error-for="work_date"></p>
         </div>
         <div>
-          <label class="form-label" for="f-from">{% translate "From" %}</label>
+          <label class="form-label is-required" for="f-from">{% translate "From" %}</label>
           <input id="f-from" type="time" name="starts_at" class="form-input" required>
           <p class="form-error" data-error-for="starts_at"></p>
         </div>
         <div>
-          <label class="form-label" for="f-to">{% translate "To" %}</label>
+          <label class="form-label is-required" for="f-to">{% translate "To" %}</label>
           <input id="f-to" type="time" name="ends_at" class="form-input" required>
           <p class="form-error" data-error-for="ends_at"></p>
         </div>

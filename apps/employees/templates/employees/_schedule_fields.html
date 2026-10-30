@@ -1,18 +1,18 @@
 {% load i18n %}{# Working-hours fields. Include with prefix="schedule." (new employee) or prefix="" (a change), schedule=current values or None, id= a unique id prefix. #}
 <div class="grid grid-cols-1 gap-5 sm:grid-cols-4">
   <div>
-    <label class="form-label" for="{{ id }}-start">{% translate "Shift starts" %}</label>
+    <label class="form-label is-required" for="{{ id }}-start">{% translate "Shift starts" %}</label>
     <input id="{{ id }}-start" type="time" name="{{ prefix }}starts_at" class="form-input" value="{{ schedule.starts_at|time:'H:i'|default:'09:00' }}" required>
     <p class="form-error" data-error-for="{{ prefix }}starts_at"></p>
   </div>
   <div>
-    <label class="form-label" for="{{ id }}-end">{% translate "Shift ends" %}</label>
+    <label class="form-label is-required" for="{{ id }}-end">{% translate "Shift ends" %}</label>
     <input id="{{ id }}-end" type="time" name="{{ prefix }}ends_at" class="form-input" value="{{ schedule.ends_at|time:'H:i'|default:'17:00' }}" required>
     <p class="form-error" data-error-for="{{ prefix }}ends_at"></p>
   </div>
   <div class="sm:col-span-2">
     <label class="form-label" for="{{ id }}-early">{% translate "Early leave allowed (minutes)" %}</label>
-    <input id="{{ id }}-early" name="{{ prefix }}early_leave_minutes" class="form-input num w-full text-start" inputmode="numeric" value="{{ schedule.early_leave_minutes|default_if_none:'0' }}">
+    <input id="{{ id }}-early" name="{{ prefix }}early_leave_minutes" data-empty="omit" class="form-input num w-full text-start" inputmode="numeric" value="{{ schedule.early_leave_minutes|default_if_none:'0' }}">
     <p class="form-error" data-error-for="{{ prefix }}early_leave_minutes"></p>
   </div>
   <fieldset class="sm:col-span-4" data-number>
