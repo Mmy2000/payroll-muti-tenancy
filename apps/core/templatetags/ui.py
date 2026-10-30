@@ -14,6 +14,12 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+
+@register.simple_tag
+def first_day_of_week() -> int:
+    """For the date picker: the week as config/formats says it starts (0 = Sunday)."""
+    return formats.get_format("FIRST_DAY_OF_WEEK")
+
 _ICONS_FILE = Path(__file__).resolve().parent.parent / "ui_icons.json"
 
 

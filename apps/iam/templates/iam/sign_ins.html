@@ -15,7 +15,7 @@
     <a class="font-medium underline" href="?outcome=failed">{% translate "Show them" %}</a></p>
 </div>
 {% endif %}
-<form method="get" class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end">
+<form method="get" data-live-filter class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end">
   <label class="sm:w-52"><span class="form-label">{% translate "Who" %}</span>
     <select name="user" class="form-input"><option value="">{% translate "Anyone" %}</option>
       {% for m in members %}<option value="{{ m.pk }}" {% if filters.user == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.user.display_name }} (@{{ m.username }})</option>{% endfor %}</select></label>

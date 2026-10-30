@@ -223,6 +223,18 @@ server and document-design pages):
 - The Django admin stays at `/django-admin/` for emergencies; `manage.py create_tenant` still
   works from the shell.
 
+### Real-time search and the pickers
+
+- **Search and filters** answer as you type (`static/core/js/live_filter.js`): any
+  `<form method="get" data-live-filter>` fetches its own page and swaps everything around the
+  form, so results, totals, tabs and pager stay right through the normal view and its
+  permissions, the cursor stays where it is, and the address follows. A test refuses a GET form
+  without it. The Ctrl+K palette and the dropdowns already searched as you type.
+- **Date, month and time pickers** (`static/core/js/pickers.js`) replace every
+  `<input type="date|month|time">` by themselves, also in rows added later. The real input stays
+  in the form, hidden, and keeps sending ISO values, so nothing on the server changed. A date can
+  be typed (`5/3/2026`, Arabic digits too), and one shared panel serves the whole page.
+
 ### Live notifications
 
 The bell updates the moment something happens (`apps/notifications`):

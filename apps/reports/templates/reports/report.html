@@ -17,7 +17,7 @@
 </div>
 {% endblock %}
 {% block content %}
-<form method="get" class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end" data-no-print>
+<form method="get" data-live-filter class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end" data-no-print>
   {% for spec in report.filters %}{% with value=params|param:spec.key %}
     {% if spec.kind == "date" %}
       <label><span class="form-label">{{ spec.label }}</span><input type="date" name="{{ spec.key }}" class="form-input" value="{{ value|date:'Y-m-d' }}"></label>

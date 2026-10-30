@@ -15,7 +15,7 @@
 {% endblock %}
 {% block content %}
 {% if not record %}
-<form method="get" class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end">
+<form method="get" data-live-filter class="card mb-6 flex flex-col flex-wrap gap-3 p-4 sm:flex-row sm:items-end">
   <label class="sm:w-56"><span class="form-label">{% translate "What" %}</span>
     <select name="table" class="form-input"><option value="">{% translate "Everything" %}</option>
       {% for key, label in tables %}<option value="{{ key }}" {% if filters.table == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>

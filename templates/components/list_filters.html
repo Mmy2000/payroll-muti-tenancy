@@ -1,5 +1,5 @@
 {% load i18n ui %}{# Search and filters for a list (apps/core/listing.py ListQuery): include with filters=… #}
-<form method="get" class="grid grid-cols-2 gap-3 border-b border-slate-100 p-4 lg:flex lg:flex-wrap lg:items-end" role="search">
+<form method="get" data-live-filter class="grid grid-cols-2 gap-3 border-b border-slate-100 p-4 lg:flex lg:flex-wrap lg:items-end" role="search">
   {% if filters.search %}
   <label class="col-span-2 min-w-48 flex-1"><span class="form-label">{% translate "Search" %}</span>
     <span class="relative block">
@@ -23,7 +23,7 @@
   {% endif %}{% endfor %}
   {% if filters.party_id %}<input type="hidden" name="{{ filters.party_param }}" value="{{ filters.party_id }}">{% endif %}
   {% for name, value in filters.kept.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
-  <div class="col-span-2 flex gap-2">
+  <div class="col-span-2 flex gap-2" data-live-fresh>
     <button class="btn btn-secondary max-lg:flex-1" type="submit">{% icon "search" "size-4" %}{% translate "Show" %}</button>
     {% if filters.active %}<a class="btn btn-ghost" href="?{% for name, value in filters.kept.items %}{{ name }}={{ value|urlencode }}{% if not forloop.last %}&amp;{% endif %}{% endfor %}">{% translate "Clear" %}</a>{% endif %}
   </div>

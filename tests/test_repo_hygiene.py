@@ -29,6 +29,16 @@ def test_template_comments_are_closed_on_their_line():
     assert offenders == [], "Use {% comment %} for comments over several lines."
 
 
+def test_every_search_form_answers_as_you_type():
+    """A filter form with no data-live-filter would be the one list that still needs a button."""
+    offenders = []
+    for path in [*ROOT.glob("templates/**/*.html"), *ROOT.glob("apps/**/templates/**/*.html")]:
+        for tag in re.findall(r"<form\b[^>]*>", path.read_text(encoding="utf-8")):
+            if 'method="get"' in tag and "data-live-filter" not in tag:
+                offenders.append(f"{path.relative_to(ROOT)}: {tag[:60]}")
+    assert offenders == []
+
+
 def test_every_static_file_a_template_loads_exists():
     """{% static 'x' %} names a file in static/: a missing one silently breaks the page (the user
     and role forms once loaded an iam/js/forms.js that did not exist, so they could not save)."""

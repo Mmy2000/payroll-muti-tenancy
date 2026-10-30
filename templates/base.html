@@ -1,4 +1,4 @@
-{% load i18n static %}<!doctype html>
+{% load i18n static ui %}<!doctype html>
 <html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="h-full"
       data-theme="{% block theme %}{% if ui.theme == 'dark' %}dark{% else %}light{% endif %}{% endblock %}"
       data-theme-pref="{% block theme_pref %}{{ ui.theme|default:'system' }}{% endblock %}"
@@ -23,6 +23,9 @@
 <body class="h-full">
   {% block body %}{% endblock %}
   {% if request.user.is_authenticated %}{% include "components/print_table.html" %}{% endif %}
+  <template id="picker-strings" data-first-day="{% first_day_of_week %}" data-today="{% translate 'Today' %}"
+            data-this-month="{% translate 'This month' %}" data-now="{% translate 'Now' %}" data-clear="{% translate 'Clear' %}"
+            data-hours="{% translate 'Hours' %}" data-minutes="{% translate 'Minutes' %}"></template>
   <div id="toasts" class="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:inset-x-auto sm:end-4 sm:items-end" aria-live="polite">
     {% for message in messages %}
       <div class="toast{% if message.tags == 'error' %} toast-error{% endif %}" data-toast role="status">{{ message }}</div>

@@ -5333,6 +5333,9 @@ msgstr "هذا القرض لم يعد قيد السداد."
 msgid "This minute"
 msgstr "هذه الدقيقة"
 
+msgid "This month"
+msgstr "هذا الشهر"
+
 msgid ""
 "This month's allowance is %(allowed)s minutes and %(used)s are used; this "
 "request needs %(minutes)s."
