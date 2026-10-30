@@ -223,6 +223,27 @@ server and document-design pages):
 - The Django admin stays at `/django-admin/` for emergencies; `manage.py create_tenant` still
   works from the shell.
 
+### Live notifications
+
+The bell updates the moment something happens (`apps/notifications`):
+
+- **Domain events** (`apps/core/events.py`, Observer): a service publishes what happened
+  (`publish(LeaveRequested(...))`) and knows nothing about notifications; `handlers.py` subscribes
+  and says who is told. A new notification is a new handler, no service changes.
+- **`realtime.py`**: `announce` is a PostgreSQL NOTIFY, sent only when the transaction commits, so
+  no extra service is needed and a rolled-back action announces nothing. It carries ids, never
+  text. `Hub` is each process's one LISTEN connection, ringing the streams of that member.
+- **`stream.py`**: Server-Sent Events at `/notifications/stream/`. It reads through the tenant's
+  row-level security, ends every 30 minutes so the browser signs in again, and picks up from
+  `Last-Event-ID`.
+- **`static/core/js/live.js`**: only the tab in view holds a stream; it reconnects by itself, and
+  falls back on asking every minute where streaming isn't possible.
+
+Streaming needs an async server. In development `runserver` is one (daphne). In production:
+`gunicorn config.asgi:application -k uvicorn_worker.UvicornWorker`. On a plain WSGI server the
+stream answers 503 and the bell polls. Behind nginx, turn buffering off for that path (the
+response already says `X-Accel-Buffering: no`).
+
 ## Setting up a development machine
 
 Requirements: Python 3.13, PostgreSQL 15 or later, Node.js 22 or later.

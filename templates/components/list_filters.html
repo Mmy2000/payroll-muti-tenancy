@@ -17,7 +17,7 @@
       {% for b in filters.branches %}<option value="{{ b.pk }}" {% if filters.branch == b.pk %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></label>
   {% endif %}
   {% for choice in filters.choices %}{% if choice.tabs %}<input type="hidden" name="{{ choice.name }}" value="{{ choice.value }}">{% else %}
-  <label class="lg:w-44"><span class="form-label">{{ choice.label }}</span>
+  <label class="{% if choice.depends_on %}lg:w-52{% else %}lg:w-44{% endif %}"><span class="form-label">{{ choice.label }}</span>
     <select name="{{ choice.name }}" class="form-input"{% if choice.depends_on %} data-depends-on="{{ choice.depends_on }}"{% endif %}>
       {% for value, label, parent in choice.rows %}<option value="{{ value }}"{% if parent %} data-parent="{{ parent }}"{% endif %} {% if choice.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
   {% endif %}{% endfor %}

@@ -1,6 +1,6 @@
 """What a member is told: a leave request to decide, their leave decided, an incentive given,
-their pay paid… (PayRole `Notif.Notification`). The mobile app polls them (`/api/v1/
-notifications`); there is no push.
+their pay paid… (PayRole `Notif.Notification`). The browser gets them live
+(apps/notifications/realtime.py); the mobile app polls `/api/v1/notifications`.
 
 The text is written once, in the client's language, when the event happens (PayRole's were
 Arabic text too)."""

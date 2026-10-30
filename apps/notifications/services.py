@@ -1,4 +1,4 @@
-"""Telling members something (apps/notifications/events.py says what, when), and reading it.
+"""Telling members something (apps/notifications/handlers.py says what, when), and reading it.
 
 A notification is written once, in the client's language (the mobile app shows the text as it
 is). Whoever caused the event is not told about it (PayRole: the acting user)."""
@@ -8,6 +8,7 @@ from __future__ import annotations
 from django.db.models import QuerySet
 from django.utils import timezone, translation
 
+from . import realtime
 from .models import Notification
 
 PAGE = 30  # the mobile app's page
@@ -29,9 +30,11 @@ def notify(members, kind: str, title, body="", *, url: str = "", by=None) -> int
     with translation.override(_language()):
         title_text = str(title() if callable(title) else title)[:200]
         body_text = str(body() if callable(body) else body)[:500]
+    members = {m.pk: m for m in targets}
     Notification.objects.bulk_create([
         Notification(member=member, kind=kind, title=title_text, body=body_text, url=url)
-        for member in {m.pk: m for m in targets}.values()])
+        for member in members.values()])
+    realtime.announce(next(iter(members.values())).tenant_id, members)
     return len(targets)
 
 
@@ -47,7 +50,10 @@ def mark_read(member, ids=None) -> int:
     rows = for_member(member).filter(read_at__isnull=True)
     if ids:
         rows = rows.filter(pk__in=ids)
-    return rows.update(read_at=timezone.now())
+    marked = rows.update(read_at=timezone.now())
+    if marked:
+        realtime.announce(member.tenant_id, [member.pk])  # the member's other tabs follow
+    return marked
 
 
 def clean_up(*, read_days: int = 90, unread_days: int = 365) -> int:

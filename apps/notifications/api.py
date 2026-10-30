@@ -2,29 +2,15 @@
 what needs attention (?count=1: the unread count only), POST <id>/read/, POST read-all/."""
 
 from django.urls import path
-from django.utils.timesince import timesince
-from django.utils.translation import gettext as _
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.iam.catalog import AUTHENTICATED
 
 from . import attention, services
-from .models import Kind
+from .present import item
 
-LATEST = 12
-ICONS = {Kind.LEAVE_REQUEST: "calendar-days", Kind.LEAVE_WITHDRAWN: "calendar-x",
-         Kind.LEAVE_ADDED: "calendar-days", Kind.LEAVE_APPROVED: "calendar-check",
-         Kind.LEAVE_REJECTED: "calendar-x", Kind.LEAVE_CANCELLED: "calendar-x",
-         Kind.PERMISSION_ADDED: "calendar-clock", Kind.PERMISSION_CANCELLED: "calendar-clock",
-         Kind.MOVEMENT: "hand-coins", Kind.SALARY_PAID: "banknote"}
-
-
-def item(row) -> dict:
-    return {"id": row.pk, "kind": row.kind, "title": row.title, "body": row.body,
-            "url": row.url, "read": row.read_at is not None,
-            "icon": ICONS.get(row.kind, "bell"),
-            "ago": _("%(time)s ago") % {"time": timesince(row.created_at)}}
+LATEST = 20
 
 
 class NotificationsView(APIView):

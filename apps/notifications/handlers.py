@@ -1,5 +1,6 @@
-"""The events members are told about (PayRole Notif/signals.py), called by the services where
-they happen, inside their transaction. Each says who is told and in which words.
+"""Which events members are told about (PayRole Notif/signals.py): each handler says who is told
+and in which words. The services only publish what happened (apps/core/events.py) and don't know
+this module exists; a new notification is a new handler here. Loaded by NotificationsConfig.
 
 The employee is told through their own login (Employee.member); a request to decide goes to
 the members who may decide it in the employee's branch.
@@ -8,6 +9,18 @@ the members who may decide it in the employee's branch.
 from __future__ import annotations
 
 from django.utils.translation import gettext_lazy as _
+
+from apps.adjustments.events import BatchApproved
+from apps.attendance.events import (
+    HourlyLeaveCancelled,
+    HourlyLeaveEntered,
+    LeaveDecided,
+    LeaveEnteredApproved,
+    LeaveRequested,
+)
+from apps.core.events import subscribe
+from apps.loans.events import AdvanceGiven, LoanGranted
+from apps.payroll.events import RunPaid
 
 from .models import Kind
 from .services import notify
@@ -34,9 +47,11 @@ def _range(request) -> str:
 # --- leave -----------------------------------------------------------------------------------
 
 
-def leave_requested(request, *, by=None) -> None:
+@subscribe(LeaveRequested)
+def leave_requested(event: LeaveRequested) -> None:
     """A request waiting for approval: its deciders are told when the employee asked; the
     employee is told when someone asked for them."""
+    request, by = event.request, event.by
     employee = request.employee
     own = by is not None and _member(employee) is not None and \
         getattr(by, "membership", by).pk == employee.member_id
@@ -50,7 +65,9 @@ def leave_requested(request, *, by=None) -> None:
                lambda: _range(request), by=by)
 
 
-def leave_decided(request, move: str, *, by=None) -> None:
+@subscribe(LeaveDecided)
+def leave_decided(event: LeaveDecided) -> None:
+    request, move, by = event.request, event.move, event.by
     employee = request.employee
     if move == "approve":
         kind, title = Kind.LEAVE_APPROVED, _("Your leave request was approved")
@@ -67,12 +84,16 @@ def leave_decided(request, move: str, *, by=None) -> None:
     notify([_member(employee)], kind, title, lambda: _range(request), by=by)
 
 
-def leave_entered_approved(request, *, by=None) -> None:
+@subscribe(LeaveEnteredApproved)
+def leave_entered_approved(event: LeaveEnteredApproved) -> None:
+    request, by = event.request, event.by
     notify([_member(request.employee)], Kind.LEAVE_ADDED,
            _("Approved leave was entered for you"), lambda: _range(request), by=by)
 
 
-def hourly_leave_entered(request, *, by=None) -> None:
+@subscribe(HourlyLeaveEntered)
+def hourly_leave_entered(event: HourlyLeaveEntered) -> None:
+    request, by = event.request, event.by
     notify([_member(request.employee)], Kind.PERMISSION_ADDED,
            _("Hourly leave was entered for you"),
            lambda: _("On %(day)s from %(start)s to %(end)s") % {
@@ -80,7 +101,9 @@ def hourly_leave_entered(request, *, by=None) -> None:
                "end": f"{request.ends_at:%H:%M}"}, by=by)
 
 
-def hourly_leave_cancelled(request, *, by=None) -> None:
+@subscribe(HourlyLeaveCancelled)
+def hourly_leave_cancelled(event: HourlyLeaveCancelled) -> None:
+    request, by = event.request, event.by
     notify([_member(request.employee)], Kind.PERMISSION_CANCELLED,
            _("Your hourly leave was cancelled"),
            lambda: _("On %(day)s") % {"day": request.work_date}, by=by)
@@ -89,7 +112,9 @@ def hourly_leave_cancelled(request, *, by=None) -> None:
 # --- pay -------------------------------------------------------------------------------------
 
 
-def adjustment_approved(batch, *, by=None) -> None:
+@subscribe(BatchApproved)
+def batch_approved(event: BatchApproved) -> None:
+    batch, by = event.batch, event.by
     title = (_("An incentive was given to you") if batch.kind == "incentive"
              else _("A penalty was recorded for you"))
     for row in batch.rows.select_related("employee__member"):
@@ -98,19 +123,25 @@ def adjustment_approved(batch, *, by=None) -> None:
                    "amount": row.amount, "day": row.date}, by=by)
 
 
-def advance_given(advance, *, by=None) -> None:
+@subscribe(AdvanceGiven)
+def advance_given(event: AdvanceGiven) -> None:
+    advance, by = event.advance, event.by
     notify([_member(advance.employee)], Kind.MOVEMENT, _("A salary advance was recorded"),
            lambda: _("The amount %(amount)s on %(day)s") % {
                "amount": advance.amount, "day": advance.date}, by=by)
 
 
-def loan_granted(loan, installments: int, *, by=None) -> None:
+@subscribe(LoanGranted)
+def loan_granted(event: LoanGranted) -> None:
+    loan, installments, by = event.loan, event.installments, event.by
     notify([_member(loan.employee)], Kind.MOVEMENT, _("A loan was recorded"),
            lambda: _("The amount %(amount)s on %(day)s, over %(months)s months") % {
                "amount": loan.amount, "day": loan.granted_on, "months": installments}, by=by)
 
 
-def pay_paid(run, *, by=None) -> None:
+@subscribe(RunPaid)
+def run_paid(event: RunPaid) -> None:
+    run, by = event.run, event.by
     for slip in run.payslips.select_related("employee__member"):
         notify([_member(slip.employee)], Kind.SALARY_PAID, _("Your pay was paid"),
                lambda slip=slip: _("The period from %(start)s to %(end)s — net %(net)s") % {

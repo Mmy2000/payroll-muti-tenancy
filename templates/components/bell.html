@@ -1,23 +1,27 @@
-{% load i18n ui %}{# The bell: unread notifications and what needs attention (static/core/js/bell.js). #}
-<div class="relative" data-bell data-endpoint="{% url 'notifications-api' %}" data-read-all="{% url 'notifications-read-all' %}">
+{% load i18n ui %}{# The bell: unread notifications and what needs attention (static/core/js/bell.js, live.js). #}
+<div class="relative" data-bell data-endpoint="{% url 'notifications-api' %}" data-read-all="{% url 'notifications-read-all' %}" data-stream="{% url 'notifications-stream' %}">
   <button type="button" class="btn btn-ghost relative h-8 px-2" aria-haspopup="true" aria-expanded="false" data-bell-toggle
           title="{% translate 'Notifications' %}" aria-label="{% translate 'Notifications' %}">
     {% icon "bell" "size-[18px]" %}
     <span class="bell-badge num" data-bell-count{% if not bell.unread %} hidden{% endif %}>{{ bell.label }}</span>
   </button>
-  <div class="menu-panel w-[min(23rem,calc(100vw-2rem))] overflow-hidden p-0 max-sm:fixed max-sm:inset-x-4 max-sm:top-14 max-sm:w-auto" data-bell-panel hidden>
-    <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
-      <p class="text-sm font-semibold text-slate-900">{% translate "Notifications" %}</p>
+  <div class="menu-panel w-[min(25rem,calc(100vw-2rem))] overflow-hidden p-0 max-sm:fixed max-sm:inset-x-4 max-sm:top-14 max-sm:w-auto" data-bell-panel hidden>
+    <div class="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2.5">
+      <p class="text-[15px] font-semibold text-slate-900">{% translate "Notifications" %}</p>
       <button type="button" class="btn btn-ghost h-7 px-2 text-xs" data-bell-read-all hidden>{% icon "check-check" "size-3.5" %}{% translate "Mark all as read" %}</button>
     </div>
-    <div class="max-h-[min(28rem,70vh)] overflow-y-auto" data-bell-body aria-live="polite"></div>
-    <div class="border-t border-slate-100 bg-slate-50/70 px-4 py-2 text-xs">
-      <a href="{% url 'notifications' %}" class="font-medium text-brand-700 hover:underline">{% translate "See all" %}</a>
+    <div class="flex gap-1 border-b border-slate-100 px-3" role="tablist">
+      <button type="button" class="bell-tab" role="tab" data-bell-tab="all" aria-selected="true">{% translate "All" %}</button>
+      <button type="button" class="bell-tab" role="tab" data-bell-tab="unread" aria-selected="false">{% translate "Unread" %}</button>
     </div>
+    <div class="max-h-[min(30rem,70vh)] overflow-y-auto pb-1" data-bell-body aria-live="polite"></div>
+    <a href="{% url 'notifications' %}" class="block border-t border-slate-100 px-4 py-2.5 text-center text-xs font-medium text-brand-700 hover:bg-slate-50">{% translate "See all" %}</a>
   </div>
   <template data-bell-strings
             data-empty="{% translate 'Nothing new' %}" data-empty-text="{% translate 'You are all caught up.' %}"
-            data-attention="{% translate 'Needs attention' %}" data-latest="{% translate 'Latest' %}"
+            data-no-unread="{% translate 'No unread notifications' %}"
+            data-attention="{% translate 'Needs attention' %}" data-today="{% translate 'Today' %}"
+            data-yesterday="{% translate 'Yesterday' %}" data-earlier="{% translate 'Earlier' %}"
             data-failed="{% translate 'Could not load the notifications.' %}"></template>
   <template data-bell-icons>{% for name in bell.icons %}<span data-icon="{{ name }}">{% icon name "size-4" %}</span>{% endfor %}</template>
 </div>

@@ -29,12 +29,13 @@ from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
+from apps.core.events import publish
 from apps.core.history import in_effect
 from apps.employees.services import visible_employees
 from apps.employees.targets import Target, resolve
-from apps.notifications import events
 
 from .domain.amounts import METHODS
+from .events import BatchApproved
 from .models import Adjustment, AdjustmentBatch, AdjustmentKind, AdjustmentType, BatchStatus
 
 SOURCE = "adjustments.Adjustment"  # what payroll records as paid (apps/core/locks.py)
@@ -348,7 +349,7 @@ def _approve(batch: AdjustmentBatch, actor) -> None:
     batch.status, batch.approved_at = BatchStatus.APPROVED, timezone.now()
     batch.approved_by = getattr(actor, "user", None)
     _touch(batch, "", actor, "status", "approved_at", "approved_by")
-    events.adjustment_approved(batch, by=actor)
+    publish(BatchApproved(batch=batch, by=actor))
 
 
 def approve(batch_id: int, *, actor=None) -> AdjustmentBatch:

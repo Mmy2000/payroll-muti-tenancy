@@ -15,10 +15,11 @@ from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
+from apps.core.events import publish
 from apps.core.history import in_effect
 from apps.employees.services import get_employee
-from apps.notifications import events
 
+from .events import AdvanceGiven
 from .models import Advance, AdvanceStatus
 
 VIEW, MANAGE = "loans.advance.view", "loans.advance.manage"
@@ -61,7 +62,7 @@ def give_advance(data: AdvanceInput, *, actor=None) -> Advance:
         advance = Advance.objects.create(employee=employee, date=data.date, amount=data.amount,
                                          reason=data.reason.strip(),
                                          created_by=getattr(actor, "user", None))
-        events.advance_given(advance, by=actor)
+        publish(AdvanceGiven(advance=advance, by=actor))
         return advance
 
 

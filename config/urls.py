@@ -125,6 +125,7 @@ urlpatterns = [
     path("pay-setup/holidays/", policies.holidays, name="holidays"),
     path("settings/activity/", audit.activity, name="activity"),
     path("notifications/", notifications.notifications, name="notifications"),
+    path("notifications/stream/", notifications.stream, name="notifications-stream"),
     path("settings/whatsapp/", messaging.whatsapp, name="whatsapp"),
     path("settings/messages/", messaging.messages, name="sent-messages"),
     path("settings/sign-ins/", iam.sign_ins, name="sign-ins"),

@@ -16,12 +16,13 @@
 {% endblock %}
 {% block content %}
 <div class="space-y-6">
+  <a href="{{ request.get_full_path }}" class="card flex items-center gap-3 border-brand-200 bg-brand-50/60 px-4 py-3 text-sm font-medium text-brand-800" data-new-notices hidden>{% icon "bell" "size-4" %}{% translate "New notifications: show them" %}</a>
   {% if attention %}
   <section class="card">
     <h2 class="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">{% translate "Needs attention" %}</h2>
     <ul class="divide-y divide-slate-100">
       {% for a in attention %}<li><a class="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50" href="{{ a.url }}">
-        <span class="grid size-8 place-items-center rounded-lg bg-amber-50 text-amber-700">{% icon a.icon "size-4" %}</span>
+        <span class="notice-icon" data-tone="action">{% icon a.icon "size-4" %}</span>
         <span class="flex-1">{{ a.label }}</span><span class="badge badge-warning num">{{ a.count }}</span></a></li>{% endfor %}
     </ul>
   </section>
@@ -31,7 +32,7 @@
     <div class="divide-y divide-slate-100">
       {% for n in items %}
       <a href="{{ n.url|default:'#' }}" class="notice" data-notice="{% url 'notifications-read' n.id %}"{% if not n.read %} data-unread{% endif %}>
-        <span class="notice-icon">{% icon n.icon "size-4" %}</span>
+        <span class="notice-icon" data-tone="{{ n.tone }}">{% icon n.icon "size-4" %}</span>
         <span class="min-w-0 flex-1">
           <span class="block text-sm font-medium text-slate-900" dir="auto">{{ n.title }}</span>
           {% if n.body %}<span class="mt-0.5 block text-xs text-slate-600" dir="auto">{{ n.body }}</span>{% endif %}

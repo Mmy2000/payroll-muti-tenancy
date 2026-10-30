@@ -18,14 +18,15 @@ from django.utils.translation import gettext as _
 
 from apps.core import bulk, locks
 from apps.core.errors import DomainError, NotFound, ValidationError
+from apps.core.events import publish
 from apps.core.history import in_effect
 from apps.employees.services import get_employee
 from apps.employees.targets import Group, resolve_group
-from apps.notifications import events
 
 from . import approvals
 from .domain.days import Status
 from .domain.leave import span_minutes, spans_overlap
+from .events import HourlyLeaveCancelled, HourlyLeaveEntered
 from .models import HourlyLeave, RequestStatus
 from .selectors import active_requests, evaluate
 
@@ -97,7 +98,7 @@ def record_hourly_leave(data: HourlyLeaveInput, *, approve: bool = False,
         if approve:
             approvals.decide(request, approvals.APPROVE, actor=actor,
                              before_approve=_check_allowance)
-        events.hourly_leave_entered(request, by=actor)
+        publish(HourlyLeaveEntered(request=request, by=actor))
     return request
 
 
@@ -118,7 +119,7 @@ def decide_hourly_leave(request_id: int, move: str, *, note: str = "",
         approvals.decide(request, move, actor=actor, note=note,
                          before_approve=_check_allowance)
         if move == approvals.CANCEL:
-            events.hourly_leave_cancelled(request, by=actor)
+            publish(HourlyLeaveCancelled(request=request, by=actor))
         return request
 
 

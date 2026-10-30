@@ -16,10 +16,11 @@ const ICONS = {
   error: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
 };
 
-export function toast(message, { kind = "info", timeout = 4500 } = {}) {
+export function toast(message, { kind = "info", timeout = 4500, href = "" } = {}) {
   const host = document.getElementById("toasts");
   if (!host || !message) return;
-  const node = document.createElement("div");
+  const node = document.createElement(href ? "a" : "div");
+  if (href) node.href = href;
   node.className = "toast" + (kind === "error" ? " toast-error" : "");
   node.setAttribute("role", kind === "error" ? "alert" : "status");
   const tone = kind === "error" ? "text-red-500" : "text-emerald-500";

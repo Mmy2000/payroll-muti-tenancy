@@ -17,12 +17,13 @@ from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.errors import DomainError, NotFound, ValidationError
+from apps.core.events import publish
 from apps.core.history import in_effect
 from apps.employees.services import get_employee
-from apps.notifications import events
 
 from . import approvals
 from .domain.leave import Balance, leave_days
+from .events import LeaveDecided, LeaveEnteredApproved, LeaveRequested
 from .models import LeaveRequest, LeaveType, RequestStatus
 from .selectors import overlapping_leave, working_day_test
 
@@ -175,9 +176,9 @@ def request_leave(data: LeaveRequestInput, *, approve: bool = False, actor=None,
         if approve:
             approvals.decide(request, approvals.APPROVE, actor=actor,
                              before_approve=_check_balance)
-            events.leave_entered_approved(request, by=by or actor)
+            publish(LeaveEnteredApproved(request=request, by=by or actor))
         else:
-            events.leave_requested(request, by=by or actor)
+            publish(LeaveRequested(request=request, by=by or actor))
     return request
 
 
@@ -197,5 +198,5 @@ def decide_leave(request_id: int, move: str, *, note: str = "", actor=None,
                    .select_related("employee", "leave_type").get(pk=request_id))
         locks.ensure_open(employee.pk, request.start_date, request.end_date)
         approvals.decide(request, move, actor=actor, note=note, before_approve=_check_balance)
-        events.leave_decided(request, move, by=by or actor)
+        publish(LeaveDecided(request=request, move=move, by=by or actor))
         return request

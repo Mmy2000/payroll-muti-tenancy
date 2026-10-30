@@ -16,11 +16,12 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
+from apps.core.events import publish
 from apps.core.months import add_months, months
 from apps.employees.services import get_employee
-from apps.notifications import events
 
 from .domain.installments import CENT, split
+from .events import LoanGranted
 from .models import InstallmentStatus, Loan, LoanInstallment, LoanStatus
 
 VIEW, MANAGE = "loans.loan.view", "loans.loan.manage"
@@ -77,7 +78,7 @@ def grant_loan(data: LoanInput, *, actor=None) -> Loan:
             for number, (month, amount) in enumerate(
                 zip(months(data.first_month, data.installments),
                     split(data.amount, data.installments), strict=True), start=1)])
-        events.loan_granted(loan, data.installments, by=actor)
+        publish(LoanGranted(loan=loan, installments=data.installments, by=actor))
     return loan
 
 

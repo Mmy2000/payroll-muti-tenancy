@@ -1,4 +1,5 @@
 -r base.txt
+daphne==4.2.3       # an async runserver, so live notifications work in development
 pytest==9.2.0
 pytest-django==4.14.0
 hypothesis==6.170.13

@@ -1728,6 +1728,9 @@ msgstr ""
 "كل وردية تابعها تطبيق الهاتف: متى بدأت وانتهت ومدتها والمسافة وعدد المواقع "
 "المرسلة."
 
+msgid "Earlier"
+msgstr "أقدم"
+
 msgid ""
 "Earlier days keep their hours, and days an approved payroll covers can't "
 "change. Lateness and overtime policies stay as each employee has them."
@@ -3228,6 +3231,9 @@ msgstr "طلب إجازة جديد"
 msgid "New loan"
 msgstr "قرض جديد"
 
+msgid "New notifications: show them"
+msgstr "إشعارات جديدة: اعرضها"
+
 msgid "New overtime policy"
 msgstr "لائحة إضافي جديدة"
 
@@ -3409,6 +3415,9 @@ msgstr "لا يوجد سجل دخول"
 
 msgid "No tax tables yet"
 msgstr "لا توجد جداول ضريبة بعد"
+
+msgid "No unread notifications"
+msgstr "لا توجد إشعارات غير مقروءة"
 
 msgid "No worker is running"
 msgstr "لا يوجد عامل يعمل"
@@ -5422,6 +5431,9 @@ msgstr "للفتح"
 msgid "today"
 msgstr "اليوم"
 
+msgid "Today"
+msgstr "اليوم"
+
 msgid "Too many requests"
 msgstr "طلبات كثيرة جدًا"
 
@@ -5536,6 +5548,9 @@ msgid ""
 msgstr ""
 "الإجازة بدون أجر تُخصم في المرتبات. الأنواع التي تستخدم الرصيد السنوي لا "
 "تتجاوز الأيام المتبقية."
+
+msgid "Unread"
+msgstr "غير المقروء"
 
 msgid "Unread only"
 msgstr "غير المقروء فقط"
@@ -5905,6 +5920,9 @@ msgstr "نعم"
 
 msgid "yes"
 msgstr "نعم"
+
+msgid "Yesterday"
+msgstr "أمس"
 
 msgid "you"
 msgstr "أنت"

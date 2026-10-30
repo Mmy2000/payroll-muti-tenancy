@@ -395,9 +395,22 @@
   .bell-badge { @apply pointer-events-none absolute -top-0.5 -end-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500
                        px-1 text-[10px] leading-none font-semibold text-white ring-2 ring-surface; }
   .notice { @apply relative flex gap-3 px-4 py-3 text-start transition-colors hover:bg-slate-50; }
-  .notice-icon { @apply grid size-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500; }
-  .notice[data-unread] .notice-icon { @apply bg-brand-50 text-brand-700; }
-  .notice[data-unread]::before { content: ""; @apply absolute top-4 start-1.5 size-1.5 rounded-full bg-brand-500; }
+  .notice-icon { @apply grid size-9 shrink-0 place-items-center rounded-[10px] bg-slate-100 text-slate-500; }
+  /* What kind of news it is (apps/notifications/kinds.py). */
+  .notice-icon[data-tone="positive"] { @apply bg-emerald-50 text-emerald-700; }
+  .notice-icon[data-tone="negative"] { @apply bg-red-50 text-red-700; }
+  .notice-icon[data-tone="action"] { @apply bg-amber-50 text-amber-700; }
+  .notice-icon[data-tone="money"] { @apply bg-brand-50 text-brand-700; }
+  .notice[data-unread] { @apply bg-brand-50/40 hover:bg-brand-50/70; }
+  .notice[data-unread]::after { content: ""; @apply mt-1.5 size-2 shrink-0 rounded-full bg-brand-500; }
+  /* The panel. */
+  .bell-tab { @apply -mb-px border-b-2 border-transparent px-2.5 pb-2 text-[13px] font-medium text-slate-500 transition-colors
+                     hover:text-slate-900; }
+  .bell-tab[aria-selected="true"] { @apply border-brand-600 text-slate-900; }
+  .bell-heading { @apply px-4 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-slate-400 uppercase; }
+  :lang(ar) .bell-heading { @apply text-xs tracking-normal normal-case; }
+  .bell-queue { @apply flex items-center gap-3 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50; }
+  .bell-badge-new { animation: bell-badge-new 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
   .swatch { @apply flex flex-col items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-slate-600
                    transition-colors hover:bg-slate-100 hover:text-slate-900; }
   .swatch-dot { @apply grid size-7 place-items-center rounded-full text-white ring-2 ring-transparent ring-offset-2
@@ -427,6 +440,7 @@
 }
 
 /* Sign-in pages (registration/login.html, console/login.html, static/core/js/login.js). */
+@keyframes bell-badge-new { 40% { transform: scale(1.35); } }
 @keyframes login-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes login-shake {
   10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); }

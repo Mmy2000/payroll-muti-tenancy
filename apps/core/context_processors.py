@@ -136,13 +136,13 @@ def _navigation(request):
 
 
 def _bell(request) -> dict:
-    from apps.notifications.api import ICONS
     from apps.notifications.attention import ICONS as QUEUE_ICONS
+    from apps.notifications.kinds import ICONS
     from apps.notifications.services import unread_count
 
     unread = unread_count(request.actor.membership)
     # Every icon the bell's menu may draw, for its script (notification kinds and queues).
-    icons = sorted({"bell", *ICONS.values(), *QUEUE_ICONS})
+    icons = sorted({*ICONS, *QUEUE_ICONS})
     return {"unread": unread, "label": "99+" if unread > 99 else str(unread), "icons": icons}
 
 

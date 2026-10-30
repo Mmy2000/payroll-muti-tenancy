@@ -25,17 +25,18 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.errors import Conflict, DomainError, NotFound, PermissionDenied, ValidationError
+from apps.core.events import publish
 from apps.core.history import in_effect
 from apps.core.sequences import allocate_number
 from apps.employees.services import visible_employees
 from apps.loans import advances as advance_services
 from apps.loans import services as loan_services
-from apps.notifications import events
 
 from .domain import periods as period_rules
 from .domain.engine import WARNING, calculate
 from .domain.inputs import OFF_CYCLE, REGULAR, to_snapshot
 from .domain.periods import Period
+from .events import RunPaid
 from .gather import Gatherer
 from .models import (
     LIVE,
@@ -411,7 +412,7 @@ def record_payment(run_id: int, data: PaymentInput, *, actor=None) -> PayrollRun
         run.paid_by = getattr(actor, "user", None)
         run.save(update_fields=["status", "paid_on", "payment_method", "payment_reference",
                                 "paid_by", "updated_at"])
-        events.pay_paid(run, by=actor)
+        publish(RunPaid(run=run, by=actor))
     return run
 
 
