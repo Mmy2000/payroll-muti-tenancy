@@ -1,11 +1,15 @@
-"""Departments an actor may see."""
+"""The branches and departments screens choose from."""
 
 from __future__ import annotations
 
 from django.db.models import Max
 
-from .models import Department
+from .models import Branch, Department
 from .permissions import DEPARTMENT_VIEW
+
+
+def active_branches():
+    return Branch.objects.filter(is_active=True)
 
 
 def visible_departments(actor=None, permission: str = DEPARTMENT_VIEW):

@@ -46,3 +46,36 @@ def test_routes_are_in_urls_py():
         if "urlpatterns" in names:
             routed.append(_name(path))
     assert not routed, f"move these routes into urls.py: {routed}"
+
+
+ORM_CALLS = {"filter", "exclude", "annotate", "aggregate", "select_related", "prefetch_related",
+             "values", "values_list", "order_by", "only", "defer", "distinct", "get_or_create",
+             "update_or_create", "bulk_create", "bulk_update", "select_for_update", "save",
+             "delete"}
+NOT_VIEWS = {"serializers", "forms", "urls", "fields", "__init__"}
+
+
+def _imported_names(tree) -> set[str]:
+    return {alias.asname or alias.name.split(".")[0] for node in ast.walk(tree)
+            if isinstance(node, (ast.Import, ast.ImportFrom)) for alias in node.names}
+
+
+def _queries_in(path: Path) -> list[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    modules = _imported_names(tree)
+    found = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Attribute):
+            continue
+        calls_a_module = isinstance(node.value, ast.Name) and node.value.id in modules
+        if node.attr == "objects" or (node.attr in ORM_CALLS and not calls_a_module):
+            found.append(f"{_name(path)}:{node.lineno}: .{node.attr}")
+    return found
+
+
+def test_views_hold_no_queries():
+    """A view reads its input, calls a selector or a service, and answers."""
+    views = [path for path in _code() if {"api", "web"} & set(path.parts)
+             and "core" not in path.parts and path.stem not in NOT_VIEWS]
+    found = [query for path in sorted(views) for query in _queries_in(path)]
+    assert not found, "move these to selectors or services:\n" + "\n".join(found)
