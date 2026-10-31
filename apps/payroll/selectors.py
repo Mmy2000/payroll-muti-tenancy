@@ -9,7 +9,7 @@ from django.db.models import Count, Q
 from apps.core.history import in_effect
 from apps.employees.selectors import visible_employees
 from apps.org.models import Branch
-from apps.org.selectors import active_branches, visible_departments
+from apps.org.selectors import visible_departments
 
 from .domain.engine import ISSUES, LINE_LABELS
 from .models import (
@@ -61,12 +61,6 @@ def scope_names(runs) -> dict:
     names.update({(ScopeKind.DEPARTMENT, d.pk): d.label
                   for d in visible_departments().filter(pk__in=ids[ScopeKind.DEPARTMENT])})
     return names
-
-
-def branch_choices(allowed):
-    """The active branches, by code, of `allowed` (None = all of them)."""
-    branches = active_branches().order_by("code")
-    return branches if allowed is None else branches.filter(pk__in=allowed)
 
 
 def active_departments():

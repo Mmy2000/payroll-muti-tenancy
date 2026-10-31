@@ -7,8 +7,8 @@ from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery, by_status
 
 from .. import gateways, permissions, selectors, services
 from ..models import MessageStatus
@@ -29,7 +29,7 @@ def messages(request):
     found = ListQuery(request, permission=permissions.VIEW, search=("phone", "employee__name"),
                       date_field="created_at__date", branch_field="",
                       choices=[Choice("status", _("Status"), STATUS_TABS,
-                                      apply=selectors.by_status, value="all", tabs=True)])
+                                      apply=by_status, value="all", tabs=True)])
     rows = found.apply(selectors.sent_messages())
     return render(request, "messaging/messages.html", {
         "filters": found, "page": found.page(rows),

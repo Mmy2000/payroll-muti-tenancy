@@ -15,8 +15,9 @@ from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, ValidationError
 from apps.core.history import in_effect
-from apps.org.selectors import active_branches, visible_departments
-from apps.platform.tenants.limits import is_app_login
+from apps.iam.limits import is_app_login
+from apps.org.selectors import branch_choices as active_branch_choices
+from apps.org.selectors import visible_departments
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .models import Employee
@@ -59,9 +60,7 @@ def employee_choices(actor, permission: str):
 
 def branch_choices(actor, permission: str):
     """Active branches where the member holds `permission`."""
-    allowed = actor.branch_ids(permission)
-    branches = active_branches().order_by("code")
-    return branches if allowed is None else branches.filter(pk__in=allowed)
+    return active_branch_choices(actor.branch_ids(permission))
 
 
 def department_choices(actor, permission: str):
@@ -184,3 +183,7 @@ def resolve_group(group: Group, *, on: date, actor=None, permission: str) -> lis
         message = _("Some of these employees aren't yours to manage.")
         raise ValidationError(message, fields={"employee_ids": [message]})
     return people
+
+
+def department_in_use(department) -> bool:
+    return Employee.objects.filter(department=department).exists()

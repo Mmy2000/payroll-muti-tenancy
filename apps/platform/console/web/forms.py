@@ -3,9 +3,9 @@ from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.appearance import ACCENT_CHOICES
 from apps.core.media import ImageUploadInput, validate_image
 from apps.iam.web.forms import ThrottledLoginMixin
+from apps.org.appearance import ACCENT_CHOICES
 from apps.platform.tenants.models import (
     RESERVED_SLUGS,
     Plan,

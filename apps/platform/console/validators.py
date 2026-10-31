@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from apps.core.errors import ValidationError
 
 if TYPE_CHECKING:
-    from .services import ProvisionTenantCommand
+    from .services.provisioning import ProvisionTenantCommand
 
 
 def check_link(user, cmd: ProvisionTenantCommand) -> None:

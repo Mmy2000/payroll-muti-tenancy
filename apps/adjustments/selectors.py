@@ -42,10 +42,6 @@ def rows_of(kind: str):
     return Adjustment.objects.filter(kind=kind)
 
 
-def by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
 def for_employee(queryset, employee_id):
     return queryset.filter(rows__employee_id=employee_id)
 

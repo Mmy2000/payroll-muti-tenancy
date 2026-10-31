@@ -68,10 +68,10 @@ MIDDLEWARE = [
     # Counts requests per client and answers 429 over the limit, outside the tenant transaction.
     "apps.platform.tenants.middleware.TrafficMiddleware",
     # Opens the request transaction and runs SET LOCAL app.tenant_id; everything below runs in it.
-    "apps.core.tenancy.middleware.TenantResolutionMiddleware",
+    "apps.platform.tenants.resolution.TenantResolutionMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "apps.core.i18n.TenantLocaleMiddleware",  # cookie → tenant default → LANGUAGE_CODE
-    "apps.core.timezones.TenantTimezoneMiddleware",  # the client's clock (org.TenantProfile)
+    "apps.org.i18n.TenantLocaleMiddleware",  # cookie → tenant default → LANGUAGE_CODE
+    "apps.org.timezones.TenantTimezoneMiddleware",  # the client's clock (org.TenantProfile)
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -90,9 +90,9 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.request",
                 "django.template.context_processors.i18n",
-                "apps.core.context_processors.shell",
-                "apps.core.appearance.appearance",
-                "apps.core.branding.branding",
+                "config.context_processors.shell",
+                "apps.org.appearance.appearance",
+                "apps.org.branding.branding",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],

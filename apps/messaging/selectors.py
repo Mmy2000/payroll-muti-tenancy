@@ -14,7 +14,3 @@ def whatsapp_link() -> WhatsAppLink:
 
 def sent_messages() -> QuerySet[Message]:
     return Message.objects.select_related("employee", "payslip__run").order_by("-id")
-
-
-def by_status(queryset: QuerySet[Message], value: str) -> QuerySet[Message]:
-    return queryset if value == "all" else queryset.filter(status=value)

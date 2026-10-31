@@ -1,6 +1,6 @@
-from apps.core.tenancy.commands import TenantCommand
 from apps.iam.models import Membership
 from apps.org.models import Branch
+from apps.platform.tenants.commands import TenantCommand
 
 
 class Command(TenantCommand):

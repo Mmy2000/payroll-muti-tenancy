@@ -73,7 +73,7 @@ nothing posted twice. Every change ships with tests that would fail without it.
   - Don't compute `TODAY` at import time: it changes at midnight during a run.
 - **No sleeps.** Wait for conditions (threads use `threading.Event`, browser tests use
   Playwright's waits).
-- **Isolate global state.** Outboxes (`apps.messaging.codes.OUTBOX`, `gateways.OUTBOX`) and
+- **Isolate global state.** Outboxes (`gateways.OUTBOX`) and
   module-level lists must be cleared by a fixture. The cache is cleared around every test
   (autouse in `conftest.py`).
 - **Mock only the edges:** HTTP to gateways and market sources, `subprocess` for `pg_dump`, and

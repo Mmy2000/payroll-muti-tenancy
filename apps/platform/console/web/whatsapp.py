@@ -14,9 +14,9 @@ from django.views.decorators.http import require_POST
 
 from apps.messaging import gateways
 from apps.platform.tenants.models import WhatsAppService
-from apps.platform.tenants.services import replace_whatsapp_key, save_whatsapp_settings
 
 from ..selectors.whatsapp import client_rows
+from ..services.settings import replace_whatsapp_key, save_whatsapp_settings
 from .common import staff_required
 from .forms import WhatsAppServiceForm
 

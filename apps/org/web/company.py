@@ -7,11 +7,11 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.appearance import ACCENT_CHOICES
 from apps.core.media import ImageUploadInput, validate_image
 from apps.iam.authz import permission_required
 
 from .. import selectors, services
+from ..appearance import ACCENT_CHOICES
 
 QR_MOST_MINUTES = 7 * 24 * 60
 

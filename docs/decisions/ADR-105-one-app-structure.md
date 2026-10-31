@@ -19,7 +19,10 @@ layouts and had broken links.
   for JSON, `web/` for pages, `services` for writes, `selectors.py` for reads, `validators.py` for
   checks against data, `domain/` for pure calculations. An optional file exists only when the app
   has something to put in it.
-- Dependencies between apps go one way, down a fixed list of layers.
+- Dependencies between apps go one way, down a fixed list of layers. What `core` needed from
+  `org` and `platform.tenants` moved up into them, and `config/` holds the page shell.
+- Setting up a client needs every app, so provisioning and the demo data live in the console,
+  the top layer. Plan limits live beside what they count (`org.limits`, `iam.limits`).
 - `tests/test_architecture.py` checks all of it, so it can't drift again.
 - The move changes no behaviour: routes, API schema, permissions and database schema stay
   identical, compared against a snapshot taken before the work began.

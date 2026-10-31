@@ -8,8 +8,8 @@ from apps.core.errors import ValidationError
 from apps.core.tenancy import tenant_context
 from apps.iam.models import Membership, Role, User
 from apps.iam.services import assign_role
+from apps.platform.console.services.provisioning import ProvisionTenantCommand, provision_tenant
 from apps.platform.tenants.models import Tenant
-from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
 from conftest import PASSWORD, login
 
 pytestmark = pytest.mark.django_db

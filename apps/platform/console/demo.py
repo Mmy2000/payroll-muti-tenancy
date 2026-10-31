@@ -233,9 +233,8 @@ def seed_integrations(tenant, password: str) -> None:
     from apps.devices.models import Device
     from apps.devices.services import devices
     from apps.mobile.services import access
-
-    from . import features
-    from .models import TenantFeature
+    from apps.platform.tenants import features
+    from apps.platform.tenants.models import TenantFeature
 
     for key in ("mobile_app", "zk_devices", "whatsapp"):
         TenantFeature.objects.update_or_create(tenant=tenant, key=key,

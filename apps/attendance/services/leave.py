@@ -87,9 +87,6 @@ def seed_leave_types(**_values) -> None:
         LeaveType.objects.create(code=code, name=name, paid=paid, uses_annual_balance=balance)
 
 
-# --- the balance ---------------------------------------------------------------------------
-
-
 # --- requests ------------------------------------------------------------------------------
 
 

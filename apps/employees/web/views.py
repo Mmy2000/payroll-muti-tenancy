@@ -11,7 +11,6 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from apps.core.errors import AppError
 from apps.core.import_page import ImportPage, import_page, template_download
-from apps.core.listing import Choice, ListQuery
 from apps.employees import imports
 from apps.employees.models import (
     Compensation,
@@ -24,6 +23,7 @@ from apps.employees.models import (
 )
 from apps.employees.web.targets import group_page
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery
 from apps.org.selectors import visible_departments
 
 from .. import selectors

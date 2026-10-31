@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from apps.iam.authz import permission_required
+from apps.org.selectors import branch_choices
 from apps.policies import selectors
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
@@ -174,6 +175,6 @@ def holidays(request):
     allowed = request.actor.branch_ids("policies.holiday.manage")
     return render(request, "policies/holidays.html", {
         "holidays": selectors.listed_holidays(),
-        "branches": selectors.branch_choices(allowed),
+        "branches": branch_choices(allowed),
         "all_branches": allowed is None,
     })

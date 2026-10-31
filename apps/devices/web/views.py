@@ -6,13 +6,14 @@ from django.http import Http404
 from django.shortcuts import render
 
 from apps.iam.authz import permission_required
+from apps.org.selectors import branch_choices
 
 from .. import permissions, selectors
 from ..services import sync
 
 
 def _branches(actor):
-    return selectors.branch_choices(actor.branch_ids(permissions.MANAGE))
+    return branch_choices(actor.branch_ids(permissions.MANAGE))
 
 
 @permission_required(permissions.VIEW)

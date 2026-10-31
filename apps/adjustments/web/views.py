@@ -10,9 +10,9 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from apps.core.listing import Choice, ListQuery
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery, by_status
 from apps.org.selectors import visible_departments
 
 from .. import selectors
@@ -80,7 +80,7 @@ def _list(request, page: KindPage):
                       choices=[Choice("type", _("Type"), [("", _("All types"))] + types,
                                       "adjustment_type_id"),
                                Choice("status", _("Status"), STATUS_TABS,
-                                      apply=selectors.by_status, value="all", tabs=True)])
+                                      apply=by_status, value="all", tabs=True)])
     matching = found.apply(selectors.visible_batches(request.actor, page.kind))
     result = found.page(selectors.batches_with_totals(matching))
     _target_names(result.object_list)

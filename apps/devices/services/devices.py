@@ -1,10 +1,4 @@
-"""Fingerprint devices: setting them up, what they send, and what they are asked to do.
-
-What a device sends is kept as it came (`DevicePunch`). A punch whose PIN is linked to an
-employee also becomes an attendance punch (source "device"), judged like any other clock time;
-the device's own in/out key is not trusted (PayRole ignored it too). A PIN linked later brings
-its waiting punches in. Days an approved payroll covers are left alone: their punches are kept,
-but stay out of attendance.
+"""Setting up fingerprint devices, and what they are asked to do from the screens.
 
 Permissions: `devices.device.view` and `devices.device.manage`, by the device's branch.
 """
@@ -80,9 +74,6 @@ def resend_all(device_id: int, *, actor=None) -> Device:
     return device
 
 
-# --- the device's calls ---------------------------------------------------------------------
-
-
 # --- commands asked from the screens --------------------------------------------------------
 
 TEST, PULL_USERS, PULL_PUNCHES = "test", "pull_users", "pull_punches"
@@ -116,8 +107,5 @@ def ask(device_id: int, data: CommandInput, *, actor=None) -> DeviceCommand:
                            code="DEVICES_COMMAND_WAITING")
         return DeviceCommand.objects.create(device=device, command=text,
                                             requested_by=getattr(actor, "user", None))
-
-
-# --- linking PINs to employees --------------------------------------------------------------
 
 

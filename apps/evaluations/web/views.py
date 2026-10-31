@@ -7,9 +7,9 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.core.listing import ListQuery
 from apps.employees.web.targets import employee_choices
 from apps.iam.authz import permission_required
+from apps.org.listing import ListQuery
 
 from .. import permissions, selectors
 

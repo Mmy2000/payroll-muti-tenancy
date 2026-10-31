@@ -1,4 +1,11 @@
-"""What a device says over the iClock protocol (protocol.py parses it), and what it is told."""
+"""What a device says over the iClock protocol (protocol.py parses it), and what it is told.
+
+What a device sends is kept as it came (`DevicePunch`). A punch whose PIN is linked to an
+employee also becomes an attendance punch (source "device"), judged like any other clock time;
+the device's own in/out key is not trusted (PayRole ignored it too). A PIN linked later brings
+its waiting punches in. Days an approved payroll covers are left alone: their punches are kept,
+but stay out of attendance.
+"""
 
 from __future__ import annotations
 

@@ -15,10 +15,10 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core import months
 from apps.core.errors import AppError
 from apps.core.import_page import ImportPage, import_page, template_download
-from apps.core.listing import Choice, ListQuery
 from apps.employees.selectors import branch_choices, department_choices, get_employee
 from apps.employees.web.targets import employee_choices, group_page
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery, by_status
 
 from .. import selectors
 from ..domain.summary import summarize
@@ -106,7 +106,7 @@ def _requests_page(request, *, model, view_permission, approve_permission, templ
                       branch_field="employee__branch_id",
                       party="employee_id", party_model="employees.Employee",
                       choices=[Choice("status", _("Status"), REQUEST_TABS,
-                                      apply=selectors.by_status, value=RequestStatus.PENDING,
+                                      apply=by_status, value=RequestStatus.PENDING,
                                       tabs=True)])
     rows = found.apply(selectors.visible_requests(model, request.actor, view_permission,
                                                   date_field=date_field, related=extra or ()))

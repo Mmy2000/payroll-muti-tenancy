@@ -56,7 +56,7 @@ of the app under a name that says what they are.
 
 `apps/mobile` has two APIs, so it has `api/v1/` (PayRole's contract for the app, ADR-104) and
 `api/web/` (what the browser calls). `apps/platform/console` serves staff pages only, so it has
-`web/` and no `api/`.
+`web/` and no `api/`, and its reads are a `selectors/` package by topic.
 
 ## Where code goes
 
@@ -161,13 +161,29 @@ Rules:
 
 Apps form layers. An app imports its own layer and the ones above it in this table, never below.
 
-The table is completed in the last phase of ADR-105.
+| Layer | Apps | What they are |
+|---|---|---|
+| 0 | `core` | Tools with no business in them: tenancy, errors, numbers, imports, events |
+| 1 | `platform.tenants` | Clients, plans, features, domains, traffic |
+| 2 | `org` | Branches, departments, the company profile; language, time zone and lists follow it |
+| 3 | `iam`, `audit`, `printing`, `platform.jobs` | Who may do what, the History, PDFs, the worker |
+| 4 | `policies` | Lateness, overtime, tax, insurance, holidays |
+| 5 | `employees` | The employee, their pay and hours |
+| 6 | `attendance`, `compensation`, `loans`, `adjustments`, `devices` | What happens to an employee |
+| 7 | `payroll` | The pay run, which reads all of the above |
+| 8 | `evaluations`, `messaging`, `notifications`, `mobile`, `reports` | Built on the rest |
+| 9 | `platform.console` | Staff pages, setting up a client, the demo data |
 
-- `core` knows no business app. What it needs from one is given to it through a registry.
+Every app may use the registries and the permission check (`iam.catalog`, `iam.authz`,
+`platform.tenants.features`, `platform.jobs.registry`): those are what it plugs into.
+`config/` sits above everything: the URLs, and `config/context_processors.py` for the page shell.
+
+- `core` imports no app at all.
 - **A lower app needs a higher one to act?** Publish a domain event, or fill a registry from
   `ready()`. Don't import upward, not even inside a function.
 - **Import public names only.** Never `_private` functions from another module.
 - Imports inside functions are for heavy or optional libraries. They are not a way round a cycle.
+- `management/` commands and `tests/` may use any app.
 
 ### Registries
 
@@ -182,7 +198,8 @@ def ready(self):
 
 Use an existing registry before creating one: permissions and limits (`iam.catalog`), features
 (`platform.tenants.features`), jobs (`platform.jobs.registry`), documents (`core.documents`),
-reports (`reports.registry`), seeding (`core.seeding`), audit labels.
+reports (`reports.registry`), seeding (`core.seeding`), audit labels, the employee on the user
+form (`iam.member_links`), a department in use (`org.validators`).
 
 ### Domain events
 

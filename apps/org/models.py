@@ -37,7 +37,7 @@ class TenantProfile(TenantScopedModel):
                                 validators=[validate_timezone])
     locale = models.CharField(max_length=8, default="ar", choices=settings.LANGUAGES)
     country = models.CharField(max_length=2, default="EG")  # ISO 3166; phone number region
-    # Accent colour of the workspace (apps.core.appearance.ACCENTS); users may pick their own.
+    # Accent colour of the workspace (apps.org.appearance.ACCENTS); users may pick their own.
     accent = models.CharField(max_length=16, default="teal")
     # How long a QR for signing in to the app works (apps/mobile/services/qr.py), at most a week.
     app_qr_minutes = models.PositiveIntegerField(default=15)
@@ -54,8 +54,8 @@ class TenantProfile(TenantScopedModel):
         super().save(*args, **kwargs)
         from django.core.cache import cache
 
-        from apps.core import timezones
-        from apps.core.i18n import tenant_locale_cache_key
+        from . import timezones
+        from .i18n import tenant_locale_cache_key
 
         cache.delete(tenant_locale_cache_key(self.tenant_id))
         timezones.forget(self.tenant_id)

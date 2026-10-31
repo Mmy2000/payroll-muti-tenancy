@@ -12,9 +12,9 @@ from apps.compensation.models import (
     PayItemKind,
 )
 from apps.core import months
-from apps.core.listing import Choice, ListQuery
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery, by_status
 
 from .. import permissions, selectors
 
@@ -69,7 +69,7 @@ def assignments(request):
                       choices=[Choice("item", _("Pay item"), [("", _("All items"))] + items,
                                       "item_id"),
                                Choice("status", _("Status"), STATUS_TABS,
-                                      apply=selectors.by_status, value=AssignmentStatus.ACTIVE,
+                                      apply=by_status, value=AssignmentStatus.ACTIVE,
                                       tabs=True)])
     rows = found.apply(selectors.assignments_running(request.actor, month, last))
     return render(request, "compensation/assignments.html", {

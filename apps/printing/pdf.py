@@ -214,7 +214,7 @@ def sheet_pdf(template: str, context: dict, *, title, landscape: bool = False) -
     numbers. Needs no request (background jobs use it); raises PdfUnavailable."""
     from django.template.loader import render_to_string
 
-    from apps.core.appearance import accent_swatch
+    from apps.org.appearance import accent_swatch
     from apps.org.models import TenantProfile
 
     profile = TenantProfile.objects.first()

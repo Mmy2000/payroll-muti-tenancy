@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from apps.core.errors import ValidationError
 from apps.iam import selectors, services
 from apps.iam.catalog import AUTHENTICATED, WILDCARD, permissions
+from apps.iam.member_links import employee_link
 from apps.iam.models import MembershipStatus
 
 from .serializers import (
@@ -38,12 +39,9 @@ class MeView(APIView):
 
 def _link_employee(membership, data, actor) -> None:
     """The user form also says which employee the user is: saved with the user, in the same
-    transaction. The rules are the mobile app's (apps.mobile.services.access), imported here
-    only."""
+    transaction."""
     if "employee" in data:
-        from apps.mobile.services.access import link_member
-
-        link_member(membership.pk, data["employee"], actor=actor)
+        employee_link().link_member(membership.pk, data["employee"], actor=actor)
 
 
 def _member_input(data) -> services.MemberInput:

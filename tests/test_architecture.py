@@ -116,3 +116,113 @@ def test_no_function_assigns_over_an_imported_module():
             for name in stored & used_as_module & modules:
                 found.append(f"{_name(path)}: {function.name}: {name}")
     assert not found, found
+
+
+# Lowest first. An app imports its own row and the rows above it, never below.
+LAYERS = (
+    ("core",),
+    ("platform.tenants",),
+    ("org",),
+    ("iam", "audit", "printing", "platform.jobs"),
+    ("policies",),
+    ("employees",),
+    ("attendance", "compensation", "loans", "adjustments", "devices"),
+    ("payroll",),
+    ("evaluations", "messaging", "notifications", "mobile", "reports"),
+    ("platform.console",),
+)
+RANK = {app: rank for rank, row in enumerate(LAYERS) for app in row}
+# What every app plugs into: the registries, and the check of who may do what.
+EVERYONE_USES = ("apps.iam.catalog", "apps.iam.authz", "apps.platform.tenants.features",
+                 "apps.platform.jobs.registry")
+
+
+def _module(path: Path) -> list[str]:
+    parts = list(path.relative_to(ROOT).with_suffix("").parts)
+    return parts[:-1] if parts[-1] == "__init__" else parts
+
+
+def _app_of(parts: list[str]) -> str:
+    if len(parts) < 2:
+        return ""
+    return ".".join(parts[1:3]) if parts[1] == "platform" else parts[1]
+
+
+def _imports(path: Path):
+    """Each import's module, absolute, with the names it brings in."""
+    here = _module(path)
+    package = here if path.name == "__init__.py" else here[:-1]
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.ImportFrom) and node.module != "__future__":
+            base = package[:len(package) - node.level + 1] if node.level else []
+            yield node, base + (node.module or "").split(".") if node.module else base
+
+
+def _dependencies() -> list[tuple[str, str, str]]:
+    """(importing app, imported app, where), for what is not everyone's."""
+    found = []
+    for path in _code():
+        if "management" in path.parts:
+            continue
+        mine = _app_of(_module(path))
+        if mine in ("", "platform"):
+            continue
+        for node, target in _imports(path):
+            if target[0] != "apps" or len(target) < 2:
+                continue
+            names = [".".join(target)] + [".".join([*target, a.name]) for a in node.names]
+            if any(name.startswith(EVERYONE_USES) for name in names):
+                continue
+            theirs = _app_of(target)
+            if theirs != mine and theirs != "platform":
+                found.append((mine, theirs, f"{_name(path)}:{node.lineno}"))
+    return found
+
+
+def test_every_app_is_in_a_layer():
+    missing = [path.relative_to(APPS).as_posix() for path in _apps()
+               if path.relative_to(APPS).as_posix().replace("/", ".") not in RANK]
+    assert not missing
+
+
+def test_dependencies_point_down_the_layers():
+    upward = [f"{where}: {mine} imports {theirs}" for mine, theirs, where in _dependencies()
+              if RANK[theirs] > RANK[mine]]
+    assert not upward, "use a domain event or a registry:\n" + "\n".join(upward)
+
+
+def test_core_imports_no_app():
+    assert not [where for mine, _theirs, where in _dependencies() if mine == "core"]
+
+
+def test_nobody_imports_a_private_name():
+    found = [f"{_name(path)}:{node.lineno}: {alias.name}" for path in _code()
+             for node, _target in _imports(path) for alias in node.names
+             if alias.name.startswith("_") and not alias.name.startswith("__")
+             and alias.name != "_"]
+    assert not found, found
+
+
+def test_selectors_only_read():
+    writes = {"save", "delete", "create", "bulk_create", "bulk_update", "update_or_create",
+              "get_or_create"}
+    found = []
+    for path in _code():
+        if path.stem != "selectors" and "selectors" not in path.parts:
+            continue
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Attribute) and node.attr in writes:
+                found.append(f"{_name(path)}:{node.lineno}: .{node.attr}")
+    assert not found, found
+
+
+def test_domain_is_pure():
+    """A calculation takes values and gives values, so it can be tested without a database."""
+    found = []
+    for path in _code():
+        if "domain" not in path.parts:
+            continue
+        found += [f"{_name(path)}:{node.lineno}" for node, target in _imports(path)
+                  if target[-1] in {"models", "selectors"} or "services" in target
+                  or target[:2] == ["django", "db"]]
+    assert not found, found

@@ -1,4 +1,4 @@
-"""Payroll: calendars, runs and their workflow (docs/payroll-design.md §2–§3).
+"""Payroll runs: creating and calculating them (docs/payroll-design.md §2–§3).
 
     draft ──approve──▶ approved ──pay──▶ paid
       │                   └──reverse──▶ reversed

@@ -32,10 +32,6 @@ def next_pay_item_code() -> int:
     return (PayItem.objects.aggregate(top=Max("code"))["top"] or 0) + 1
 
 
-def by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
 def assignments_running(actor, first: date, last: date):
     """The items running on any day from `first` to `last`, for the employees the actor may
     see."""

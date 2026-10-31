@@ -8,9 +8,9 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from apps.core.listing import Choice, ListQuery
 from apps.employees.web.targets import employee_choices
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery, by_status
 
 from .. import permissions, selectors, validators
 from ..models import AdvanceStatus, LoanStatus
@@ -27,7 +27,7 @@ def _list_query(request, permission, date_field, tabs, default):
                      date_field=date_field, branch_field="employee__branch_id",
                      party="employee_id", party_model="employees.Employee",
                      choices=[Choice("status", _("Status"), tabs,
-                                     apply=selectors.by_status, value=default, tabs=True)])
+                                     apply=by_status, value=default, tabs=True)])
 
 
 @permission_required(permissions.ADVANCE_VIEW)

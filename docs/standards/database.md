@@ -89,7 +89,7 @@ Don't use it for documents, which have their own history.
   for reverse sets. Use aggregation (`Sum`, `Count`) instead of Python loops over rows.
   - Check: `django.test.utils.CaptureQueriesContext` in a test, or count queries in the
     development toolbar of your choice.
-- **Paginate lists.** The API does it by default; web lists use `apps/core/listing.py`.
+- **Paginate lists.** The API does it by default; web lists use `apps/org/listing.py`.
 - **`.raw()`, `.extra()` and string-built SQL are not allowed.** `cursor.execute` takes
   parameters (`%s`) only. Ruff's `S608` flags string-built SQL (automated).
 

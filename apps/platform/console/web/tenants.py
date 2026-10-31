@@ -13,17 +13,6 @@ from django.views.decorators.http import require_POST
 from apps.core.errors import ValidationError
 from apps.platform.tenants import features as feature_registry
 from apps.platform.tenants.models import Tenant, TenantStatus
-from apps.platform.tenants.services import (
-    LIMIT_FIELDS,
-    ProvisionTenantCommand,
-    add_domain,
-    attr,
-    create_client,
-    remove_domain,
-    set_client_status,
-    update_client,
-    update_client_profile,
-)
 
 from ..selectors import metrics
 from ..selectors.events import client_events
@@ -36,6 +25,17 @@ from ..selectors.tenants import (
     primary_domain,
     search_clients,
 )
+from ..services.clients import (
+    LIMIT_FIELDS,
+    add_domain,
+    attr,
+    create_client,
+    remove_domain,
+    set_client_status,
+    update_client,
+    update_client_profile,
+)
+from ..services.provisioning import ProvisionTenantCommand
 from .common import back, get_tenant, show_form_errors, staff_required
 from .forms import DomainForm, ProfileForm, TenantCreateForm, TenantSettingsForm, domain_for
 

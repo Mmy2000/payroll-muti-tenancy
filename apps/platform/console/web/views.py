@@ -13,12 +13,12 @@ from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 
 from apps.platform.tenants.models import TenantStatus
-from apps.platform.tenants.services import save_platform_settings
 
 from ..selectors import metrics
 from ..selectors.events import platform_events
 from ..selectors.settings import platform_links, settings_row
 from ..selectors.tenants import LIVE_STATUSES
+from ..services.settings import save_platform_settings
 from .common import staff_required
 from .forms import (
     PlatformLinkFormSet,

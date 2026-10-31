@@ -10,10 +10,10 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.platform.tenants import features as feature_registry
-from apps.platform.tenants.services import set_client_feature, set_plan_feature
 
 from ..selectors.plans import find_plan_by_code, plan_labels
 from ..selectors.tenants import live_clients
+from ..services.plans import set_client_feature, set_plan_feature
 from .common import back, get_tenant, staff_required
 
 

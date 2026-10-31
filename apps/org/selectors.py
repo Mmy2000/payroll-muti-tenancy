@@ -48,6 +48,12 @@ def branch_departments(branch: Branch):
     return branch.departments.order_by("code")
 
 
+def branch_choices(allowed):
+    """The active branches, by code, of `allowed` (None = all of them)."""
+    branches = active_branches().order_by("code")
+    return branches if allowed is None else branches.filter(pk__in=allowed)
+
+
 def visible_departments(actor=None, permission: str = DEPARTMENT_VIEW):
     """Departments, with their branch, in the branches where the member has `permission`."""
     departments = Department.objects.select_related("branch")

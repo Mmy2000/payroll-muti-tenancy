@@ -10,14 +10,14 @@ from __future__ import annotations
 
 def grant_to_system_roles(*prefixes: str):
     def run(apps, schema_editor):
-        from apps.iam.services import _system_role_templates
+        from apps.iam.services import system_role_templates
 
         Tenant = apps.get_model("tenants", "Tenant")
         Role = apps.get_model("iam", "Role")
         RolePermission = apps.get_model("iam", "RolePermission")
         connection = schema_editor.connection
         db = connection.alias
-        templates = _system_role_templates()
+        templates = system_role_templates()
         for tenant_id in Tenant.objects.using(db).values_list("id", flat=True):
             with connection.cursor() as cursor:
                 cursor.execute("SELECT set_config('app.tenant_id', %s, true)", [str(tenant_id)])

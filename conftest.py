@@ -4,7 +4,7 @@ from django.test import Client
 from django.utils import timezone
 
 from apps.core.tenancy import tenant_context
-from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
+from apps.platform.console.services.provisioning import ProvisionTenantCommand, provision_tenant
 
 PASSWORD = "correct-horse-battery-staple"
 

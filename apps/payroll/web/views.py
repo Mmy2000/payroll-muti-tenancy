@@ -11,8 +11,9 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
+from apps.org.listing import Choice, ListQuery
+from apps.org.selectors import branch_choices
 
 from .. import permissions, printing, selectors
 from ..models import Frequency, MonthlyRule, PeriodKind, RunStatus, ScopeKind
@@ -62,7 +63,7 @@ def run_new(request):
                     for f, label in Frequency.choices],
         # A member limited to some branches runs payroll branch by branch.
         "all_branches": allowed is None,
-        "branches": selectors.branch_choices(allowed),
+        "branches": branch_choices(allowed),
         "departments": selectors.active_departments(),
     })
 

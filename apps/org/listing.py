@@ -24,6 +24,11 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 
+def by_status(queryset, value: str):
+    """A `Choice.apply` for lists with an "all" tab."""
+    return queryset if value == "all" else queryset.filter(status=value)
+
+
 @dataclass
 class Choice:
     name: str  # the query parameter

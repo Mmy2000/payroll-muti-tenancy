@@ -11,9 +11,9 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from apps.platform.tenants.models import Tenant
-from apps.platform.tenants.services import set_traffic_limit
 
 from ..selectors import traffic as traffic_report
+from ..services.clients import set_traffic_limit
 from .common import get_tenant, show_form_errors, staff_required
 from .forms import TrafficLimitForm
 

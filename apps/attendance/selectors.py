@@ -126,10 +126,6 @@ def visible_requests(model, actor, code: str, *, date_field: str, related=()):
             .order_by(f"-{date_field}", "-id"))
 
 
-def by_status(requests, value: str):
-    return requests if value == "all" else requests.filter(status=value)
-
-
 def leave_types():
     return LeaveType.objects.order_by("code")
 

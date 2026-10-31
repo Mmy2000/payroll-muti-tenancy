@@ -7,10 +7,9 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import Http404
 
+from apps.core.tenancy.context import tenant_context
 from apps.platform.tenants.models import TenantStatus
 from apps.platform.tenants.selectors import tenant_for_host
-
-from .context import tenant_context
 
 
 class TenantResolutionMiddleware:

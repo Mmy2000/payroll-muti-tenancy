@@ -9,9 +9,9 @@ from django.utils.translation import gettext as _
 
 from apps.platform.tenants import features as feature_registry
 from apps.platform.tenants.models import Plan
-from apps.platform.tenants.services import delete_plan, save_plan
 
 from ..selectors.plans import clients_on, find_plan, plans_with_clients, replacement_for
+from ..services.plans import delete_plan, save_plan
 from .common import staff_required
 from .forms import PlanDeleteForm, PlanForm
 

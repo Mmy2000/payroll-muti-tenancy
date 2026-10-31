@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from apps.core.errors import AppError
-from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
+from apps.platform.console.services.provisioning import ProvisionTenantCommand, provision_tenant
 
 
 class Command(BaseCommand):

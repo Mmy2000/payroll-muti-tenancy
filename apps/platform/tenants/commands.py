@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from django.core.management.base import BaseCommand, CommandError
 
-from .context import tenant_context
+from apps.core.tenancy.context import tenant_context
 
 
 class TenantCommand(BaseCommand):

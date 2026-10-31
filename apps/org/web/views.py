@@ -3,10 +3,10 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.core.listing import ListQuery
 from apps.iam.authz import permission_required
 
 from .. import permissions, selectors
+from ..listing import ListQuery
 
 
 @permission_required("org.branch.view")

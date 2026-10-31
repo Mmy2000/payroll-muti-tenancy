@@ -17,7 +17,7 @@ MAX_SHORTCUTS = 12
 
 def screens() -> dict:
     """Every pinnable screen: url name → its sidebar item."""
-    from apps.core.context_processors import NAVIGATION
+    from config.context_processors import NAVIGATION
 
     return {item.url_name: item for section in NAVIGATION for item in section.items
             if item.url_name != "home"}  # the dashboard is always first anyway

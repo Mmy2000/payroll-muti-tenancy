@@ -1,5 +1,5 @@
-"""Incentives and penalties: their types, and batches given to an employee, a department or a
-branch, through their life:
+"""Incentives and penalties: batches given to an employee, a department or a branch, through
+their life:
 
     draft ──approve──▶ approved ──reopen (reason, not paid)──▶ draft
       │                   ├──cancel (reason, not paid)──▶ cancelled
@@ -37,12 +37,6 @@ from ..events import BatchApproved
 from ..models import Adjustment, AdjustmentBatch, AdjustmentType, BatchStatus
 from ..permissions import permission
 from ..selectors import ZERO, effective_amounts, paid_rows
-
-# --- types ---------------------------------------------------------------------------------
-
-
-# --- reading -------------------------------------------------------------------------------
-
 
 # --- the details of a batch ------------------------------------------------------------------
 

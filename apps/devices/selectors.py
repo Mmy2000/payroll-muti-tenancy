@@ -7,7 +7,6 @@ from datetime import timedelta
 from django.utils import timezone
 
 from apps.employees.selectors import visible_employees
-from apps.org.selectors import active_branches
 
 from . import protocol
 from .models import Device, DeviceUser
@@ -58,9 +57,3 @@ def recent_punches(device: Device):
 def linkable_employees(actor, branch):
     return visible_employees(actor, MANAGE).filter(branch=branch, left_on__isnull=True).order_by(
         "code")
-
-
-def branch_choices(allowed):
-    """The active branches, by code, of `allowed` (None = all of them)."""
-    branches = active_branches().order_by("code")
-    return branches if allowed is None else branches.filter(pk__in=allowed)

@@ -17,7 +17,6 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, ValidationError
-from apps.platform.tenants.limits import check_room_for, is_app_login
 
 from .catalog import (
     APP_SIGNIN,
@@ -28,6 +27,7 @@ from .catalog import (
     WILDCARD,
     permissions,
 )
+from .limits import check_room_for, is_app_login
 from .models import (
     SYSTEM_ROLE_NAMES,
     Membership,
@@ -50,7 +50,7 @@ from .validators import (
 )
 
 
-def _system_role_templates() -> dict[str, tuple[str, str, list[str]]]:
+def system_role_templates() -> dict[str, tuple[str, str, list[str]]]:
     catalog = permissions()
     viewing = [c for c in catalog if c.endswith(".view")]
     managing = [c for c in catalog if not c.startswith("admin.")] + ["admin.users.view"]
@@ -66,7 +66,7 @@ def _system_role_templates() -> dict[str, tuple[str, str, list[str]]]:
 def seed_system_roles() -> dict[str, Role]:
     """Create the Owner/Manager/Viewer roles for a new tenant. Idempotent."""
     roles = {}
-    for code, (name, description, grants) in _system_role_templates().items():
+    for code, (name, description, grants) in system_role_templates().items():
         role, created = Role.objects.get_or_create(
             code=code, defaults={"name": name, "description": description, "is_system": True}
         )

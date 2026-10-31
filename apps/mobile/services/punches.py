@@ -1,14 +1,13 @@
-"""What the mobile app does (docs/mobile-api.md), in PayRole's order of checks and with its
-messages (apps/mobile/contract.py), on this system's records:
+"""Punching from the app (docs/mobile-api.md), in PayRole's order of checks and with its messages
+(apps/mobile/contract.py).
 
-* a punch is an attendance punch (source "mobile", with what the employee pressed and where),
-  judged like the device's; its day is the employee's work day (a night shift's check-out after
-  midnight belongs to the day it started; PayRole refused it);
-* the fingerprint proof, GPS tracking and the geofence are the client's features;
-* leave is a leave request of the annual leave type, with this system's balance and approval.
+A punch is an attendance punch (source "mobile", with what the employee pressed and where), judged
+like the device's. Its day is the employee's work day: a night shift's check-out after midnight
+belongs to the day it started (PayRole refused it). The fingerprint proof, GPS tracking and the
+geofence are the client's features.
 
-The app acts for the employee on their own records only, so the services below are trusted
-callers of the attendance services (no actor), and say who asked (`by`).
+The app acts for the employee on their own records only, so the services here are trusted callers
+of the attendance services (no actor), and say who asked (`by`).
 """
 
 from __future__ import annotations

@@ -5,7 +5,6 @@ from __future__ import annotations
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound
-from apps.org.selectors import active_branches
 
 from .models import InsuranceRate, PublicHoliday, TaxTable
 
@@ -59,9 +58,3 @@ def holidays():
 
 def listed_holidays():
     return holidays().order_by("-date")
-
-
-def branch_choices(allowed):
-    """The active branches, by code, of `allowed` (None = all of them)."""
-    branches = active_branches().order_by("code")
-    return branches if allowed is None else branches.filter(pk__in=allowed)

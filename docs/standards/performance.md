@@ -10,7 +10,7 @@ Measure before optimising. The usual problems here are queries, not Python.
   - Check a page or report with `CaptureQueriesContext` in a test, with two and with ten rows:
     the count must be the same.
 - **Lists are paginated** (API: 25 per page, 100 maximum; web lists through
-  `apps/core/listing.py`). A list that loads everything to find the latest row per group should
+  `apps/org/listing.py`). A list that loads everything to find the latest row per group should
   use the database: `distinct("employee_id")` with `order_by`.
 - **Indexes for every filter used by lists and reports**, starting with `tenant`. Documents
   already have `(tenant, branch, -business_date)`.

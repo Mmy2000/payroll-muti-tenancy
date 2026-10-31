@@ -19,8 +19,8 @@ from apps.employees.permissions import MANAGE as EMPLOYEES_MANAGE
 from apps.employees.selectors import get_employee
 from apps.iam import catalog as iam_catalog
 from apps.iam import services as iam
+from apps.iam.limits import is_app_login
 from apps.iam.models import MembershipStatus, Role
-from apps.platform.tenants.limits import is_app_login
 
 USERS = "admin.users.manage"
 

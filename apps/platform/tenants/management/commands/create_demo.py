@@ -1,5 +1,5 @@
 """Development only: a platform admin and two demo clients to sign in to and click through,
-with example pay set-up and employees (apps/platform/tenants/demo.py).
+with example pay set-up and employees (apps/platform/console/demo.py).
 
     manage.py create_demo
 
@@ -11,15 +11,15 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
-from apps.core import timezones
 from apps.core.tenancy import tenant_context
 from apps.iam.catalog import MANAGER, VIEWER
 from apps.iam.models import Membership, Role, User
 from apps.iam.services import assign_role
+from apps.org import timezones
 from apps.org.models import Branch
-from apps.platform.tenants import demo
+from apps.platform.console import demo
+from apps.platform.console.services.provisioning import ProvisionTenantCommand, provision_tenant
 from apps.platform.tenants.models import Tenant
-from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
 
 PASSWORD = "Demo-Pass-2026"
 PLATFORM_ADMIN = "admin@platform.test"

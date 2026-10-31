@@ -20,10 +20,6 @@ def month_advances(employee, day: date) -> Decimal:
     return open_ones.aggregate(total=Sum("amount"))["total"] or Decimal(0)
 
 
-def by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
 def visible_advances(actor):
     return employee_rows(Advance.objects.all(), actor, ADVANCE_VIEW).order_by("-date", "-id")
 

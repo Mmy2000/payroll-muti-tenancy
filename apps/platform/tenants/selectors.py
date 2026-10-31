@@ -4,6 +4,10 @@ from collections.abc import Iterable
 
 from django.core.cache import cache
 
+from apps.core.tenancy import get_current_tenant_id
+
+from .models import Tenant
+
 HOST_CACHE_SECONDS = 60
 
 
@@ -28,3 +32,9 @@ def tenant_for_host(host: str):
 
 def forget_hosts(hosts: Iterable[str]) -> None:
     cache.delete_many([_key(h) for h in hosts])
+
+
+def current_tenant() -> Tenant | None:
+    tenant_id = get_current_tenant_id()
+    return (Tenant.objects.select_related("plan").filter(pk=tenant_id).first()
+            if tenant_id else None)

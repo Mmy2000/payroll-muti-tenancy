@@ -19,8 +19,8 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone, translation
 
-from apps.core import timezones
 from apps.core.tenancy.context import tenant_context
+from apps.org import timezones
 
 from . import registry
 from .models import Job, JobStatus, Worker

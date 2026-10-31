@@ -6,6 +6,7 @@ from django.urls import reverse
 from apps.iam import selectors, signins
 from apps.iam.authz import permission_required
 from apps.iam.catalog import WILDCARD
+from apps.iam.member_links import employee_link
 from apps.iam.models import SignInOutcome
 from apps.org.selectors import active_branches_by_code
 
@@ -56,15 +57,13 @@ def _user_form(request, membership=None):
 
 
 def _employee_link(actor, membership) -> dict:
-    """The employee this user is, when the mobile app is on (apps.mobile.services.access)."""
-    from apps.mobile import selectors as mobile_selectors
-    from apps.mobile.services import access
-
-    if not access.can_link(actor):
+    """The employee this user is, when the mobile app is on."""
+    link = employee_link()
+    if not link.can_link(actor):
         return {}
     member_id = membership.pk if membership else None
-    linked = mobile_selectors.linked_employee(member_id) if member_id else None
-    return {"link_employees": access.link_choices(actor, member_id), "linked_employee": linked}
+    linked = link.linked(member_id) if member_id else None
+    return {"link_employees": link.choices(actor, member_id), "linked_employee": linked}
 
 
 @permission_required("admin.users.manage")

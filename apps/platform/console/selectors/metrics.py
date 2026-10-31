@@ -17,7 +17,7 @@ from django.utils import formats, timezone
 
 from apps.core.charts import Point, columns
 from apps.core.tenancy import tenant_context
-from apps.platform.tenants import limits
+from apps.iam import limits as iam_limits
 from apps.platform.tenants.models import Tenant, TenantStatus
 
 ZERO = Decimal(0)
@@ -30,7 +30,7 @@ class TenantUsage:
     display_name: str = ""
     currency: str = ""
     locale: str = ""
-    users: int = 0  # active office users (apps.platform.tenants.limits)
+    users: int = 0  # active office users (apps.iam.limits)
     app_logins: int = 0  # active app logins, a limit of their own
     branches: int = 0
     employees: int = 0  # working today
@@ -75,8 +75,8 @@ def tenant_usage(tenant: Tenant) -> TenantUsage:
             usage.display_name = profile.display_name
             usage.currency = profile.functional_currency
             usage.locale = profile.locale
-        usage.users = limits.office_users()
-        usage.app_logins = limits.app_logins()
+        usage.users = iam_limits.office_users()
+        usage.app_logins = iam_limits.app_logins()
         usage.branches = Branch.objects.filter(is_active=True).count()
         today = timezone.localdate()
         usage.employees = Employee.objects.filter(hired_on__lte=today).exclude(

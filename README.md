@@ -48,7 +48,7 @@ new code follows are in [docs/standards/](docs/standards/) and
 - **Leave** (`leave.py`): leave types (seeded for new clients), requests counted in working
   days, the yearly balance checked on approval. **Hourly leave** (`hourly.py`) within the monthly
   allowance. Both use one state machine (`approvals.py`).
-- **Shared**: every request runs in the client's time zone (`apps/core/timezones.py`); Excel
+- **Shared**: every request runs in the client's time zone (`apps/org/timezones.py`); Excel
   imports share `apps/core/imports.py` (Template Method) and one page (`apps/core/import_page.py`).
 - Features: `attendance`, `attendance_import`, `leave`, `hourly_leave`; `lateness` and
   `overtime` now require `attendance`.

@@ -124,7 +124,7 @@ class Money:
 
 @dataclass(frozen=True, slots=True)
 class Weight:
-    """A mass in grams. Metal balances use fine grams (see apps.catalog.domain.metal)."""
+    """A mass in grams."""
 
     grams: Decimal
 
