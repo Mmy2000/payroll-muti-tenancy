@@ -1,4 +1,4 @@
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -6,23 +6,12 @@ from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.org import services
 from apps.org.models import Branch, Department
 
-from .serializers import BranchSerializer, DepartmentSerializer
-
-
-class BranchWriteSerializer(serializers.Serializer):
-    code = serializers.IntegerField(min_value=1, max_value=999)
-    name = serializers.CharField(max_length=200)
-    phone = serializers.CharField(max_length=30, required=False, allow_blank=True, default="")
-    address = serializers.CharField(required=False, allow_blank=True, default="")
-    is_head_office = serializers.BooleanField(required=False, default=False)
-    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False,
-                                        allow_null=True, default=None, min_value=-90,
-                                        max_value=90)
-    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False,
-                                         allow_null=True, default=None, min_value=-180,
-                                         max_value=180)
-    radius_m = serializers.IntegerField(required=False, default=200, min_value=20,
-                                        max_value=5000)
+from .serializers import (
+    BranchSerializer,
+    BranchWriteSerializer,
+    DepartmentSerializer,
+    DepartmentWriteSerializer,
+)
 
 
 class BranchViewSet(viewsets.GenericViewSet):
@@ -69,13 +58,6 @@ class BranchViewSet(viewsets.GenericViewSet):
     def activate(self, request, pk=None):
         branch = services.set_branch_active(int(pk), True, actor=request.actor)
         return Response(self.get_serializer(branch).data)
-
-
-class DepartmentWriteSerializer(serializers.Serializer):
-    branch = serializers.IntegerField()
-    code = serializers.IntegerField(min_value=1, max_value=9999, required=False,
-                                    allow_null=True, default=None)
-    name = serializers.CharField(max_length=120)
 
 
 class DepartmentViewSet(ActivateMixin, ServiceViewSet):

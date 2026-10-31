@@ -83,6 +83,12 @@ def _ensure_can_grant(actor, codes) -> None:
                                code="IAM_ESCALATION")
 
 
+def ensure_can_act_on(membership, actor) -> None:
+    """Acting as a member, or letting someone in as them, takes the powers they hold."""
+    for assignment in membership.roles.select_related("role"):
+        _ensure_can_grant(actor, _role_codes(assignment.role))
+
+
 def _role_codes(role: Role) -> set[str]:
     return set(role.grants.values_list("permission", flat=True))
 

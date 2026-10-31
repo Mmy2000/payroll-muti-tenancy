@@ -59,11 +59,24 @@ PayRole's code (there was no other documentation); `apps/mobile/tests/` checks i
 - **Leave**: `{"ser":int,"date":"YYYY-MM-DD","date1":…|null,"date2":…|null,"days":int|null,
   "acept":bool,"status_text":"معتمدة"|"بانتظار الاعتماد"}`.
 
+## Signing in by QR
+
+Additive: nothing PayRole's app calls has changed. A manager gives an employee a QR from their
+page. It reads `payroll://link?url=<the client's address>&code=<one-time code>`: never a password
+or a token. The app sends the code to `<url>/api/v1/auth/qr` and gets what `auth/login` gives. A
+code works once, for the minutes set on the company page (15 by default, a week at most), and
+only its SHA-256 is stored.
+
+`auth/login` and `auth/qr` take an optional `device_id`. A sign-in that names its phone gets
+tokens with a `did` claim, and signing that phone out (from the employee's page) answers 401 at
+once on every request and refresh. Tokens without the claim work as they always did.
+
 ## Endpoints
 
 | Path | Method | Auth | Success |
 |---|---|---|---|
 | `auth/login` | POST `{username,password}` | none | 200 `{refresh,access,username,role,is_superuser,employee}` |
+| `auth/qr` | POST `{code,device_id?}` (new, additive) | none | 200, as `auth/login`. 400 `qr_invalid`, `qr_expired`, `qr_used`; 429 `qr_locked` |
 | `auth/refresh` | POST `{refresh}` | none | 200 `{access,refresh}` |
 | `auth/verify` | POST `{token}` | none | 200 `{}` |
 | `auth/change-password` | POST `{current_password,new_password(≥8),confirm_password}` | JWT | 200 `{"detail":"تم تغيير كلمة المرور",access,refresh}` |

@@ -5,6 +5,7 @@ employee went during a shift. Punches themselves are attendance punches (source 
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -31,6 +32,53 @@ class BiometricEnrollment(TenantScopedModel):
         ordering = ["-enrolled_at"]
         indexes = [models.Index(fields=["tenant", "employee", "is_active"],
                                 name="mobile_enrollment_active_idx")]
+
+
+class DeviceMethod(models.TextChoices):
+    QR = "qr", _("QR code")
+    PASSWORD = "password", _("Password")
+
+
+class AppDevice(TenantScopedModel):
+    """A phone signed in to the app (apps/mobile/devices.py)."""
+
+    member = models.ForeignKey("iam.Membership", on_delete=models.CASCADE,
+                               related_name="app_devices")
+    device_id = models.CharField(max_length=100)
+    method = models.CharField(max_length=10, choices=DeviceMethod.choices)
+    signed_in_at = models.DateTimeField(default=timezone.now)
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    revoked_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["-signed_in_at"]
+        constraints = [models.UniqueConstraint(fields=["tenant", "member", "device_id"],
+                                               name="mobile_device_once_uniq")]
+
+
+class AppLinkCode(TenantScopedModel):
+    """A QR for signing in (apps/mobile/qr.py). Only the code's fingerprint is kept."""
+
+    employee = models.ForeignKey("employees.Employee", on_delete=models.CASCADE,
+                                 related_name="+")
+    member = models.ForeignKey("iam.Membership", on_delete=models.CASCADE, related_name="+")
+    code_hash = models.CharField(max_length=64)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_device = models.ForeignKey(AppDevice, null=True, blank=True, on_delete=models.SET_NULL,
+                                    related_name="+")
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    issued_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                  on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["-id"]
+        constraints = [models.UniqueConstraint(fields=["tenant", "code_hash"],
+                                               name="mobile_link_code_uniq")]
+        indexes = [models.Index(fields=["tenant", "employee", "expires_at"],
+                                name="mobile_link_active_idx")]
 
 
 class BiometricNonce(TenantScopedModel):

@@ -1,20 +1,11 @@
 """The browser's API for evaluations: POST one, PUT it, DELETE it."""
 
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.routers import SimpleRouter
 
 from . import services
-
-
-class EvaluationWriteSerializer(serializers.Serializer):
-    employee_id = serializers.IntegerField()
-    year = serializers.IntegerField()
-    evaluated_on = serializers.DateField()
-    note_1 = serializers.CharField(allow_blank=True, default="", max_length=5000)
-    note_2 = serializers.CharField(allow_blank=True, default="", max_length=5000)
-    note_3 = serializers.CharField(allow_blank=True, default="", max_length=5000)
-    note_4 = serializers.CharField(allow_blank=True, default="", max_length=5000)
+from .serializers import EvaluationWriteSerializer
 
 
 class EvaluationViewSet(viewsets.GenericViewSet):

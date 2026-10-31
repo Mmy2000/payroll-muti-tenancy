@@ -1,5 +1,5 @@
 {% extends "layouts/app.html" %}
-{% load i18n ui audit %}
+{% load mobile i18n ui audit %}
 {% block title %}{{ employee.name }}{% endblock %}
 {% block page_header %}
 <div class="mb-8">
@@ -177,6 +177,8 @@
       </div>
     </section>
     {% endif %}
+
+    {% app_qr_card employee %}
 
     {% if can_manage %}
     <section class="card">

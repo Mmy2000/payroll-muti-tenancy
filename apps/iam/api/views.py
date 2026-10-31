@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,19 +14,12 @@ from apps.iam.models import Membership, MembershipStatus, Role
 from .serializers import (
     MemberReadSerializer,
     MemberWriteSerializer,
+    MeSerializer,
     PasswordSerializer,
     RoleReadSerializer,
     RoleWriteSerializer,
+    ShortcutSerializer,
 )
-
-
-class MeSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField(source="user.id")
-    display_name = serializers.CharField(source="user.display_name")
-    email = serializers.EmailField(source="user.email", allow_null=True)
-    username = serializers.CharField()
-    tenant = serializers.CharField(source="tenant.slug")
-    default_branch = serializers.IntegerField(source="default_branch_id", allow_null=True)
 
 
 class MeView(APIView):
@@ -177,11 +170,6 @@ class RoleViewSet(viewsets.GenericViewSet):
     def destroy(self, request, pk=None):
         services.delete_role(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ShortcutSerializer(serializers.Serializer):
-    screen = serializers.CharField(max_length=80)
-    pinned = serializers.BooleanField()
 
 
 class ShortcutsView(APIView):

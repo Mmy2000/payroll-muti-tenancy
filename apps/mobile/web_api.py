@@ -1,16 +1,14 @@
-"""The browser's API for the mobile app: giving an employee their login (PUT) or taking it
-away (DELETE), at /api/web/mobile/logins/<employee id>/."""
+"""The browser's API for the mobile app: giving an employee their login (PUT) or taking it away
+(DELETE) at /api/web/mobile/logins/<employee id>/; their QR at /qr/<employee id>/ (PUT a new one,
+POST renew/, DELETE cancel); signing one phone out at DELETE /devices/<id>/."""
 
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.routers import SimpleRouter
 
-from . import access
-
-
-class LoginWriteSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    password = serializers.CharField(max_length=128)
+from . import access, devices, qr
+from .serializers import LoginWriteSerializer
 
 
 class AppLoginViewSet(viewsets.GenericViewSet):
@@ -28,6 +26,34 @@ class AppLoginViewSet(viewsets.GenericViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class AppQrViewSet(viewsets.GenericViewSet):
+    required_permissions = {"update": qr.MANAGE, "renew": qr.MANAGE, "destroy": qr.MANAGE}
+
+    def update(self, request, pk=None):
+        issued = qr.issue(int(pk), actor=request.actor)
+        text = qr.link_text(f"{request.scheme}://{request.get_host()}", issued.code)
+        return Response({"svg": qr.qr_svg(text), "expires_at": issued.link.expires_at,
+                         "username": issued.link.member.username})
+
+    @action(detail=True, methods=["post"])
+    def renew(self, request, pk=None):
+        return Response({"expires_at": qr.renew(int(pk), actor=request.actor).expires_at})
+
+    def destroy(self, request, pk=None):
+        qr.cancel(int(pk), actor=request.actor)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AppDeviceViewSet(viewsets.GenericViewSet):
+    required_permissions = {"destroy": qr.MANAGE}
+
+    def destroy(self, request, pk=None):
+        devices.revoke(int(pk), actor=request.actor)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 router = SimpleRouter()
 router.register("logins", AppLoginViewSet, basename="app-login")
+router.register("qr", AppQrViewSet, basename="app-qr")
+router.register("devices", AppDeviceViewSet, basename="app-device")
 urlpatterns = router.urls

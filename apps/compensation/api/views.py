@@ -8,30 +8,18 @@ from apps.compensation.models import (
     ItemFrequency,
     PayItem,
     PayItemAssignment,
-    PayItemBasis,
-    PayItemKind,
 )
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
-from apps.employees.api.targets import TargetFields
+from apps.employees.api.serializers import TargetFields
 
-
-class PayItemSerializer(serializers.ModelSerializer):
-    kind_label = serializers.CharField(source="get_kind_display", read_only=True)
-    basis_label = serializers.CharField(source="get_basis_display", read_only=True)
-
-    class Meta:
-        model = PayItem
-        fields = ["id", "code", "name", "kind", "kind_label", "basis", "basis_label", "taxable",
-                  "is_active"]
-
-
-class PayItemWriteSerializer(serializers.Serializer):
-    code = serializers.IntegerField(min_value=1, max_value=99999)
-    name = serializers.CharField(max_length=120)
-    kind = serializers.ChoiceField(choices=PayItemKind.choices)
-    basis = serializers.ChoiceField(choices=PayItemBasis.choices, default=PayItemBasis.FIXED)
-    taxable = serializers.BooleanField(default=False)
+from .serializers import (
+    AssignmentSerializer,
+    CancelSerializer,
+    EndSerializer,
+    PayItemSerializer,
+    PayItemWriteSerializer,
+)
 
 
 class PayItemViewSet(ActivateMixin, ServiceViewSet):
@@ -58,16 +46,6 @@ class PayItemViewSet(ActivateMixin, ServiceViewSet):
         return services.set_pay_item_active(pk, active, actor=actor)
 
 
-class AssignmentSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source="employee.name", read_only=True)
-    item_name = serializers.CharField(source="item.name", read_only=True)
-
-    class Meta:
-        model = PayItemAssignment
-        fields = ["id", "employee", "employee_name", "item", "item_name", "frequency", "amount",
-                  "starts_on", "ends_on", "note", "batch", "status"]
-
-
 class AssignmentWriteSerializer(TargetFields):
     item_id = serializers.IntegerField()
     frequency = serializers.ChoiceField(choices=ItemFrequency.choices)
@@ -75,14 +53,6 @@ class AssignmentWriteSerializer(TargetFields):
     starts_on = serializers.DateField()
     ends_on = serializers.DateField(allow_null=True, required=False, default=None)
     note = serializers.CharField(max_length=300, allow_blank=True, default="")
-
-
-class CancelSerializer(serializers.Serializer):
-    whole_batch = serializers.BooleanField(default=False)
-
-
-class EndSerializer(serializers.Serializer):
-    ends_on = serializers.DateField()
 
 
 class AssignmentViewSet(EmployeeRowsViewSet):

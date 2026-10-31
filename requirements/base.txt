@@ -6,6 +6,7 @@ django-filter==26.2
 drf-spectacular==0.30.0
 psycopg[binary]==3.3.6
 django-environ==0.14.0
+segno==1.6.6  # draws the QR codes for signing in to the app
 argon2-cffi==25.1.0
 cryptography==50.0.2
 phonenumbers==9.0.42

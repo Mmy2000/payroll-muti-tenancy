@@ -64,6 +64,9 @@ contract for any other client. This page describes the contract as implemented (
       return Response(VoucherSerializer(voucher).data, status=201)
   ```
 
+- **Serializers live in `serializers.py`,** next to the views (`api/serializers.py`, or the app's
+  `serializers.py` in an app with a single `api.py`), never in a view file. `api/fields.py` holds
+  reusable field types. `tests/test_repo_hygiene.py` enforces this.
 - **No business logic in the view or serializer.** Field-level shape checks belong in the
   serializer (type, required, max length). Business rules belong in the service.
 - **Decimals:** clients send them as strings (`"18392.85"`). The renderer writes every Decimal

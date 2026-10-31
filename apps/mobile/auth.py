@@ -18,12 +18,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.iam.authz import build_actor
 from apps.iam.models import Membership, MembershipStatus
 
+from . import devices
+
 TENANT_CLAIM = "tid"
+DEVICE_CLAIM = "did"  # the phone's record (apps/mobile/devices.py), when it named itself
 
 
-def tokens_for(membership) -> dict:
+def tokens_for(membership, device_pk: int | None = None) -> dict:
     refresh = RefreshToken.for_user(membership.user)
     refresh[TENANT_CLAIM] = membership.tenant_id
+    if device_pk is not None:
+        refresh[DEVICE_CLAIM] = device_pk
     return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
 
@@ -51,6 +56,9 @@ class AppTokenAuthentication(JWTAuthentication):
         check_tenant(token, request._request)
         membership = active_membership(user)
         if membership is None:
+            raise AuthenticationFailed("User not found", code="user_not_found")
+        device_pk = token.get(DEVICE_CLAIM)
+        if device_pk is not None and not devices.is_allowed(device_pk):
             raise AuthenticationFailed("User not found", code="user_not_found")
         request._request.membership = membership
         request._request.actor = build_actor(membership)

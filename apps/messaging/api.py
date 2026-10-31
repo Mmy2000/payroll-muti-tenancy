@@ -1,28 +1,13 @@
 """The browser's API for WhatsApp: the link (start, look, unlink), the wording, a test, sending
 a run's payslips, and sending a failed message again."""
 
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.routers import SimpleRouter
 
 from . import services
-
-
-class WordingSerializer(serializers.Serializer):
-    payslip_message = serializers.CharField(max_length=2000)
-    gap_seconds = serializers.IntegerField(default=10)
-
-
-class TestSerializer(serializers.Serializer):
-    phone = serializers.CharField(max_length=30)
-
-
-class PayslipsSerializer(serializers.Serializer):
-    run_id = serializers.IntegerField()
-    slip_ids = serializers.ListField(child=serializers.IntegerField(), required=False,
-                                     default=list)
-    again = serializers.BooleanField(default=False)
+from .serializers import PayslipsSerializer, TestSerializer, WordingSerializer
 
 
 def _valid(serializer_class, data) -> dict:

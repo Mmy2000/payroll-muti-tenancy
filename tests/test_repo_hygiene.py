@@ -1,3 +1,4 @@
+import ast
 import re
 from pathlib import Path
 
@@ -36,6 +37,22 @@ def test_every_search_form_answers_as_you_type():
         for tag in re.findall(r"<form\b[^>]*>", path.read_text(encoding="utf-8")):
             if 'method="get"' in tag and "data-live-filter" not in tag:
                 offenders.append(f"{path.relative_to(ROOT)}: {tag[:60]}")
+    assert offenders == []
+
+
+def test_serializers_live_in_serializers_py():
+    """A view handles the request; the shape of the data has its own file. `fields.py` is the
+    one other home: reusable field types, not serializers."""
+    offenders = []
+    for path in ROOT.joinpath("apps").rglob("*.py"):
+        parts = path.relative_to(ROOT).parts
+        if path.name in ("serializers.py", "fields.py") or {"tests", "migrations"} & set(parts):
+            continue
+        for node in ast.parse(path.read_text(encoding="utf-8")).body:
+            if isinstance(node, ast.ClassDef) and any(
+                    "Serializer" in ast.unparse(base) or "serializers." in ast.unparse(base)
+                    for base in node.bases):
+                offenders.append(f"{path.relative_to(ROOT)}: {node.name}")
     assert offenders == []
 
 

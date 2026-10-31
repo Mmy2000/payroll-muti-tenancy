@@ -12,6 +12,8 @@ from apps.core.media import ImageUploadInput, replace_file, validate_image
 from apps.iam.authz import permission_required
 from apps.org.models import TenantProfile
 
+QR_MOST_MINUTES = 7 * 24 * 60
+
 
 class CompanyForm(forms.Form):
     display_name = forms.CharField(label=_("Name on screens and receipts"), max_length=200,
@@ -25,6 +27,11 @@ class CompanyForm(forms.Form):
         widget=ImageUploadInput(attrs={"class": "form-file"}),
         help_text=_("PNG, JPEG, WEBP, GIF or ICO, up to 2 MB. A square or wide image on a "
                     "transparent background works best."))
+    app_qr_minutes = forms.IntegerField(
+        label=_("A sign-in QR works for (minutes)"), min_value=1, max_value=QR_MOST_MINUTES,
+        widget=forms.NumberInput(attrs={"class": "form-input num w-full text-start"}),
+        help_text=_("From 1 minute to 1 week (10080). Shorter is safer: a QR signs in whoever "
+                    "scans it first."))
 
 
 @permission_required("org.settings.manage")
@@ -32,10 +39,15 @@ def company(request):
     profile = TenantProfile.objects.get()
     form = CompanyForm(request.POST or None, request.FILES or None, initial={
         "display_name": profile.display_name, "accent": profile.accent,
-        "logo": profile.logo or None})
+        "logo": profile.logo or None, "app_qr_minutes": profile.app_qr_minutes})
+    uses_the_app = request.actor.can("mobile.qr.manage")
+    if not uses_the_app:
+        del form.fields["app_qr_minutes"]
     if request.method == "POST" and form.is_valid():
         profile.display_name = form.cleaned_data["display_name"]
         profile.accent = form.cleaned_data["accent"]
+        if uses_the_app:
+            profile.app_qr_minutes = form.cleaned_data["app_qr_minutes"]
         replace_file(profile, "logo", form.cleaned_data["logo"])
         profile.save()
         messages.success(request, _("Saved."))

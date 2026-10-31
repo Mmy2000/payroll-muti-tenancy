@@ -1,6 +1,5 @@
 """The app's objects as it reads them (docs/mobile-api.md "Objects"), and what it sends,
 validated with DRF's own messages as PayRole's were."""
-
 from __future__ import annotations
 
 import base64
@@ -8,11 +7,14 @@ import binascii
 import re
 
 from django.utils import timezone
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from apps.employees.models import Weekday
 
-from . import contract, services
+from . import contract, devices, services
+from .auth import DEVICE_CLAIM, TENANT_CLAIM, active_membership
 from .contract import day, decimal, moment
 
 DAY_CODES = {Weekday.MONDAY: "mo", Weekday.TUESDAY: "tu", Weekday.WEDNESDAY: "we",
@@ -109,9 +111,17 @@ def profile(person, request) -> dict:
 # --- what the app sends -------------------------------------------------------------------------
 
 
+class QrLoginSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=100)
+    device_id = serializers.CharField(max_length=100, required=False, allow_blank=True,
+                                      default="")
+
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
+    device_id = serializers.CharField(max_length=100, required=False, allow_blank=True,
+                                      default="")
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -226,3 +236,30 @@ class TrackBatchSerializer(serializers.Serializer):
         if len(value) > 500:
             raise serializers.ValidationError(contract.TOO_MANY_POINTS)
         return value
+
+
+class TenantRefreshSerializer(TokenRefreshSerializer):
+    """A refresh token works on the client it was issued for, for a member still active."""
+
+    def validate(self, attrs):
+        request = self.context["request"]
+        token = RefreshToken(attrs["refresh"])  # TokenError: "Token is invalid" (401)
+        tenant = getattr(request._request, "tenant", None)
+        if tenant is None or token.get(TENANT_CLAIM) != tenant.id:
+            raise TokenError("Token is invalid")
+        from django.contrib.auth import get_user_model
+
+        user = get_user_model().objects.filter(pk=token.get("user_id")).first()
+        device_pk = token.get(DEVICE_CLAIM)
+        if (user is None or active_membership(user) is None
+                or (device_pk is not None and not devices.is_allowed(device_pk))):
+            raise exceptions.AuthenticationFailed(
+                "No active account found for the given token.")
+        if device_pk is not None:
+            devices.seen(device_pk)
+        return super().validate(attrs)
+
+
+class LoginWriteSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128)

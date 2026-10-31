@@ -72,3 +72,17 @@ class RoleWriteSerializer(serializers.Serializer):
     description = serializers.CharField(max_length=300, required=False, allow_blank=True,
                                         default="")
     permissions = serializers.ListField(child=serializers.CharField(), default=list)
+
+
+class MeSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(source="user.id")
+    display_name = serializers.CharField(source="user.display_name")
+    email = serializers.EmailField(source="user.email", allow_null=True)
+    username = serializers.CharField()
+    tenant = serializers.CharField(source="tenant.slug")
+    default_branch = serializers.IntegerField(source="default_branch_id", allow_null=True)
+
+
+class ShortcutSerializer(serializers.Serializer):
+    screen = serializers.CharField(max_length=80)
+    pinned = serializers.BooleanField()

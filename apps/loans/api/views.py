@@ -1,12 +1,18 @@
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.routers import SimpleRouter
 
-from apps.core.api.fields import MonthField
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.loans import advances, services
-from apps.loans.models import Advance, Loan, LoanInstallment
+from apps.loans.models import Advance, Loan
+
+from .serializers import (
+    AdvanceSerializer,
+    AdvanceWriteSerializer,
+    LoanSerializer,
+    LoanWriteSerializer,
+)
 
 
 def _valid(serializer_class, data) -> dict:
@@ -16,23 +22,6 @@ def _valid(serializer_class, data) -> dict:
 
 
 # --- advances ------------------------------------------------------------------------------
-
-
-class AdvanceSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source="employee.name", read_only=True)
-    status_label = serializers.CharField(source="get_status_display", read_only=True)
-
-    class Meta:
-        model = Advance
-        fields = ["id", "employee", "employee_name", "date", "amount", "reason", "status",
-                  "status_label"]
-
-
-class AdvanceWriteSerializer(serializers.Serializer):
-    employee_id = serializers.IntegerField()
-    date = serializers.DateField()
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
-    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
 
 
 class AdvanceViewSet(EmployeeRowsViewSet):
@@ -55,32 +44,6 @@ class AdvanceViewSet(EmployeeRowsViewSet):
 
 
 # --- loans ---------------------------------------------------------------------------------
-
-
-class InstallmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LoanInstallment
-        fields = ["id", "number", "due_month", "amount", "status"]
-
-
-class LoanSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source="employee.name", read_only=True)
-    status_label = serializers.CharField(source="get_status_display", read_only=True)
-    installments = InstallmentSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Loan
-        fields = ["id", "employee", "employee_name", "granted_on", "amount", "reason", "status",
-                  "status_label", "installments"]
-
-
-class LoanWriteSerializer(serializers.Serializer):
-    employee_id = serializers.IntegerField()
-    granted_on = serializers.DateField()
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
-    installments = serializers.IntegerField(min_value=1, max_value=services.MAX_INSTALLMENTS)
-    first_month = MonthField()
-    reason = serializers.CharField(max_length=300, allow_blank=True, default="")
 
 
 class LoanViewSet(EmployeeRowsViewSet):

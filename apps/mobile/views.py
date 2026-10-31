@@ -22,21 +22,20 @@ from rest_framework import exceptions, permissions, status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView, exception_handler
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from apps.employees.models import Employee
 from apps.iam import throttle
 from apps.iam.authz import build_actor
 from apps.iam.catalog import WILDCARD
+from apps.iam.signals import client_ip
 from apps.notifications import services as notifications
 
-from . import contract, services
+from . import contract, devices, qr, services
 from . import serializers as s
-from .auth import TENANT_CLAIM, AppTokenAuthentication, active_membership, tokens_for
+from .auth import DEVICE_CLAIM, AppTokenAuthentication, active_membership, tokens_for
 from .contract import AppError
-from .models import TrackSession
+from .models import DeviceMethod, TrackSession
 
 SIGNIN, MONITOR = "mobile.signin", "mobile.monitor.track"
 
@@ -110,6 +109,16 @@ def _employee_or_none(member):
 # --- signing in ------------------------------------------------------------------------------
 
 
+def _signed_in(member, device, request) -> dict:
+    """The answer to a sign-in, by password or by QR."""
+    user, actor = member.user, build_actor(member)
+    user.last_login = timezone.now()
+    user.save(update_fields=["last_login"])
+    return {**tokens_for(member, device.pk if device else None), "username": member.username,
+            "role": _role(actor), "is_superuser": actor.can(MONITOR),
+            "employee": s.employee(_employee_or_none(member), request)}
+
+
 class LoginView(EnglishMixin, APIView):
     authentication_classes = ()
     permission_classes = ()
@@ -127,34 +136,32 @@ class LoginView(EnglishMixin, APIView):
             raise exceptions.AuthenticationFailed(  # DRF's own: no "code", as PayRole
                 "No active account found with the given credentials")
         throttle.succeeded(request._request, username)
-        user.last_login = timezone.now()
-        user.save(update_fields=["last_login"])
-        person = _employee_or_none(member)
-        return Response({**tokens_for(member), "username": member.username,
-                         "role": _role(actor), "is_superuser": actor.can(MONITOR),
-                         "employee": s.employee(person, request)})
+        device = devices.sign_in(member, data["device_id"], DeviceMethod.PASSWORD)
+        return Response(_signed_in(member, device, request))
 
 
-class TenantRefreshSerializer(TokenRefreshSerializer):
-    """A refresh token works on the client it was issued for, for a member still active."""
+class QrLoginView(EnglishMixin, APIView):
+    """The app's scan: a one-time code for the same answer as a login (apps/mobile/qr.py)."""
 
-    def validate(self, attrs):
-        request = self.context["request"]
-        token = RefreshToken(attrs["refresh"])  # TokenError: "Token is invalid" (401)
-        tenant = getattr(request._request, "tenant", None)
-        if tenant is None or token.get(TENANT_CLAIM) != tenant.id:
-            raise TokenError("Token is invalid")
-        from django.contrib.auth import get_user_model
+    authentication_classes = ()
+    permission_classes = ()
 
-        user = get_user_model().objects.filter(pk=token.get("user_id")).first()
-        if user is None or active_membership(user) is None:
-            raise exceptions.AuthenticationFailed(
-                "No active account found for the given token.")
-        return super().validate(attrs)
+    def post(self, request):
+        data = _valid(s.QrLoginSerializer, request.data)
+        tries = f"qr:{client_ip(request._request)}"
+        if throttle.locked_for(request._request, tries):
+            raise AppError("qr_locked", status=429)
+        try:
+            member, device = qr.redeem(data["code"], data["device_id"])
+        except AppError as error:
+            if error.code == "qr_invalid":  # guessing; an old QR scanned by mistake isn't
+                throttle.failed(request._request, tries)
+            raise
+        return Response(_signed_in(member, device, request))
 
 
 class RefreshView(EnglishMixin, TokenRefreshView):
-    serializer_class = TenantRefreshSerializer
+    serializer_class = s.TenantRefreshSerializer
 
 
 class VerifyView(EnglishMixin, TokenVerifyView):
@@ -178,7 +185,8 @@ class ChangePasswordView(AppView):
                            contract.MESSAGES["weak_password"]) from None
         user.set_password(data["new_password"])
         user.save(update_fields=["password"])
-        return Response({"detail": contract.PASSWORD_CHANGED, **tokens_for(self.member)})
+        return Response({"detail": contract.PASSWORD_CHANGED,
+                         **tokens_for(self.member, request.auth.get(DEVICE_CLAIM))})
 
 
 # --- the employee ----------------------------------------------------------------------------

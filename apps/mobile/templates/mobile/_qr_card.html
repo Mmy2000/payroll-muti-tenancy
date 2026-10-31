@@ -1,0 +1,54 @@
+{% load i18n static ui %}{# Signing in to the app by QR, and the phones signed in (apps/mobile/qr.py, devices.py). #}
+{% if allowed %}
+<section class="card" data-app-qr data-endpoint="{% url 'app-qr-detail' employee.pk %}">
+  <div class="card-body space-y-3">
+    <div class="flex items-start gap-3">
+      <span class="stat-icon">{% icon "qr-code" "size-[18px]" %}</span>
+      <div class="min-w-0">
+        <h2 class="text-base font-semibold text-slate-900">{% translate "Sign in by QR" %}</h2>
+        <p class="mt-0.5 text-xs text-slate-500">{% translate "The employee scans it with the app: no address, no password. It works once." %}</p>
+      </div>
+    </div>
+
+    <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-qr-error role="alert"></div>
+
+    <div class="space-y-3" data-qr-shown hidden>
+      <div class="mx-auto w-fit rounded-xl bg-white p-2 ring-1 ring-slate-200 [&_svg]:size-52" data-qr-image></div>
+      <p class="text-center text-sm text-slate-600">{% translate "Expires in" %} <span class="num font-semibold text-slate-900" data-qr-left></span></p>
+      <p class="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{% translate "Whoever scans it first signs in as this employee. Show it in person: don't send a photo of it." %}</p>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" class="btn btn-secondary" data-qr-renew>{% translate "Renew" %}</button>
+        <button type="button" class="btn btn-secondary" data-qr-cancel>{% translate "Cancel it" %}</button>
+      </div>
+    </div>
+
+    <p class="text-sm text-slate-600" data-qr-waiting{% if not active %} hidden{% endif %}>
+      {% if active %}{% blocktranslate trimmed with time=active.expires_at|date:"SHORT_DATETIME_FORMAT" %}A QR was given out and works until {{ time }}. It can only be shown once: to show one again, generate a new one.{% endblocktranslate %}{% endif %}
+    </p>
+    <button type="button" class="btn btn-primary w-full" data-qr-generate>{% icon "qr-code" "size-4" %}<span data-qr-generate-label>{% if active %}{% translate "Generate a new QR" %}{% else %}{% translate "Generate a QR" %}{% endif %}</span></button>
+    <button type="button" class="btn btn-ghost w-full text-xs" data-qr-cancel{% if not active %} hidden{% endif %}>{% translate "Cancel the QR" %}</button>
+
+    {% if devices %}
+    <div class="border-t border-slate-100 pt-3">
+      <p class="mb-2 text-xs font-medium text-slate-500">{% translate "Phones signed in" %}</p>
+      <ul class="space-y-2">
+        {% for device in devices %}
+        <li class="flex items-center gap-3 text-sm">
+          <span class="grid size-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">{% icon "smartphone" "size-4" %}</span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-slate-800">{{ device.get_method_display }}</span>
+            <span class="num block text-[11px] text-slate-400">{{ device.signed_in_at|date:"SHORT_DATETIME_FORMAT" }}</span>
+          </span>
+          <form data-api-form data-method="DELETE" data-endpoint="{% url 'app-device-detail' device.pk %}" data-success="{% translate 'The phone was signed out.' %}">
+            <button type="submit" class="btn btn-ghost text-xs">{% translate "Sign out" %}</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+  <template data-qr-words data-new="{% translate 'Generate a new QR' %}" data-first="{% translate 'Generate a QR' %}" data-expired="{% translate 'This QR has expired.' %}"></template>
+</section>
+<script type="module" src="{% static 'mobile/js/app_qr.js' %}"></script>
+{% endif %}

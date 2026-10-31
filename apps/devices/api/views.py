@@ -1,6 +1,6 @@
 """The browser's API for fingerprint devices: setting them up, asking them things, linking PINs."""
 
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.routers import SimpleRouter
@@ -8,23 +8,7 @@ from rest_framework.routers import SimpleRouter
 from apps.devices import services
 from apps.devices.models import DeviceUser
 
-
-class DeviceWriteSerializer(serializers.Serializer):
-    serial = serializers.CharField(max_length=32)
-    name = serializers.CharField(max_length=60)
-    branch_id = serializers.IntegerField()
-    is_active = serializers.BooleanField(default=True)
-
-
-class AskSerializer(serializers.Serializer):
-    kind = serializers.ChoiceField(choices=[(k, k) for k in (
-        services.TEST, services.PULL_USERS, services.PULL_PUNCHES)])
-    start = serializers.DateField(required=False, allow_null=True, default=None)
-    end = serializers.DateField(required=False, allow_null=True, default=None)
-
-
-class LinkSerializer(serializers.Serializer):
-    employee_id = serializers.IntegerField(allow_null=True)
+from .serializers import AskSerializer, DeviceWriteSerializer, LinkSerializer
 
 
 def _valid(serializer_class, data) -> dict:

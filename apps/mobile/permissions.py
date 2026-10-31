@@ -7,6 +7,7 @@ from apps.platform.tenants.features import ATTENDANCE, Feature, register_feature
 register_permissions(_("Mobile app"), [
     ("mobile.signin", _("Use the mobile app")),
     ("mobile.monitor.track", _("Follow employees' routes and live positions")),
+    ("mobile.qr.manage", _("Give employees a QR to sign in, and sign their phones out")),
 ])
 
 register_feature(Feature(

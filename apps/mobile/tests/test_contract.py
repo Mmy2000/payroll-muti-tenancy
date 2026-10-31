@@ -397,7 +397,7 @@ def test_every_app_endpoint_needs_the_app():
 
     from apps.mobile.views import CanUseApp
 
-    public = {"api_login", "api_refresh", "api_verify"}
+    public = {"api_login", "api_qr_login", "api_refresh", "api_verify"}
     loose = []
     for pattern in get_resolver().url_patterns:
         if str(pattern.pattern) != "api/v1/":

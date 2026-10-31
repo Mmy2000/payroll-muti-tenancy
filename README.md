@@ -152,7 +152,10 @@ From "PayRole — the four gaps" (decisions of 2026-10-29).
   work day (night shifts work); leave is a leave request. SimpleJWT tokens carry the client
   (`tid`) and are refused on another client's host. The fingerprint proof (HMAC, one phone per
   employee, nonces), GPS tracking and the geofence (branch location and radius) are features.
-  An employee gets a login from their page (the built-in "Employee (app)" role).
+  An employee gets a login from their page (the built-in "Employee (app)" role), or a QR that
+  signs the app in with no address and no password (`apps/mobile/qr.py`: a one-time code, of
+  which only the hash is kept, for the minutes set on the company page). Each phone has a record
+  (`apps/mobile/devices.py`), and signing one out takes effect at once.
 - **Notifications** (`apps/notifications`): what an employee or a decider is told (leave asked
   for and decided, hourly leave, incentives, penalties, advances, loans, pay paid), in PayRole's
   words; the app polls them.
