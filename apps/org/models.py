@@ -92,30 +92,49 @@ class Branch(TenantScopedModel):
 
 
 class Department(TenantScopedModel):
-    """A group of employees in one branch (PayRole: `Enp.Pfn`, "المجموعة", with its `br1`). The
-    same name may be used in several branches: each is its own department, with its own code."""
+    """A department of the company (PayRole: `Enp.Pfn`, "المجموعة"), with one code and one name,
+    in the branches it operates in. Its people in a branch are the employees of that branch and
+    this department, so each branch has its own."""
 
-    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="departments")
+    branches = models.ManyToManyField(Branch, through="DepartmentBranch",
+                                      related_name="departments")
     code = models.PositiveIntegerField()
     name = models.CharField(max_length=120)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ["branch__code", "code"]
+        ordering = ["code"]
         constraints = [
-            models.UniqueConstraint(fields=["tenant", "branch", "code"],
-                                    name="org_department_code_uniq"),
-            models.UniqueConstraint(fields=["tenant", "branch", "name"],
-                                    name="org_department_name_uniq"),
+            models.UniqueConstraint(fields=["tenant", "code"], name="org_department_code_uniq"),
+            models.UniqueConstraint(fields=["tenant", "name"], name="org_department_name_uniq"),
         ]
 
     def __str__(self):
         return self.name
 
     @property
-    def label(self) -> str:
-        """For lists across branches, where two departments may have the same name."""
-        return f"{self.name} · {self.branch.name}"
+    def branch_ids(self) -> list[int]:
+        return [row.branch_id for row in self.placements.all()]
+
+    @property
+    def parent_ids(self) -> str:
+        """For a picker's `data-parent`: the branches this department can be chosen under."""
+        return " ".join(str(pk) for pk in self.branch_ids)
+
+
+class DepartmentBranch(TenantScopedModel):
+    """A branch a department operates in."""
+
+    department = models.ForeignKey(Department, on_delete=models.CASCADE,
+                                   related_name="placements")
+    branch = models.ForeignKey(Branch, on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        ordering = ["branch__code"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "department", "branch"],
+                                    name="org_departmentbranch_uniq"),
+        ]
 
 
 class Position(TenantScopedModel):

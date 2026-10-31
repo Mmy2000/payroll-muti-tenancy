@@ -37,7 +37,7 @@
       <label class="sm:w-48"><span class="form-label">{{ spec.label }}</span>
         <select name="{{ spec.key }}" class="form-input" data-depends-on="branch">
           <option value="">{% translate "All departments" %}</option>
-          {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.branch_id }}" {% if value.pk == department.pk %}selected{% endif %}>{{ department.label }}</option>{% endfor %}
+          {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.parent_ids }}" {% if value.pk == department.pk %}selected{% endif %}>{{ department.label }}</option>{% endfor %}
         </select></label>
     {% elif spec.kind == "employee" %}
       <label class="sm:w-64"><span class="form-label">{{ spec.label }}</span>

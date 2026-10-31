@@ -158,7 +158,8 @@ def give(data: AdjustmentInput, *, approve: bool = False, actor=None) -> Adjustm
         batch = AdjustmentBatch.objects.create(
             kind=found.kind, adjustment_type=found, date=data.date, method=method.key,
             quantity=data.quantity, reason=data.reason.strip(), target_kind=data.target.kind,
-            target_id=data.target.id, created_by=getattr(actor, "user", None))
+            target_id=data.target.id, target_branch_id=data.target.branch_id,
+            created_by=getattr(actor, "user", None))
         people = resolve(data.target, on=data.date, actor=actor, permission=manage)
         Adjustment.objects.bulk_create([_row(batch, e, method, data.quantity, actor)
                                         for e in people])

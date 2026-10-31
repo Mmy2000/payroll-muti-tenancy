@@ -174,10 +174,13 @@ class TargetFields(serializers.Serializer):
 
     target_kind = serializers.ChoiceField(choices=[(k, k) for k in KINDS])
     target_id = serializers.IntegerField()
+    target_department_branch = serializers.IntegerField(required=False, allow_null=True,
+                                                        default=None)
 
     @staticmethod
     def target(data: dict) -> Target:
-        return Target(data.pop("target_kind"), data.pop("target_id"))
+        return Target(data.pop("target_kind"), data.pop("target_id"),
+                      data.pop("target_department_branch"))
 
 
 class GroupFields(serializers.Serializer):
@@ -189,13 +192,15 @@ class GroupFields(serializers.Serializer):
     employee_ids = serializers.ListField(child=serializers.IntegerField(), required=False,
                                          default=list, max_length=2000)
     group_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    group_department_branch = serializers.IntegerField(required=False, allow_null=True,
+                                                       default=None)
     save = serializers.BooleanField(default=False)
     skip_failed = serializers.BooleanField(default=False)
 
     @staticmethod
     def group(data: dict) -> Group:
         return Group(data.pop("group_kind"), tuple(data.pop("employee_ids")),
-                     data.pop("group_id"))
+                     data.pop("group_id"), data.pop("group_department_branch"))
 
     @staticmethod
     def run_options(data: dict) -> dict:

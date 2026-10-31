@@ -8,6 +8,7 @@ TABLES = {
     "org.TenantProfile": _("Company"),
     "org.Branch": _("Branch"),
     "org.Department": _("Department"),
+    "org.DepartmentBranch": _("Branch of a department"),
     "iam.Membership": _("User"),
     "iam.Role": _("Role"),
     "iam.RolePermission": _("Role permission"),
@@ -107,7 +108,8 @@ COLUMNS = {
     "ends_on": _("To"), "batch": _("Given together"), "batch_id": _("Batch"),
     "granted_on": _("Granted on"), "loan_id": _("Loan"), "due_month": _("Due month"),
     "adjustment_type_id": _("Type"), "target_kind": _("Given to"),
-    "target_id": _("Given to (id)"), "approved_at": _("Approved at"),
+    "target_id": _("Given to (id)"), "target_branch_id": _("In the branch"),
+    "scope_branch_id": _("In the branch"), "approved_at": _("Approved at"),
     "approved_by_id": _("Approved by"), "corrects_id": _("Corrects"),
     "change_reason": _("Why it changed"), "revision": _("Revision"),
     # payroll

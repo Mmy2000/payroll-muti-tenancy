@@ -11,15 +11,19 @@ class BranchSerializer(serializers.ModelSerializer):
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
-    branch_name = serializers.CharField(source="branch.name", read_only=True)
+    branches = serializers.ListField(source="branch_ids", read_only=True)
+    branch_names = serializers.SerializerMethodField()
 
     class Meta:
         model = Department
-        fields = ["id", "branch", "branch_name", "code", "name", "is_active"]
+        fields = ["id", "branches", "branch_names", "code", "name", "is_active"]
+
+    def get_branch_names(self, department) -> list[str]:
+        return [row.branch.name for row in department.placements.all()]
 
 
 class PositionSerializer(serializers.ModelSerializer):
-    department_name = serializers.CharField(source="department.label", default="",
+    department_name = serializers.CharField(source="department.name", default="",
                                             read_only=True)
 
     class Meta:
@@ -44,7 +48,7 @@ class BranchWriteSerializer(serializers.Serializer):
 
 
 class DepartmentWriteSerializer(serializers.Serializer):
-    branch = serializers.IntegerField()
+    branches = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
     code = serializers.IntegerField(min_value=1, max_value=9999, required=False,
                                     allow_null=True, default=None)
     name = serializers.CharField(max_length=120)

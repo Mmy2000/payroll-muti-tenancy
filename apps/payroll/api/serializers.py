@@ -59,6 +59,7 @@ class RunWriteSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=300, allow_blank=True, default="")
     scope = serializers.ChoiceField(ScopeKind.choices, default=ScopeKind.ALL)
     scope_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    scope_branch_id = serializers.IntegerField(required=False, allow_null=True, default=None)
     note = serializers.CharField(max_length=300, allow_blank=True, default="")
 
 

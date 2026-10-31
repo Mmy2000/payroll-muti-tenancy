@@ -42,8 +42,8 @@ def employees(request):
         request, permission=VIEW, search=("name", "code", "phone", "job_title"),
         search_label=_("Name, code, phone or job"), date_field="",
         choices=[Choice("department", _("Department"), [("", _("All departments"))]
-                        + [(d.pk, d.label) for d in departments], "department_id",
-                        depends_on="branch", parents={d.pk: d.branch_id for d in departments}),
+                        + [(d.pk, d.name) for d in departments], "department_id",
+                        depends_on="branch", parents={d.pk: d.parent_ids for d in departments}),
                  Choice("status", _("Status"), STATUSES, apply=selectors.by_status,
                         value="active")])
     rows = found.apply(selectors.listed_employees(request.actor))

@@ -70,16 +70,16 @@
         {% if branches|length > 1 %}
         <div data-show-when="scope=department">
           <label class="form-label" for="f-department-branch">{% translate "Branch" %}</label>
-          <select id="f-department-branch" name="scope_department_branch" class="form-input">
-            <option value="">—</option>
+          <select id="f-department-branch" name="scope_branch_id" class="form-input" data-empty="null">
+            <option value="">{% translate "All branches" %}</option>
             {% for b in branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}</select>
         </div>
         {% endif %}
         <div data-show-when="scope=department">
           <label class="form-label is-required" for="f-department">{% translate "Department" %}</label>
-          <select id="f-department" name="scope_id" class="form-input" data-depends-on="scope_department_branch">
+          <select id="f-department" name="scope_id" class="form-input" data-depends-on="scope_branch_id">
             <option value="">—</option>
-            {% for d in departments %}<option value="{{ d.pk }}" data-parent="{{ d.branch_id }}">{{ d.name }}</option>{% endfor %}</select>
+            {% for d in departments %}<option value="{{ d.pk }}" data-parent="{{ d.parent_ids }}">{{ d.name }}</option>{% endfor %}</select>
         </div>
         <div class="sm:col-span-2">
           <label class="form-label" for="f-note">{% translate "Note" %}</label>

@@ -139,10 +139,11 @@ export function initDependentSelects(root = document) {
     const parent = select.form?.elements.namedItem(select.dataset.dependsOn);
     if (!parent) return;
     // A choice from the address or the saved record brings its parent with it.
-    const chosen = select.selectedOptions[0]?.dataset.parent;
+    const chosen = select.selectedOptions[0]?.dataset.parent?.split(" ")[0];
     if (chosen && !parent.value) parent.value = chosen;
     const narrow = () => {
-      filterOptions(select, (option) => option.dataset.parent === parent.value);
+      // An option can belong to several parents: a department in several branches.
+      filterOptions(select, (option) => (option.dataset.parent ?? "").split(" ").includes(parent.value));
       lock(select, !parent.value);
     };
     parent.addEventListener("change", narrow);

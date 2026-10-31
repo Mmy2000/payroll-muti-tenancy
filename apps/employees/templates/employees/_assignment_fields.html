@@ -11,7 +11,7 @@
     <label class="form-label" for="{{ id }}-department">{% translate "Department" %}</label>
     <select id="{{ id }}-department" name="department_id" class="form-input" data-empty="null" data-depends-on="branch_id">
       <option value="">—</option>
-      {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.branch_id }}" {% if employee.department_id == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
+      {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.parent_ids }}" {% if employee.department_id == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
     </select>
     <p class="form-error" data-error-for="department_id"></p>
   </div>

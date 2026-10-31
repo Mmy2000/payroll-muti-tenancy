@@ -50,9 +50,13 @@ def branch_edit(request, pk):
 @permission_required(permissions.DEPARTMENT_VIEW)
 def departments(request):
     found = ListQuery(request, permission=permissions.DEPARTMENT_VIEW, search=("name",),
-                      search_label=_("Department name"), date_field="")
-    rows = found.apply(selectors.visible_departments(request.actor))
-    return render(request, "org/departments.html", {"filters": found, "page": found.page(rows)})
+                      search_label=_("Department name"), date_field="",
+                      branch_field=selectors.in_branches)
+    page = found.page(found.apply(selectors.visible_departments(request.actor)))
+    for department in page.object_list:
+        department.can_edit = selectors.covers(request.actor, department,
+                                               permissions.DEPARTMENT_MANAGE)
+    return render(request, "org/departments.html", {"filters": found, "page": page})
 
 
 def _department_form(request, department=None):
@@ -60,8 +64,9 @@ def _department_form(request, department=None):
     return render(request, "org/department_form.html", {
         "department": department,
         "in_use": department is not None and department_in_use(department),
-        "branches": selectors.active_branches_by_code(allowed),
-        "chosen_branch": department.branch_id if department else request.GET.get("branch", ""),
+        "branches": selectors.branches_for_department(allowed, department),
+        "chosen_branches": (set(department.branch_ids) if department
+                            else {int(pk) for pk in request.GET.getlist("branch") if pk.isdigit()}),
         "endpoint": (reverse("department-detail", args=[department.pk]) if department
                      else reverse("department-list")),
         "method": "PUT" if department else "POST",
@@ -76,7 +81,8 @@ def department_new(request):
 @permission_required(permissions.DEPARTMENT_MANAGE)
 def department_edit(request, pk):
     department = selectors.visible_department(request.actor, pk, permissions.DEPARTMENT_MANAGE)
-    if department is None:
+    if department is None or not selectors.covers(request.actor, department,
+                                                  permissions.DEPARTMENT_MANAGE):
         raise Http404
     return _department_form(request, department)
 

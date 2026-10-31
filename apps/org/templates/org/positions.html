@@ -23,7 +23,7 @@
       {% for position in page.object_list %}
         <tr>
           <td class="font-medium text-slate-900">{{ position.name }}</td>
-          <td class="text-slate-600">{% if position.department %}{{ position.department.label }}{% else %}—{% endif %}</td>
+          <td class="text-slate-600">{% if position.department %}{{ position.department.name }}{% else %}—{% endif %}</td>
           <td>{% if position.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}</td>
           <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'position-edit' position.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>

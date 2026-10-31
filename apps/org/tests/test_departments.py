@@ -1,19 +1,26 @@
-"""Each department belongs to one branch, as in PayRole (`Pfn.br1`): a branch has its own
-departments, and an employee's department is in the employee's branch."""
+"""A department has one code and one name, and operates in several branches. Each branch has its
+own employees in it: an employee's department must be in their branch."""
+
+from datetime import date
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.core.errors import PermissionDenied, ValidationError
 from apps.core.tenancy import tenant_context
-from apps.employees.services import employees
+from apps.employees.models import Employee
+from apps.employees.selectors import DEPARTMENT, Group, Target, resolve, resolve_group
+from apps.iam.authz import build_actor
+from apps.iam.models import Membership
 from apps.org import services
-from apps.org.models import Branch
+from apps.org.models import Branch, Department
 from conftest import login
 
 from .. import selectors
 
 pytestmark = pytest.mark.django_db
+EMPLOYEES = "employees.employee.manage"
 
 
 @pytest.fixture
@@ -22,114 +29,145 @@ def branches(tenant_a):
         return Branch.objects.get(code=1), Branch.objects.create(code=2, name="Alexandria")
 
 
-def _save(branch, name, code=None, **kwargs):
+def _save(name, *where, code=None, **kwargs):
     return services.save_department(
-        services.DepartmentInput(branch_id=branch.pk, code=code, name=name), **kwargs)
+        services.DepartmentInput(branch_ids=tuple(b.pk for b in where), code=code, name=name),
+        **kwargs)
 
 
-def test_codes_and_names_are_each_branchs_own(tenant_a, branches):
+def _actor(member):
+    return build_actor(Membership.objects.get(pk=member.pk))
+
+
+def test_one_department_with_one_code_in_several_branches(tenant_a, branches):
     head, alexandria = branches
     with tenant_context(tenant_a.id):
-        first = _save(head, "Sales")
-        second = _save(head, "Accounts")
-        assert (first.code, second.code) == (1, 2)  # the branch's next code
-        # The same name and code are another department in another branch.
-        other = _save(alexandria, "Sales", code=1)
-        assert other.pk != first.pk and other.label == "Sales · Alexandria"
-
-        with pytest.raises(ValidationError) as refused:
-            _save(head, "Sales")
-        assert "name" in refused.value.fields
-        with pytest.raises(ValidationError) as refused:
-            _save(head, "Stores", code=1)
-        assert "code" in refused.value.fields
+        sales = _save("Sales", head, alexandria)
+        accounts = _save("Accounts", head)
+        assert (sales.code, accounts.code) == (1, 2)
+        assert Department.objects.count() == 2
+        assert set(sales.branch_ids) == {head.pk, alexandria.pk}
+        assert set(head.departments.all()) == {sales, accounts}
+        assert list(alexandria.departments.all()) == [sales]
 
 
-def test_a_department_with_employees_stays_in_its_branch(tenant_a, branches, make_employee):
+def test_code_and_name_are_the_companys(tenant_a, branches):
     head, alexandria = branches
     with tenant_context(tenant_a.id):
-        sales = _save(head, "Sales")
-        empty = _save(head, "Empty")
-    make_employee(tenant_a, 1, department_id=sales.pk)
+        _save("Sales", head)
+        with pytest.raises(ValidationError) as same_name:
+            _save("Sales", alexandria)
+        assert "name" in same_name.value.fields
+        with pytest.raises(ValidationError) as same_code:
+            _save("Stores", alexandria, code=1)
+        assert "code" in same_code.value.fields
+
+
+def test_each_branch_has_its_own_people(tenant_a, branches, make_employee):
+    head, alexandria = branches
     with tenant_context(tenant_a.id):
-        with pytest.raises(ValidationError) as refused:
-            services.save_department(
-                services.DepartmentInput(branch_id=alexandria.pk, name="Sales"),
-                department_id=sales.pk)
-        assert "branch" in refused.value.fields
-        moved = services.save_department(
-            services.DepartmentInput(branch_id=alexandria.pk, name="Empty"),
-            department_id=empty.pk)
-        assert moved.branch_id == alexandria.pk and moved.code == empty.code
+        sales = _save("Sales", head, alexandria)
+    here = make_employee(tenant_a, 1, branch=head, department_id=sales.pk)
+    there = make_employee(tenant_a, 2, branch=alexandria, department_id=sales.pk)
+    day = timezone.localdate()
+    with tenant_context(tenant_a.id):
+        only_here = resolve(Target(DEPARTMENT, sales.pk, head.pk), on=day, permission=EMPLOYEES)
+        assert [person.pk for person in only_here] == [here.pk]
+        everyone = resolve(Target(DEPARTMENT, sales.pk), on=day, permission=EMPLOYEES)
+        assert {person.pk for person in everyone} == {here.pk, there.pk}
+        group = resolve_group(Group(DEPARTMENT, id=sales.pk, branch_id=alexandria.pk), on=day,
+                              permission=EMPLOYEES)
+        assert [person.pk for person in group] == [there.pk]
 
 
 def test_an_employees_department_is_in_their_branch(tenant_a, branches, make_employee):
     head, alexandria = branches
     with tenant_context(tenant_a.id):
-        there = _save(alexandria, "Sales")
-    with pytest.raises(ValidationError) as refused:
-        make_employee(tenant_a, 1, branch=head, department_id=there.pk)
-    assert "department_id" in refused.value.fields
+        there = _save("Sales", alexandria)
+        with pytest.raises(ValidationError):
+            make_employee(tenant_a, 1, branch=head, department_id=there.pk)
     person = make_employee(tenant_a, 2, branch=alexandria, department_id=there.pk)
-
-    # Moved to another branch, the department has to change with them.
     with tenant_context(tenant_a.id):
-        card = employees.EmployeeInput(code=2, name=person.name, branch_id=head.pk,
-                                       hired_on=person.hired_on, department_id=there.pk)
+        assert Employee.objects.get(pk=person.pk).department_id == there.pk
+
+
+def test_a_branch_can_be_added_and_left_if_nobody_works_there(tenant_a, branches, make_employee):
+    head, alexandria = branches
+    with tenant_context(tenant_a.id):
+        sales = _save("Sales", head)
+    make_employee(tenant_a, 1, branch=head, department_id=sales.pk)
+    with tenant_context(tenant_a.id):
+        grown = _save_existing(sales, head, alexandria)
+        assert set(Department.objects.get(pk=grown.pk).branch_ids) == {head.pk, alexandria.pk}
+        _save_existing(sales, head)
+        assert Department.objects.get(pk=sales.pk).branch_ids == [head.pk]
         with pytest.raises(ValidationError) as refused:
-            employees.update_employee(person.pk, card)
-        assert "department_id" in refused.value.fields
+            _save_existing(sales, alexandria)
+        assert "branches" in refused.value.fields
 
 
-def test_a_branch_manager_only_has_their_branchs_departments(tenant_a, branches, make_member):
-    from apps.iam.authz import build_actor
+def _save_existing(department, *where):
+    return services.save_department(
+        services.DepartmentInput(name=department.name, branch_ids=tuple(b.pk for b in where)),
+        department_id=department.pk)
 
+
+def test_a_department_needs_a_branch(tenant_a, branches):
+    with tenant_context(tenant_a.id), pytest.raises(ValidationError) as refused:
+        _save("Sales")
+    assert "branches" in refused.value.fields
+
+
+def test_a_branch_manager_sees_theirs_and_changes_what_they_fully_cover(tenant_a, branches,
+                                                                        make_member):
     head, alexandria = branches
     with tenant_context(tenant_a.id):
-        here = _save(head, "Sales")
-        there = _save(alexandria, "Warehouse")
-    boss = make_member(tenant_a, "boss", "owner", branches=[head])
-    client = login(tenant_a, "boss", language="en")
-
+        shared = _save("Sales", head, alexandria)
+        own = _save("Accounts", head)
+        far = _save("Warehouse", alexandria)
+    member = make_member(tenant_a, "local", "manager", branches=[head])
     with tenant_context(tenant_a.id):
-        actor = build_actor(boss)
-        assert list(selectors.visible_departments(actor)) == [here]
+        actor = _actor(member)
+        seen = set(selectors.visible_departments(actor))
+        assert seen == {shared, own}
+        assert far not in seen
+        _save("Stores", head, actor=actor)
         with pytest.raises(PermissionDenied):
-            _save(alexandria, "Stores", actor=actor)
+            _save("Stores 2", alexandria, actor=actor)
         with pytest.raises(PermissionDenied):
-            services.set_department_active(there.pk, False, actor=actor)
-
-    page = client.get(reverse("departments")).content.decode()
-    assert "Sales" in page and "Warehouse" not in page
-    assert client.get(reverse("department-edit", args=[there.pk])).status_code == 404
-    assert client.get(reverse("department-detail", args=[there.pk])).status_code == 404
-    listed = client.get(reverse("department-list")).json()["results"]
-    assert [row["id"] for row in listed] == [here.pk]
+            services.save_department(services.DepartmentInput("Renamed", (head.pk,)),
+                                     department_id=shared.pk, actor=actor)
+        with pytest.raises(PermissionDenied):
+            services.set_department_active(shared.pk, False, actor=actor)
+        services.set_department_active(own.pk, False, actor=actor)
 
 
-def test_the_pages_show_each_branchs_departments(tenant_a, branches):
+def test_the_pages_show_a_department_and_its_branches(tenant_a, branches):
     head, alexandria = branches
     with tenant_context(tenant_a.id):
-        _save(head, "Sales")
-        _save(alexandria, "Warehouse")
+        _save("Sales", head, alexandria)
+        _save("Accounts", head)
     client = login(tenant_a, language="en")
-
-    response = client.post(reverse("department-list"),
-                           {"branch": alexandria.pk, "name": "Stores", "code": None},
-                           content_type="application/json")
-    assert response.status_code == 201
-    assert response.json()["branch_name"] == "Alexandria" and response.json()["code"] == 2
-
+    made = client.post(reverse("department-list"),
+                       {"branches": [head.pk, alexandria.pk], "name": "Stores", "code": None},
+                       content_type="application/json")
+    assert made.status_code == 201
+    assert made.json()["branch_names"] == [head.name, "Alexandria"]
+    page = client.get(reverse("departments")).content.decode()
+    assert "Alexandria" in page and "Stores" in page
     filtered = client.get(f"{reverse('departments')}?branch={alexandria.pk}").content.decode()
-    assert "Warehouse" in filtered and "Sales" not in filtered
-    page = client.get(reverse("branch-edit", args=[alexandria.pk])).content.decode()
-    assert "Warehouse" in page and "Stores" in page and "Sales" not in page
-    page = client.get(f"{reverse('department-new')}?branch={alexandria.pk}").content.decode()
-    assert f'value="{alexandria.pk}" selected' in page
+    assert "Sales" in filtered and "Accounts" not in filtered
+    form = client.get(f"{reverse('department-new')}?branch={alexandria.pk}").content.decode()
+    assert f'<option value="{alexandria.pk}" selected>' in form
 
-    # An employee's form tells each department's branch, for the list to follow the branch.
-    page = client.get(reverse("employee-new")).content.decode()
-    assert f'data-parent="{alexandria.pk}"' in page and 'data-depends-on="branch_id"' in page
+
+def test_a_picker_offers_a_department_under_each_of_its_branches(tenant_a, branches):
+    head, alexandria = branches
+    with tenant_context(tenant_a.id):
+        sales = _save("Sales", head, alexandria)
+    page = login(tenant_a, language="en").get(reverse("employee-new")).content.decode()
+    parents = {head.pk, alexandria.pk}
+    assert f'data-parent="{" ".join(map(str, sorted(parents)))}"' in page, sales
 
 
 def test_the_employee_import_finds_the_department_in_the_rows_branch(tenant_a, branches):
@@ -137,43 +175,48 @@ def test_the_employee_import_finds_the_department_in_the_rows_branch(tenant_a, b
 
     head, alexandria = branches
     with tenant_context(tenant_a.id):
-        _save(head, "Sales", code=5)
-        there = _save(alexandria, "Sales", code=5)
-        sheet = EmployeeImport.__new__(EmployeeImport)
-        sheet.prepare()
-        assert sheet.departments[alexandria.pk][5] == there.pk
-        assert 9 not in sheet.departments[head.pk]
+        sales = _save("Sales", head, alexandria)
+        job = EmployeeImport(actor=None)
+        job.prepare()
+        assert job.departments[head.pk][sales.code] == sales.pk
+        assert job.departments[alexandria.pk][sales.code] == sales.pk
 
 
-def test_a_branch_comes_first_wherever_a_department_is_chosen(tenant_a, branches):
-    """The browser locks a department until its branch is chosen (selects.js `data-depends-on`):
-    each form names the field it follows, and each department its branch."""
-    _head, alexandria = branches
+def test_a_department_run_can_be_for_one_branch(tenant_a, branches, make_employee, make_member):
+    from apps.payroll.services import runs
+    from apps.platform.tenants import features
+    from apps.platform.tenants.models import TenantFeature
+
+    TenantFeature.objects.create(tenant=tenant_a, key="attendance", enabled=False)
+    features.forget(tenant_a.pk)
+    head, alexandria = branches
     with tenant_context(tenant_a.id):
-        _save(alexandria, "Warehouse")
-    client = login(tenant_a, language="en")
-    for url, parent in ((reverse("employee-new"), "branch_id"),
-                        (reverse("employees"), "branch"),
-                        (reverse("attendance"), "branch"),
-                        (reverse("incentive-new"), "target_department_branch"),
-                        (reverse("hourly-leave-for-group"), "group_department_branch"),
-                        (reverse("payroll-run-new"), "scope_department_branch")):
-        page = client.get(url).content.decode()
-        assert f'data-depends-on="{parent}"' in page, url
-        assert f'name="{parent}"' in page, url
-        assert f'data-parent="{alexandria.pk}"' in page, url
-
-    # A new employee starts with no branch, or the department would be open from the start.
-    page = client.get(reverse("employee-new")).content.decode()
-    assert ('<select id="f-branch" name="branch_id" class="form-input">\n'
-            '              <option value="">') in page
-
-
-def test_with_one_branch_there_is_nothing_to_choose_first(tenant_a):
+        sales = _save("Sales", head, alexandria)
+    here = make_employee(tenant_a, 1, branch=head, department_id=sales.pk)
+    make_employee(tenant_a, 2, branch=alexandria, department_id=sales.pk)
+    member = make_member(tenant_a, "local", "manager", branches=[head])
     with tenant_context(tenant_a.id):
-        _save(Branch.objects.get(code=1), "Sales")
-    client = login(tenant_a, language="en")
-    page = client.get(reverse("incentive-new")).content.decode()
-    assert 'name="target_department_branch"' not in page and "Sales" in page
-    page = client.get(reverse("employee-new")).content.decode()
-    assert '<select id="f-branch" name="branch_id" class="form-input">\n              \n' in page
+        data = {"frequency": "monthly", "day": date(2026, 10, 15), "scope": "department",
+                "scope_id": sales.pk}
+        run = runs.create_run(runs.RunInput(**data, scope_branch_id=head.pk), actor=_actor(member))
+        assert [slip.employee_id for slip in run.payslips.all()] == [here.pk]
+        with pytest.raises(PermissionDenied):
+            runs.create_run(runs.RunInput(**data), actor=_actor(member))
+
+
+def test_a_given_batch_remembers_its_branch(tenant_a, branches, make_employee):
+    from apps.adjustments.models import AdjustmentType
+    from apps.adjustments.services import batches
+
+    head, alexandria = branches
+    with tenant_context(tenant_a.id):
+        sales = _save("Sales", head, alexandria)
+    here = make_employee(tenant_a, 1, branch=head, department_id=sales.pk)
+    make_employee(tenant_a, 2, branch=alexandria, department_id=sales.pk)
+    with tenant_context(tenant_a.id):
+        kind = AdjustmentType.objects.filter(kind="incentive").first()
+        batch = batches.give(batches.AdjustmentInput(
+            type_id=kind.pk, target=Target(DEPARTMENT, sales.pk, head.pk),
+            date=timezone.localdate(), method="fixed", quantity=100))
+        assert batch.target_branch_id == head.pk
+        assert [row.employee_id for row in batch.rows.all()] == [here.pk]

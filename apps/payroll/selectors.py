@@ -27,13 +27,14 @@ from .permissions import CALCULATE, READ
 
 
 def visible_runs(actor):
-    """Every run for a member reading payroll in all branches; otherwise the runs of their
-    branches (a run for everyone or a department spans branches they can't see)."""
+    """Every run for a member reading payroll in all branches; otherwise the runs limited to
+    their branches (a run for everyone, or a whole department, spans ones they can't see)."""
     runs = PayrollRun.objects.select_related("period")
     branches = actor.branch_ids(READ) if actor is not None else None
     if branches is None:
         return runs
-    return runs.filter(Q(scope=ScopeKind.BRANCH) & Q(scope_id__in=branches))
+    return runs.filter(Q(scope=ScopeKind.BRANCH, scope_id__in=branches)
+                       | Q(scope_branch_id__in=branches))
 
 
 def find_run(actor, pk):
@@ -56,9 +57,9 @@ def scope_names(runs) -> dict:
     """{(scope, id): name} for the branches and departments the runs are for."""
     ids = {kind: {r.scope_id for r in runs if r.scope == kind}
            for kind in (ScopeKind.BRANCH, ScopeKind.DEPARTMENT)}
-    names = {(ScopeKind.BRANCH, b.pk): b.name
-             for b in Branch.objects.filter(pk__in=ids[ScopeKind.BRANCH])}
-    names.update({(ScopeKind.DEPARTMENT, d.pk): d.label
+    branches = ids[ScopeKind.BRANCH] | {r.scope_branch_id for r in runs if r.scope_branch_id}
+    names = {(ScopeKind.BRANCH, b.pk): b.name for b in Branch.objects.filter(pk__in=branches)}
+    names.update({(ScopeKind.DEPARTMENT, d.pk): d.name
                   for d in visible_departments().filter(pk__in=ids[ScopeKind.DEPARTMENT])})
     return names
 
@@ -132,7 +133,8 @@ def _in_scope(run: PayrollRun, placed) -> bool:
     if run.scope == ScopeKind.BRANCH:
         return placed.branch_id == run.scope_id
     if run.scope == ScopeKind.DEPARTMENT:
-        return placed.department_id == run.scope_id
+        return placed.department_id == run.scope_id and run.scope_branch_id in (
+            None, placed.branch_id)
     return True
 
 

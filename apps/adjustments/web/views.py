@@ -61,13 +61,15 @@ STATUS_TABS = [(BatchStatus.DRAFT, _lazy("Drafts")), (BatchStatus.APPROVED, _laz
 
 def _target_names(batches) -> None:
     """`target_name` on each batch: who it was given to, in words."""
-    names = {"department": {d.pk: d.label for d in visible_departments()},
-             "branch": selectors.branch_names()}
+    branches = selectors.branch_names()
+    names = {"department": {d.pk: d.name for d in visible_departments()}, "branch": branches}
     for batch in batches:
         if batch.corrects_id:
             batch.target_name = _("Correction")
         elif batch.target_kind in names:
             batch.target_name = names[batch.target_kind].get(batch.target_id, "—")
+            if batch.target_branch_id in branches:
+                batch.target_name += f" · {branches[batch.target_branch_id]}"
         else:
             batch.target_name = ""
 

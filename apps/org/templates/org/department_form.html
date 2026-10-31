@@ -19,11 +19,12 @@
     <section class="card">
       <div class="card-body grid grid-cols-1 gap-5 sm:grid-cols-4">
         <div class="sm:col-span-4">
-          <label class="form-label" for="f-branch">{% translate "Branch" %}</label>
-          <select id="f-branch" name="branch" class="form-input" required>
-            {% for branch in branches %}<option value="{{ branch.pk }}" {% if chosen_branch|stringformat:"s" == branch.pk|stringformat:"s" %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+          <label class="form-label is-required" for="f-branches">{% translate "Branches" %}</label>
+          <select id="f-branches" name="branches" class="form-input" multiple required data-placeholder="{% translate 'Choose branches' %}">
+            {% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk in chosen_branches %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
           </select>
-          <p class="form-error" data-error-for="branch"></p>
+          <p class="mt-1 text-xs text-slate-500">{% translate "One department, one code. Each branch has its own employees in it." %}</p>
+          <p class="form-error" data-error-for="branches"></p>
         </div>
         <div>
           <label class="form-label" for="f-code">{% translate "Code" %}</label>

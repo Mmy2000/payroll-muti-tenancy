@@ -63,7 +63,7 @@ def test_each_history_page_shows_its_own_record(tenant_a, make_employee):
             employee_id=second.pk, granted_on=date(2026, 6, 1), amount=Decimal(1200),
             installments=3, first_month=date(2026, 7, 1)))
         department = org.save_department(org.DepartmentInput(
-            branch_id=Branch.objects.get(code=1).pk, code=7, name="Warehouse"))
+            branch_ids=(Branch.objects.get(code=1).pk,), code=7, name="Warehouse"))
         branch = Branch.objects.get(code=1)
     client = login(tenant_a, language="en")
 

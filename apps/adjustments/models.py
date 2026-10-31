@@ -69,6 +69,8 @@ class AdjustmentBatch(TenantScopedModel):
     # Who it was given to (apps.employees.selectors); empty for a correction.
     target_kind = models.CharField(max_length=10, blank=True)
     target_id = models.BigIntegerField(null=True, blank=True)
+    # A department given to in one branch (a department spans several); empty for all of it.
+    target_branch_id = models.BigIntegerField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=BatchStatus.choices,
                               default=BatchStatus.DRAFT)
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,

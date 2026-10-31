@@ -34,8 +34,8 @@ users and widen their own scope. An employee leaving did nothing to their login.
   span branches, and the rule would need to say whose user that is.
 - **A separate `EmploymentPeriod` table.** Not needed: periods can be read from the assignments, so
   there is one history instead of two.
-- **Departments across branches.** Kept per branch, as in PayRole. A company-wide group can be added
-  later without touching existing rows.
+- **Departments across branches.** Kept per branch here, as in PayRole. ADR-107 later changed
+  this.
 
 ## Consequences
 

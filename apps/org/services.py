@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from apps.core.errors import NotFound, ValidationError
 from apps.core.media import replace_file
 
-from .models import Branch, Department, Position, TenantProfile
+from .models import Branch, Department, DepartmentBranch, Position, TenantProfile
 from .permissions import BRANCH_MANAGE, DEPARTMENT_MANAGE, POSITION_MANAGE
 from .selectors import next_department_code
 from .validators import check_department, check_position
@@ -107,28 +107,33 @@ def set_branch_active(branch_id: int, active: bool, *, actor=None) -> Branch:
 @dataclass(frozen=True)
 class DepartmentInput:
     name: str
-    branch_id: int
-    code: int | None = None  # None: the branch's next code (PayRole: `_next_code` per branch)
+    branch_ids: tuple[int, ...]
+    code: int | None = None  # None: the company's next code
+
+
+def _require_branches(actor, branch_ids) -> None:
+    if actor is not None:
+        for branch_id in branch_ids:
+            actor.require(DEPARTMENT_MANAGE, branch=branch_id)
 
 
 def save_department(data: DepartmentInput, *, department_id: int | None = None,
                     actor=None) -> Department:
-    """Create a department in its branch, or update one when `department_id` is given."""
-    if actor is not None:
-        actor.require(DEPARTMENT_MANAGE, branch=data.branch_id)
+    """Create a department in its branches, or update one when `department_id` is given. A
+    change reaches every branch it is in, so the member needs them all."""
+    wanted = set(data.branch_ids)
+    _require_branches(actor, wanted)
     if department_id is None:
         department = Department(created_by=getattr(actor, "user", None))
     else:
         department = Department.objects.filter(pk=department_id).first()
         if department is None:
             raise NotFound(_("Not found."))
-        if actor is not None:
-            actor.require(DEPARTMENT_MANAGE, branch=department.branch_id)
+        _require_branches(actor, department.branch_ids)
     errors = check_department(department, data)
     if errors:
         raise ValidationError(_("Please correct the highlighted fields."), fields=errors)
-    department.branch_id = data.branch_id
-    department.code = data.code or department.code or next_department_code(data.branch_id)
+    department.code = data.code or department.code or next_department_code()
     department.name = data.name.strip()
     department.updated_by = getattr(actor, "user", None)
     department._stamp_tenant()
@@ -137,7 +142,11 @@ def save_department(data: DepartmentInput, *, department_id: int | None = None,
     except DjangoValidationError as exc:
         raise ValidationError(_("Please correct the highlighted fields."),
                               fields=exc.message_dict) from exc
-    department.save()
+    with transaction.atomic():
+        department.save()
+        department.placements.exclude(branch_id__in=wanted).delete()
+        for branch_id in sorted(wanted - set(department.branch_ids)):
+            DepartmentBranch.objects.create(department=department, branch_id=branch_id)
     return department
 
 
@@ -145,8 +154,7 @@ def set_department_active(department_id: int, active: bool, *, actor=None) -> De
     department = Department.objects.filter(pk=department_id).first()
     if department is None:
         raise NotFound(_("Not found."))
-    if actor is not None:
-        actor.require(DEPARTMENT_MANAGE, branch=department.branch_id)
+    _require_branches(actor, department.branch_ids)
     department.is_active = active
     department.save(update_fields=["is_active", "updated_at"])
     return department

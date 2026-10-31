@@ -61,9 +61,9 @@ class EmployeeImport(SheetImport):
 
     def prepare(self):
         self.branches = dict(Branch.objects.filter(is_active=True).values_list("code", "pk"))
-        self.departments = defaultdict(dict)  # a department's code is its branch's
+        self.departments = defaultdict(dict)  # the codes of the departments in each branch
         for branch_id, code, pk in Department.objects.filter(is_active=True).values_list(
-                "branch_id", "code", "pk"):
+                "placements__branch_id", "code", "pk"):
             self.departments[branch_id][code] = pk
 
     def _lookup(self, cells: Cells, key: str, table: dict, message: str, *, optional=False):

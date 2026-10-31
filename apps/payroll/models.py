@@ -103,9 +103,16 @@ class ScopeKind(models.TextChoices):
 
 
 class PayrollRun(TenantScopedModel):
+    @property
+    def branch_in_scope(self) -> int | None:
+        """The one branch this run is limited to, if it is."""
+        return self.scope_id if self.scope == ScopeKind.BRANCH else self.scope_branch_id
+
     period = models.ForeignKey(PayrollPeriod, on_delete=models.PROTECT, related_name="runs")
     scope = models.CharField(max_length=10, choices=ScopeKind.choices, default=ScopeKind.ALL)
     scope_id = models.PositiveBigIntegerField(null=True, blank=True)  # the branch or department
+    # A department run for one branch (a department spans several); empty for all of it.
+    scope_branch_id = models.PositiveBigIntegerField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=RunStatus.choices, default=RunStatus.DRAFT)
     number = models.CharField(max_length=32, null=True, blank=True)  # noqa: DJ001 (on approval)
     note = models.CharField(max_length=300, blank=True)

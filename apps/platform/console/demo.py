@@ -66,9 +66,9 @@ PEOPLE = [
 def seed_pay_setup() -> None:
     if Department.objects.exists():
         return
-    for branch_id in Branch.objects.filter(is_active=True).values_list("pk", flat=True):
-        for code, name in DEPARTMENTS:
-            save_department(DepartmentInput(branch_id=branch_id, code=code, name=name))
+    branches = tuple(Branch.objects.filter(is_active=True).values_list("pk", flat=True))
+    for code, name in DEPARTMENTS:
+        save_department(DepartmentInput(branch_ids=branches, code=code, name=name))
     for code, name, kind, basis, taxable in PAY_ITEMS:
         save_pay_item(PayItemInput(code=code, name=name, kind=kind, basis=basis,
                                    taxable=taxable))
@@ -93,8 +93,7 @@ def seed_employees(people=PEOPLE) -> None:
     if Employee.objects.exists():
         return
     branches = dict(Branch.objects.values_list("code", "pk"))
-    departments = {(branch_id, code): pk for branch_id, code, pk
-                   in Department.objects.values_list("branch_id", "code", "pk")}
+    departments = dict(Department.objects.values_list("code", "pk"))
     lateness = LatenessPolicy.objects.first()
     overtime = OvertimePolicy.objects.first()
     for (code, name, branch, department, job, hired, salary, (start, end), days_off, late,
@@ -103,7 +102,7 @@ def seed_employees(people=PEOPLE) -> None:
             continue
         person = employees.create_employee(
             employees.EmployeeInput(code=code, name=name, branch_id=branches[branch],
-                                    department_id=departments.get((branches[branch], department)),
+                                    department_id=departments.get(department),
                                     job_title=job,
                                     hired_on=hired, phone=f"010{code:08d}"),
             employees.CompensationInput(effective_from=None, salary=salary,

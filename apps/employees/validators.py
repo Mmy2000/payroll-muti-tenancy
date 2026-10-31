@@ -54,7 +54,7 @@ def check_placement(employee: Employee, branch_id: int, department_id: int | Non
         if department is None or (department_id != employee.department_id
                                   and not department.is_active):
             errors["department_id"] = [_("Choose an active department.")]
-        elif department.branch_id != branch_id:
+        elif not department.placements.filter(branch_id=branch_id).exists():
             errors["department_id"] = [_("This department isn't in the employee's branch.")]
     if (position_id is not None and position_id != employee.position_id
             and not Position.objects.filter(pk=position_id, is_active=True).exists()):

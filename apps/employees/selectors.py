@@ -134,6 +134,7 @@ def next_code() -> int:
 class Target:
     kind: str
     id: int  # the employee, department or branch
+    branch_id: int | None = None  # a department in this branch only; None: in all of them
 
     @classmethod
     def employee(cls, employee_id: int) -> Target:
@@ -148,6 +149,7 @@ class Group:
     kind: str
     employee_ids: tuple[int, ...] = ()
     id: int | None = None
+    branch_id: int | None = None  # a department in this branch only; None: in all of them
 
 
 def employed_on(day: date):
@@ -159,7 +161,10 @@ def resolve(target: Target, *, on: date, actor=None, permission: str) -> list[Em
         raise ValidationError(_("Choose who this is for."),
                               fields={"target_kind": [_("Choose who this is for.")]})
     field = {EMPLOYEE: "pk", DEPARTMENT: "department_id", BRANCH: "branch_id"}[target.kind]
-    people = list(visible_employees(actor, permission).filter(employed_on(on), **{field: target.id})
+    chosen = {field: target.id}
+    if target.kind == DEPARTMENT and target.branch_id is not None:
+        chosen["branch_id"] = target.branch_id
+    people = list(visible_employees(actor, permission).filter(employed_on(on), **chosen)
                   .select_for_update(of=("self",)).order_by("pk"))
     if not people:
         message = (_("This employee isn't employed on that day, or isn't yours to manage.")
@@ -178,8 +183,8 @@ def resolve_group(group: Group, *, on: date, actor=None, permission: str) -> lis
                               fields={"group_kind": [_("Choose who this is for.")]})
     if group.kind != EMPLOYEES:
         try:
-            return resolve(Target(group.kind, group.id or 0), on=on, actor=actor,
-                           permission=permission)
+            return resolve(Target(group.kind, group.id or 0, group.branch_id), on=on,
+                           actor=actor, permission=permission)
         except ValidationError as error:
             raise ValidationError(error.message, fields={"group_id": [error.message]}) from None
     ids = set(group.employee_ids)
@@ -194,8 +199,9 @@ def resolve_group(group: Group, *, on: date, actor=None, permission: str) -> lis
     return people
 
 
-def department_has_employees(department) -> bool:
-    return Employee.objects.filter(department=department).exists()
+def department_has_employees(department, branch_ids=None) -> bool:
+    people = Employee.objects.filter(department=department)
+    return (people if branch_ids is None else people.filter(branch_id__in=branch_ids)).exists()
 
 
 def has_employees(branch) -> bool:

@@ -27,7 +27,7 @@
           <label class="form-label" for="f-department">{% translate "Department" %}</label>
           <select id="f-department" name="department" class="form-input" data-empty="null">
             <option value="">—</option>
-            {% for department in departments %}<option value="{{ department.pk }}" {% if position.department_id == department.pk %}selected{% endif %}>{{ department.label }}</option>{% endfor %}
+            {% for department in departments %}<option value="{{ department.pk }}" {% if position.department_id == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
           </select>
           <p class="form-error" data-error-for="department"></p>
         </div>

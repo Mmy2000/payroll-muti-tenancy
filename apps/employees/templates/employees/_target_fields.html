@@ -20,8 +20,8 @@
 {% if target_branches|length > 1 %}
 <div data-show-when="target_kind=department" hidden>
   <label class="form-label" for="t-department-branch">{% translate "Branch" %}</label>
-  <select id="t-department-branch" name="target_department_branch" class="form-input">
-    <option value="">—</option>
+  <select id="t-department-branch" name="target_department_branch" class="form-input" data-empty="null">
+    <option value="">{% translate "All branches" %}</option>
     {% for b in target_branches %}<option value="{{ b.pk }}">{{ b.name }}</option>{% endfor %}
   </select>
 </div>
@@ -30,7 +30,7 @@
   <label class="form-label is-required" for="t-department">{% translate "Department" %}</label>
   <select id="t-department" name="target_id" class="form-input" data-depends-on="target_department_branch">
     <option value="">—</option>
-    {% for d in target_departments %}<option value="{{ d.pk }}" data-parent="{{ d.branch_id }}">{{ d.name }}</option>{% endfor %}
+    {% for d in target_departments %}<option value="{{ d.pk }}" data-parent="{{ d.parent_ids }}">{{ d.name }}</option>{% endfor %}
   </select>
 </div>
 <div class="sm:col-span-2" data-show-when="target_kind=branch" hidden>

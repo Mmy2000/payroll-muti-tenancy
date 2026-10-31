@@ -56,9 +56,30 @@ def branch_choices(allowed):
 
 def visible_departments(actor=None, permission: str = DEPARTMENT_VIEW):
     """Departments, with their branch, in the branches where the member has `permission`."""
-    departments = Department.objects.select_related("branch")
+    departments = Department.objects.prefetch_related("placements__branch")
     allowed = actor.branch_ids(permission) if actor is not None else None
-    return departments if allowed is None else departments.filter(branch_id__in=allowed)
+    if allowed is None:
+        return departments
+    return departments.filter(placements__branch_id__in=allowed).distinct()
+
+
+def in_branches(departments, branch_ids):
+    return departments.filter(placements__branch_id__in=branch_ids).distinct()
+
+
+def covers(actor, department: Department, permission: str) -> bool:
+    """A change to a department touches all its branches, so it takes all of them."""
+    allowed = actor.branch_ids(permission)
+    return allowed is None or set(department.branch_ids) <= allowed
+
+
+def branches_for_department(allowed, department: Department | None):
+    """The branches its form offers: the active ones the member may use, and those it is in."""
+    current = department.branch_ids if department is not None else []
+    choices = Branch.objects.filter(is_active=True)
+    if allowed is not None:
+        choices = choices.filter(pk__in=allowed)
+    return (choices | Branch.objects.filter(pk__in=current)).distinct().order_by("code")
 
 
 def visible_department(actor, pk, permission: str = DEPARTMENT_VIEW) -> Department | None:
@@ -69,9 +90,8 @@ def active_departments():
     return visible_departments().filter(is_active=True)
 
 
-def next_department_code(branch_id: int) -> int:
-    return (Department.objects.filter(branch_id=branch_id)
-            .aggregate(top=Max("code"))["top"] or 0) + 1
+def next_department_code() -> int:
+    return (Department.objects.aggregate(top=Max("code"))["top"] or 0) + 1
 
 
 def tenant_profile() -> TenantProfile:
@@ -83,7 +103,7 @@ def tenant_profile_or_none() -> TenantProfile | None:
 
 
 def positions():
-    return Position.objects.select_related("department__branch").order_by("name")
+    return Position.objects.select_related("department").order_by("name")
 
 
 def active_positions():

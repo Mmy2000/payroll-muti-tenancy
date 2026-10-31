@@ -66,7 +66,7 @@ class DepartmentViewSet(ActivateMixin, ServiceViewSet):
     queryset = selectors.visible_departments()
     serializer_class = DepartmentSerializer
     write_serializer_class = DepartmentWriteSerializer
-    filterset_fields = ["is_active", "branch"]
+    filterset_fields = ["is_active"]
     required_permissions = {
         "list": "org.department.view",
         "retrieve": "org.department.view",
@@ -77,10 +77,12 @@ class DepartmentViewSet(ActivateMixin, ServiceViewSet):
     }
 
     def get_queryset(self):
-        return selectors.visible_departments(self.request.actor)
+        departments = selectors.visible_departments(self.request.actor)
+        branch = self.request.query_params.get("branch", "")
+        return selectors.in_branches(departments, [branch]) if branch.isdigit() else departments
 
     def to_input(self, data):
-        return services.DepartmentInput(branch_id=data["branch"], code=data["code"],
+        return services.DepartmentInput(branch_ids=tuple(data["branches"]), code=data["code"],
                                         name=data["name"])
 
     def save(self, data, pk, actor):

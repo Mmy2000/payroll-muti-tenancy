@@ -106,7 +106,7 @@ def test_opening_a_login_needs_the_right_to_manage_users(tenant_a, linked, make_
 def test_a_card_can_be_saved_in_a_deactivated_department_and_branch(tenant_a, make_employee):
     with tenant_context(tenant_a.id):
         branch = org.create_branch(org.BranchInput(code=2, name="B"))
-        department = org.save_department(org.DepartmentInput(name="Sales", branch_id=branch.pk))
+        department = org.save_department(org.DepartmentInput(name="Sales", branch_ids=(branch.pk,)))
     person = make_employee(tenant_a, 7, branch=branch, department_id=department.pk)
     with tenant_context(tenant_a.id):
         org.set_department_active(department.pk, False)

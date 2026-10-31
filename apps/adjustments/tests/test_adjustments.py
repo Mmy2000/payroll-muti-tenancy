@@ -16,7 +16,8 @@ from apps.employees.domain.rates import PayTerms
 from apps.employees.selectors import Target
 from apps.iam.models import Role
 from apps.iam.services import assign_role, set_role_permissions
-from apps.org.models import Branch, Department
+from apps.org.models import Branch
+from apps.org.services import DepartmentInput, save_department
 from apps.payroll.services import lifecycle as payroll_lifecycle
 from apps.payroll.services import runs as payroll
 from apps.platform.tenants import features
@@ -69,7 +70,8 @@ def test_new_clients_get_types(tenant_a):
 @pytest.mark.django_db
 def test_a_department_gets_a_draft_batch_of_one_row_each(tenant_a, make_employee):
     with tenant_context(tenant_a.id):
-        sales = Department.objects.create(branch=Branch.objects.get(code=1), code=1, name="Sales")
+        sales = save_department(DepartmentInput(
+            name="Sales", branch_ids=(Branch.objects.get(code=1).pk,)))
     make_employee(tenant_a, 1, department_id=sales.pk, salary=D(6000))
     make_employee(tenant_a, 2, department_id=sales.pk, salary=D(3000))
     make_employee(tenant_a, 3, department_id=sales.pk, hired_on=date(2026, 11, 1))  # not yet
@@ -175,7 +177,8 @@ def test_the_amount_is_kept_after_a_raise(tenant_a, make_employee):
 @pytest.mark.django_db
 def test_nobody_there_is_an_error(tenant_a):
     with tenant_context(tenant_a.id):
-        empty = Department.objects.create(branch=Branch.objects.get(code=1), code=9, name="Empty")
+        empty = save_department(DepartmentInput(
+            name="Empty", branch_ids=(Branch.objects.get(code=1).pk,)))
     response = _give(login(tenant_a), "incentive", tenant_a, "department", empty.pk)
     assert "target_id" in response.json()["error"]["fields"]
 

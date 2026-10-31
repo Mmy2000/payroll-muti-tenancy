@@ -29,6 +29,9 @@ def _with_scope_names(runs):
     for run in runs:
         run.scope_name = (_("Everyone") if run.scope == ScopeKind.ALL
                           else names.get((run.scope, run.scope_id), "—"))
+        if run.scope_branch_id:
+            branch = names.get((ScopeKind.BRANCH, run.scope_branch_id), "—")
+            run.scope_name = f"{run.scope_name} · {branch}"
     return runs
 
 
@@ -74,8 +77,7 @@ def run_detail(request, pk):
     _with_scope_names([run])
     slips = list(selectors.slips_by_code(run))
     actor = request.actor
-    can = {code: actor.can(code, branch=run.scope_id if run.scope == ScopeKind.BRANCH
-                           else None)
+    can = {code: actor.can(code, branch=run.branch_in_scope)
            for code in (permissions.CALCULATE, permissions.APPROVE, permissions.PAY,
                         permissions.REVERSE)}
     return render(request, "payroll/run.html", {
@@ -99,7 +101,7 @@ def payslip_detail(request, pk, slip_pk):
         raise Http404
     lines = selectors.labelled_lines(slip)
     can_calculate = run.is_draft and request.actor.can(
-        permissions.CALCULATE, branch=run.scope_id if run.scope == ScopeKind.BRANCH else None)
+        permissions.CALCULATE, branch=run.branch_in_scope)
     return render(request, "payroll/payslip.html", {
         "run": run, "slip": slip,
         "earnings": [line for line in lines if line.kind == "earning"],

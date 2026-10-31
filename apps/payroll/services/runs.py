@@ -69,6 +69,7 @@ class RunInput:
     reason: str = ""
     scope: str = ScopeKind.ALL
     scope_id: int | None = None
+    scope_branch_id: int | None = None  # a department in this branch only
     note: str = ""
 
 
@@ -95,13 +96,15 @@ def create_run(data: RunInput, *, actor=None) -> PayrollRun:
     if data.scope not in ScopeKind.values or (data.scope != ScopeKind.ALL
                                              and data.scope_id is None):
         raise invalid_fields({"scope": [_("Choose who the run is for.")]})
-    require_scope(actor, CALCULATE, data.scope, data.scope_id)
+    branch_id = data.scope_branch_id if data.scope == ScopeKind.DEPARTMENT else None
+    require_scope(actor, CALCULATE, data.scope, data.scope_id, branch_id)
     with transaction.atomic():
         period = _period(data)
         if period.status == PeriodStatus.CLOSED:
             raise DomainError(_("This period is closed."), code="PAYROLL_PERIOD_CLOSED")
         run = PayrollRun.objects.create(period=period, scope=data.scope,
-                                        scope_id=data.scope_id, note=data.note.strip(),
+                                        scope_id=data.scope_id, scope_branch_id=branch_id,
+                                        note=data.note.strip(),
                                         created_by=getattr(actor, "user", None))
         calculate_payslips(run, actor)
     return run
@@ -112,7 +115,7 @@ def locked_run(run_id: int, actor, permission: str) -> PayrollRun:
            .filter(pk=run_id).first())
     if run is None:
         raise NotFound(_("Not found."))
-    require_scope(actor, permission, run.scope, run.scope_id)
+    require_scope(actor, permission, run.scope, run.scope_id, run.scope_branch_id)
     return run
 
 

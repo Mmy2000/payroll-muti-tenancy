@@ -28,8 +28,10 @@ new code follows are in [docs/standards/](docs/standards/) and
   (`Compensation`) and working hours (`WorkSchedule`): a change applies from a date and earlier
   months keep their values. Pay has its own permissions (`employees.salary.*`). Excel import,
   all rows or none.
-- **Departments and positions** (`apps/org`): a department belongs to one branch. A position is a
-  job several employees can hold, optionally in a department; its permissions are
+- **Departments and positions** (`apps/org`): a department has one code and one name, and
+  operates in the branches chosen for it (`DepartmentBranch`). Each branch has its own employees
+  in it, and something given to a department can be for one branch or for all of it. A position
+  is a job several employees can hold, optionally in a department; its permissions are
   `org.position.*`.
 - **Assignments** (`apps/employees`, `EmployeeAssignment`): where an employee works and as what,
   by date. The card holds the row in effect today, and anything about a past day reads the row of
