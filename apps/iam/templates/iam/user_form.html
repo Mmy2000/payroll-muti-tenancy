@@ -108,6 +108,7 @@
                   {% for branch in branches %}<option value="{{ branch.pk }}" {% if branch.pk in item.assignment.branches %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
                 </select>
               </div>
+              {% if item.needs_every_branch %}<p class="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 {% if not item.assignment or item.assignment.all %}hidden{% endif %}" data-scope-warning role="status">{% translate "With selected branches, these won't work. Choose All branches for them:" %} {{ item.needs_every_branch|join:" · " }}</p>{% endif %}
             </div>
           </div>
         </div>

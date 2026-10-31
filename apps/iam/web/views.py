@@ -43,7 +43,8 @@ def _user_form(request, membership=None):
     for role in selectors.roles_with_grants():
         codes = {g.permission for g in role.grants.all()}
         roles.append({"role": role, "is_owner": WILDCARD in codes,
-                      "assignment": assigned.get(role.pk)})
+                      "assignment": assigned.get(role.pk),
+                      "needs_every_branch": selectors.company_wide_labels(codes)})
     endpoint = (reverse("member-detail", args=[membership.pk]) if membership
                 else reverse("member-list"))
     return render(request, "iam/user_form.html", {
@@ -84,7 +85,9 @@ def roles(request):
     items = selectors.roles_with_member_counts()
     return render(request, "iam/roles.html", {
         "roles": [{"role": r, "is_owner": any(g.permission == WILDCARD for g in r.grants.all()),
-                   "count": len(r.grants.all())} for r in items],
+                   "count": len(r.grants.all()),
+                   "incomplete": bool(selectors.role_gaps(
+                       {g.permission for g in r.grants.all()} - {WILDCARD}))} for r in items],
     })
 
 
@@ -95,7 +98,8 @@ def _role_form(request, role=None):
         "role": role,
         "is_owner": WILDCARD in granted,
         "granted": granted,
-        "sections": selectors.permission_sections(),
+        "sections": selectors.permission_sections(request.actor.disabled),
+        "gaps": selectors.role_gaps(granted - {WILDCARD}),
         "endpoint": endpoint,
         "method": "PUT" if role else "POST",
     })

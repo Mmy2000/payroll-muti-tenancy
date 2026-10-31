@@ -44,6 +44,7 @@ from .validators import (
     ensure_an_owner_remains,
     ensure_can_act_on,
     ensure_can_grant,
+    ensure_needs_met,
     ensure_not_shared,
     member_role_codes,
     role_codes,
@@ -94,6 +95,8 @@ def set_role_permissions(role: Role, codes: list[str], *, actor=None) -> None:
         # A member with this role alone counts as an app login, not an office user.
         raise ValidationError(_("The Employee (app) role only signs in to the mobile app."),
                               code="IAM_EMPLOYEE_LOCKED")
+    if actor is not None:
+        ensure_needs_met(codes)
     ensure_can_grant(actor, codes)
     with transaction.atomic():
         role.grants.all().delete()

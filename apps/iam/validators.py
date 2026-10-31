@@ -14,7 +14,8 @@ from django.utils.translation import gettext as _
 from apps.core.errors import PermissionDenied, ValidationError
 
 from .authz import ALL_BRANCHES
-from .catalog import OWNER, WILDCARD, is_known_permission
+from .catalog import OWNER, WILDCARD, is_known_permission, permissions
+from .flow import missing_needs
 from .models import Membership, MembershipRole, MembershipStatus, Role, User
 
 if TYPE_CHECKING:
@@ -75,6 +76,18 @@ def clean_permissions(codes) -> list[str]:
     if unknown:
         raise ValidationError(_("Unknown permissions."), fields={"permissions": unknown})
     return codes
+
+
+def ensure_needs_met(codes) -> None:
+    """A role that can't work is refused: "manage" with no "view" shows the person nothing."""
+    catalog = permissions()
+    gaps = [_("%(step)s needs %(other)s.") % {
+                "step": catalog[code].label,
+                "other": ", ".join(str(catalog[step].label) for step in missing)}
+            for code, missing in missing_needs(codes).items()]
+    if gaps:
+        raise ValidationError(_("Some permissions need others first."),
+                              code="IAM_PERMISSION_NEEDS", fields={"permissions": gaps})
 
 
 def unique_role_code(name: str) -> str:

@@ -5,7 +5,7 @@ from __future__ import annotations
 from django.db.models import Count, OuterRef, QuerySet, Subquery
 
 from .catalog import permissions
-from .flow import FLOW
+from .flow import FLOW, missing_needs, needs
 from .models import Membership, MembershipStatus, Role, SignInEvent, SignInOutcome
 
 
@@ -69,10 +69,35 @@ def granted_codes(role: Role) -> set[str]:
     return set(role.grants.values_list("permission", flat=True))
 
 
-def permission_sections() -> list[dict]:
-    """The permissions for the role page, in the order people work (apps/iam/flow.py)."""
+def _step(definition, screen, catalog, disabled) -> dict:
+    required = needs(definition.code)
+    return {"code": definition.code, "label": definition.label,
+            "company_wide": definition.company_wide, "off": definition.code in disabled,
+            "needs": " ".join(required),
+            "needs_elsewhere": [catalog[code].label for code in required
+                                if code not in screen.codes]}
+
+
+def permission_sections(disabled=frozenset()) -> list[dict]:
+    """The permissions for the role page, in the order people work (apps/iam/flow.py). `disabled`
+    are the ones the client's plan switches off."""
     catalog = permissions()
     return [{"title": section.title,
-             "screens": [{"title": screen.title, "steps": [catalog[c] for c in screen.codes]}
+             "screens": [{"title": screen.title,
+                          "steps": [_step(catalog[code], screen, catalog, disabled)
+                                    for code in screen.codes]}
                          for screen in section.screens]}
             for section in FLOW]
+
+
+def role_gaps(codes) -> list[dict]:
+    """The permissions in `codes` that can't work yet, and what they lack."""
+    catalog = permissions()
+    return [{"label": catalog[code].label, "needs": [catalog[step].label for step in missing]}
+            for code, missing in missing_needs(codes).items()]
+
+
+def company_wide_labels(codes) -> list:
+    """Of `codes`, those that do nothing unless the role is given for every branch."""
+    catalog = permissions()
+    return [catalog[code].label for code in catalog if code in codes and catalog[code].company_wide]

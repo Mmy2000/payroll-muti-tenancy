@@ -40,6 +40,10 @@ role doesn't allow.** These rules are part of normal work and of every code revi
   role with one of them, given for some branches, doesn't grant it.
 - **A branch manager keeps to their branches:** `org.branch.manage` edits or deactivates the
   branches it covers. A new branch, or moving the head office, needs it in every branch.
+- **A role can't be saved so that it does nothing:** a step needs the permission that opens its
+  screen, and sometimes another screen's (`apps/iam/flow.py`). The role page ticks these, and
+  `set_role_permissions` refuses a gap from any actor. The user form warns when a role with
+  company-wide permissions is given for selected branches.
 - **Nobody hands out more than they hold, or wider:** `ensure_can_grant` compares the branches of
   a grant with the actor's own. An Owner covers every branch.
 - **Leaving ends access:** a login is suspended the day after the last working day, except a
