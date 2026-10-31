@@ -35,6 +35,14 @@ role doesn't allow.** These rules are part of normal work and of every code revi
     client and are refused on another client's host.
   - A sign-in that names its phone can be revoked at once, checked against the database on every
     request (`apps/mobile/services/devices.py`).
+- **Permissions about the whole client** (`company_wide` in `register_permissions`: users, roles,
+  branches, company settings, the History, sign-ins) count only when held in every branch. A
+  role with one of them, given for some branches, doesn't grant it.
+- **Nobody hands out more than they hold, or wider:** `ensure_can_grant` compares the branches of
+  a grant with the actor's own. An Owner covers every branch.
+- **Leaving ends access:** a login is suspended the day after the last working day, except a
+  client's last Owner (`apps/employees/services/employees.py`, and a daily job for departures
+  entered ahead).
 - **Wrong passwords are throttled** (`apps/iam/throttle.py`) on every way in: 5 for one
   account, or 30 from one address, lock it for up to 15 minutes. With several servers,
   `CACHE_URL` must be a shared cache, or each server counts on its own.

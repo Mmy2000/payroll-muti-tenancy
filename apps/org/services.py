@@ -86,6 +86,10 @@ def set_branch_active(branch_id: int, active: bool, *, actor=None) -> Branch:
     if not active and branch.is_head_office:
         raise ValidationError(_("The head office cannot be deactivated."),
                               code="ORG_HEAD_OFFICE_ACTIVE")
+    if active and not branch.is_active:
+        from .limits import check_branch_limit
+
+        check_branch_limit()
     branch.is_active = active
     branch.save(update_fields=["is_active", "updated_at"])
     return branch

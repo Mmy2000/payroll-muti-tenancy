@@ -188,6 +188,7 @@
           <p class="text-sm text-slate-600">{% blocktranslate trimmed with day=employee.left_on|date:"DATE_FORMAT" %}Left on {{ day }}.{% endblocktranslate %} {{ employee.leave_reason }}</p>
           <form data-api-form data-method="POST" data-endpoint="{{ endpoint }}reinstate/" data-success="{% translate 'Saved.' %}">
             <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
+            {% if can_restore_login %}<label class="mb-3 flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" name="restore_login" class="form-checkbox">{% translate "Open their login again" %}</label>{% endif %}
             <button type="submit" class="btn btn-secondary w-full">{% translate "Undo: still working here" %}</button>
           </form>
         {% else %}

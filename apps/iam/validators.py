@@ -13,6 +13,7 @@ from django.utils.translation import gettext as _
 
 from apps.core.errors import PermissionDenied, ValidationError
 
+from .authz import ALL_BRANCHES
 from .catalog import OWNER, WILDCARD, is_known_permission
 from .models import Membership, MembershipRole, MembershipStatus, Role, User
 
@@ -21,21 +22,37 @@ if TYPE_CHECKING:
 
 
 def is_superior(actor) -> bool:
-    return actor is None or WILDCARD in actor.grants
+    """A trusted caller, or an Owner in every branch: an Owner limited to some is not one."""
+    return actor is None or actor.grants.get(WILDCARD, frozenset()) is ALL_BRANCHES
 
 
-def ensure_can_grant(actor, codes) -> None:
+def _covers(actor, code: str, branch_ids) -> bool:
+    held = actor.branch_ids(code)
+    return actor.can(code) and (held is ALL_BRANCHES
+                                or (branch_ids is not None and set(branch_ids) <= held))
+
+
+def ensure_can_grant(actor, codes, branch_ids=None) -> None:
+    """Permissions may be given only where the actor holds them: `branch_ids`, or every branch
+    when None. Holding a permission in one branch doesn't let anyone hand it out in all."""
     if is_superior(actor):
         return
-    if WILDCARD in codes or any(not actor.can(code) for code in codes):
+    if WILDCARD in codes or any(not _covers(actor, code, branch_ids) for code in codes):
         raise PermissionDenied(_("You can only grant permissions you have yourself."),
                                code="IAM_ESCALATION")
 
 
+def assignment_branches(assignment: MembershipRole) -> set[int] | None:
+    """Where an assignment holds: its branches, None for every branch."""
+    if assignment.all_branches:
+        return None
+    return {row.branch_id for row in assignment.branches.all()}
+
+
 def ensure_can_act_on(membership, actor) -> None:
     """Acting as a member, or letting someone in as them, takes the powers they hold."""
-    for assignment in membership.roles.select_related("role"):
-        ensure_can_grant(actor, role_codes(assignment.role))
+    for assignment in membership.roles.select_related("role").prefetch_related("branches"):
+        ensure_can_grant(actor, role_codes(assignment.role), assignment_branches(assignment))
 
 
 def role_codes(role: Role) -> set[str]:
@@ -44,7 +61,8 @@ def role_codes(role: Role) -> set[str]:
 
 def ensure_an_owner_remains() -> None:
     active_owners = (MembershipRole.objects
-                     .filter(role__code=OWNER, membership__status=MembershipStatus.ACTIVE)
+                     .filter(role__code=OWNER, all_branches=True,
+                             membership__status=MembershipStatus.ACTIVE)
                      .values("membership").distinct().count())
     if active_owners == 0:
         raise ValidationError(_("The workspace must keep at least one active owner."),
@@ -121,6 +139,11 @@ def validate_member(data: MemberInput, user: User | None) -> dict:
         errors["roles"] = [_("Unknown role.")]
     if not data.roles:
         errors["roles"] = [_("Give the member at least one role.")]
+    if any(a.branch_ids is not None and not a.branch_ids for a in data.roles):
+        errors["roles"] = [_("Choose at least one branch for each role.")]
+    if any(a.branch_ids is not None and a.role_id in roles and roles[a.role_id].code == OWNER
+           for a in data.roles):
+        errors["roles"] = [_("An Owner covers every branch.")]
 
     branch_ids = {b for a in data.roles for b in (a.branch_ids or ())}
     branches = {b.pk: b for b in Branch.objects.filter(pk__in=branch_ids)}

@@ -49,6 +49,7 @@
 <form class="mt-6" data-api-form data-method="POST" data-redirect="{% url 'departments' %}" data-success="{% translate 'Saved.' %}"
       data-endpoint="{{ endpoint }}{% if department.is_active %}deactivate/{% else %}activate/{% endif %}">
   <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700 lg:w-2/3" data-form-error role="alert"></div>
+  {% if department.is_active and in_use %}<p class="mb-3 rounded-lg bg-amber-50 px-3.5 py-3 text-sm text-amber-800 lg:w-2/3">{% translate "Employees work in this department. They stay in it, but nobody can be added until it is active again." %}</p>{% endif %}
   <button type="submit" class="btn btn-secondary">{% if department.is_active %}{% translate "Deactivate" %}{% else %}{% translate "Reactivate" %}{% endif %}</button>
 </form>
 {% endif %}

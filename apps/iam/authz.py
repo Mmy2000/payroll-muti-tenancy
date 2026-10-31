@@ -18,7 +18,7 @@ from django.utils.translation import gettext as _
 
 from apps.core.errors import PermissionDenied
 
-from .catalog import AUTHENTICATED, WILDCARD, limits
+from .catalog import AUTHENTICATED, WILDCARD, is_company_wide, limits
 
 ALL_BRANCHES = None  # scope value meaning "every branch"
 
@@ -45,13 +45,18 @@ class Actor:
                 yield self.grants[key]
 
     def can(self, code: str, branch=None) -> bool:
+        """In `branch`, or with no branch, in at least one. A company-wide permission
+        (apps.iam.catalog) counts only when it is held in every branch."""
         if code == AUTHENTICATED:
             return True
         if code in self.disabled:
             return False
         branch_id = getattr(branch, "pk", branch)
+        company_wide = is_company_wide(code)
         for scope in self._scopes(code):
-            if scope is ALL_BRANCHES or branch_id is None or branch_id in scope:
+            if scope is ALL_BRANCHES:
+                return True
+            if not company_wide and (branch_id in scope if branch_id is not None else scope):
                 return True
         return False
 
@@ -70,7 +75,8 @@ class Actor:
         """Branches where `code` is granted (None = all). Used to scope list queries."""
         result: frozenset[int] | None = frozenset()
         for scope in self._scopes(code):
-            result = _merge(result, scope)
+            if scope is ALL_BRANCHES or not is_company_wide(code):
+                result = _merge(result, scope)
         return result
 
     def limit(self, key: str) -> Decimal:
@@ -121,7 +127,9 @@ def members_who_can(code: str, branch=None):
         return Membership.objects.none()
     assignments = MembershipRole.objects.filter(role__grants__permission__in=(code, WILDCARD))
     branch_id = getattr(branch, "pk", branch)
-    if branch_id is not None:
+    if is_company_wide(code):
+        assignments = assignments.filter(all_branches=True)
+    elif branch_id is not None:
         assignments = assignments.filter(Q(all_branches=True) | Q(branches__branch_id=branch_id))
     return Membership.objects.filter(status=MembershipStatus.ACTIVE, user__is_active=True,
                                      pk__in=assignments.values("membership_id"))

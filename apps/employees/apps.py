@@ -7,8 +7,8 @@ class EmployeesConfig(AppConfig):
     verbose_name = "Employees"
 
     def ready(self):
-        from apps.org.validators import register_department_use
+        from apps.org.validators import register_use
 
-        from .selectors import department_in_use
+        from .selectors import department_has_employees, has_employees
 
-        register_department_use(department_in_use)
+        register_use(department=department_has_employees, branch=has_employees)

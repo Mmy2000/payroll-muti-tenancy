@@ -7,4 +7,5 @@ register_permissions(_("Administration"), [
     ("admin.users.manage", _("Manage users and their roles")),
     ("admin.roles.manage", _("Manage roles")),
     ("admin.signins.history", _("See who signed in, when and from where, and failed attempts")),
-])
+], company_wide=("admin.users.view", "admin.users.manage", "admin.roles.manage",
+                 "admin.signins.history"))

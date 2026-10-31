@@ -148,6 +148,10 @@ class LeaveSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=300, allow_blank=True, default="")
 
 
+class ReinstateSerializer(serializers.Serializer):
+    restore_login = serializers.BooleanField(default=False)
+
+
 class TargetFields(serializers.Serializer):
     """Mix into a write serializer: `target_kind` (employee / department / branch) and
     `target_id`; `target(data)` gives the Target."""

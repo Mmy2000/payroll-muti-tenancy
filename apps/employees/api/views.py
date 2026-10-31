@@ -16,6 +16,7 @@ from .serializers import (
     LeaveSerializer,
     NewEmployeeSerializer,
     PayWriteSerializer,
+    ReinstateSerializer,
     ScheduleWriteSerializer,
 )
 
@@ -90,7 +91,9 @@ class EmployeeViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def reinstate(self, request, pk=None):
-        return self._show(employees.reinstate(int(pk), actor=request.actor))
+        data = _valid(ReinstateSerializer, request.data)
+        return self._show(employees.reinstate(int(pk), restore_login=data["restore_login"],
+                                              actor=request.actor))
 
 
 class PayChangeViewSet(viewsets.GenericViewSet):

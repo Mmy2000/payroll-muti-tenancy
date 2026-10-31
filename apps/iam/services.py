@@ -39,8 +39,10 @@ from .models import (
     User,
 )
 from .validators import (
+    assignment_branches,
     clean_permissions,
     ensure_an_owner_remains,
+    ensure_can_act_on,
     ensure_can_grant,
     ensure_not_shared,
     member_role_codes,
@@ -88,6 +90,10 @@ def set_role_permissions(role: Role, codes: list[str], *, actor=None) -> None:
     if role.code == OWNER:
         raise ValidationError(_("The Owner role cannot be changed."), code="IAM_OWNER_LOCKED")
     codes = clean_permissions(codes)
+    if role.code == EMPLOYEE and codes != [APP_SIGNIN]:
+        # A member with this role alone counts as an app login, not an office user.
+        raise ValidationError(_("The Employee (app) role only signs in to the mobile app."),
+                              code="IAM_EMPLOYEE_LOCKED")
     ensure_can_grant(actor, codes)
     with transaction.atomic():
         role.grants.all().delete()
@@ -160,12 +166,16 @@ class MemberInput:
 def _apply_roles(membership: Membership, data: MemberInput, clean: dict, actor) -> None:
     wanted = {a.role_id: a for a in data.roles}
     for role in clean["roles"].values():
-        ensure_can_grant(actor, role_codes(role))
-    removed = MembershipRole.objects.filter(membership=membership).exclude(role_id__in=wanted)
-    for assignment in removed.select_related("role"):
-        # Taking a role away is also a grant decision: you can't strip powers you don't hold.
-        ensure_can_grant(actor, role_codes(assignment.role))
-    removed.delete()
+        ensure_can_grant(actor, role_codes(role), wanted[role.pk].branch_ids)
+    current = MembershipRole.objects.filter(membership=membership)
+    for assignment in current.select_related("role").prefetch_related("branches"):
+        # Taking a role or a branch away is also a grant decision: you can't strip powers you
+        # don't hold.
+        held = assignment_branches(assignment)
+        kept = wanted.get(assignment.role_id)
+        if kept is None or (set(kept.branch_ids) if kept.branch_ids is not None else None) != held:
+            ensure_can_grant(actor, role_codes(assignment.role), held)
+    current.exclude(role_id__in=wanted).delete()
     for role_id, assignment in wanted.items():
         branches = (None if assignment.branch_ids is None
                     else [clean["branches"][b] for b in assignment.branch_ids])
@@ -234,8 +244,7 @@ def set_member_status(membership_id: int, status: str, *, actor=None) -> Members
             raise NotFound(_("Not found."))
         if actor is not None and membership.pk == actor.membership.pk:
             raise ValidationError(_("You cannot suspend yourself."), code="IAM_SELF_SUSPEND")
-        for assignment in membership.roles.select_related("role"):
-            ensure_can_grant(actor, role_codes(assignment.role))
+        ensure_can_act_on(membership, actor)
         if status == MembershipStatus.ACTIVE and membership.status != MembershipStatus.ACTIVE:
             check_room_for(member_role_codes(membership))  # back in: takes a place again
         membership.status = status
@@ -251,8 +260,7 @@ def set_member_password(membership_id: int, password: str, *, actor=None) -> Non
     membership = Membership.objects.select_related("user").filter(pk=membership_id).first()
     if membership is None:
         raise NotFound(_("Not found."))
-    for assignment in membership.roles.select_related("role"):
-        ensure_can_grant(actor, role_codes(assignment.role))
+    ensure_can_act_on(membership, actor)
     ensure_not_shared(membership.user, "password")
     try:
         validate_password(password, user=membership.user)

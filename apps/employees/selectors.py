@@ -185,5 +185,9 @@ def resolve_group(group: Group, *, on: date, actor=None, permission: str) -> lis
     return people
 
 
-def department_in_use(department) -> bool:
+def department_has_employees(department) -> bool:
     return Employee.objects.filter(department=department).exists()
+
+
+def has_employees(branch) -> bool:
+    return Employee.objects.filter(branch=branch).exists()

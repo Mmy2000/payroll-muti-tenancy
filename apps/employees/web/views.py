@@ -106,6 +106,8 @@ def employee(request, pk):
         "can_app_login": actor.can("mobile.signin") and actor.can("admin.users.manage")
         and actor.can(MANAGE, branch=person.branch_id),
         "linked_user": selectors.office_member(person),
+        "can_restore_login": (person.member_id is not None and actor.can("admin.users.manage")
+                              and not person.member.is_active),
         "can_see_pay": actor.can(SALARY_READ, branch=person.branch_id),
         "can_change_pay": actor.can(SALARY_MANAGE, branch=person.branch_id),
         "can_see_attendance": actor.can("attendance.day.view", branch=person.branch_id),

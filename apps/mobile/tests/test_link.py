@@ -135,13 +135,22 @@ def test_the_choice_needs_the_app_and_the_actors_branches(tenant_a, office, make
         other_branch = Branch.objects.create(code=2, name="Alexandria")
         Employee.objects.filter(pk=office["hany"].pk).update(branch=other_branch)
         head_office = Branch.objects.get(code=1)
-    # A manager of the head office only does not see, nor link, the other branch's employee.
-    make_member(tenant_a, "boss", "owner", branches=[head_office])
+    # Someone who manages users, but employees of the head office only, does not see, nor link,
+    # the other branch's employee.
+    boss_member = make_member(tenant_a, "boss", "viewer")
+    with tenant_context(tenant_a.id):
+        from apps.iam import services as iam
+
+        users = iam.create_role("Users", "", ["admin.users.manage", "mobile.signin"])
+        people = iam.create_role("People", "", ["employees.employee.manage"])
+        iam.assign_role(boss_member, users)
+        iam.assign_role(boss_member, people, branches=[head_office])
     boss = login(tenant_a, "boss", language="en")
     page = boss.get(reverse("user-edit", args=[member.pk])).content.decode()
     assert "Samir" in page and "Hany" not in page
     with tenant_context(tenant_a.id):
-        assert _save(boss, member, employee=office["hany"].pk).status_code == 404
+        assert _save(boss, member, employee=office["hany"].pk).status_code != 200
+        assert Employee.objects.get(pk=office["hany"].pk).member_id is None
 
     # With the mobile app off for the client, the form does not offer the link.
     _switch(tenant_a, mobile_app=False)

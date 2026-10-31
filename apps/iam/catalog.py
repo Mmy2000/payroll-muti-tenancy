@@ -18,6 +18,7 @@ class PermissionDef:
     code: str
     label: str
     group: str
+    company_wide: bool = False  # about the whole client: held in every branch or not at all
 
 
 @dataclass(frozen=True)
@@ -31,11 +32,13 @@ _permissions: dict[str, PermissionDef] = {}
 _limits: dict[str, LimitDef] = {}
 
 
-def register_permissions(group: str, entries: list[tuple[str, str]]) -> None:
+def register_permissions(group: str, entries: list[tuple[str, str]], *,
+                         company_wide: tuple[str, ...] = ()) -> None:
     for code, label in entries:
         if code in _permissions:
             raise ValueError(f"Permission {code} registered twice")
-        _permissions[code] = PermissionDef(code=code, label=label, group=group)
+        _permissions[code] = PermissionDef(code=code, label=label, group=group,
+                                           company_wide=code in company_wide)
 
 
 def register_limit(key: str, label: str, default: str) -> None:
@@ -54,6 +57,11 @@ def limits() -> dict[str, LimitDef]:
 
 def is_known_permission(code: str) -> bool:
     return code == WILDCARD or code in _permissions
+
+
+def is_company_wide(code: str) -> bool:
+    found = _permissions.get(code)
+    return found is not None and found.company_wide
 
 
 OWNER = "owner"

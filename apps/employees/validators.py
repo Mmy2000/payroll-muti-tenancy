@@ -41,6 +41,23 @@ def national_id_problem(value: str) -> str | None:
     return None
 
 
+def check_placement(employee: Employee, branch_id: int, department_id: int | None) -> dict:
+    """Where the employee works. Someone already in a deactivated branch or department stays
+    valid: only a move into one is refused."""
+    errors: dict[str, list[str]] = {}
+    if (branch_id != employee.branch_id
+            and not Branch.objects.filter(pk=branch_id, is_active=True).exists()):
+        errors["branch_id"] = [_("Choose an active branch.")]
+    if department_id is not None:
+        department = Department.objects.filter(pk=department_id).first()
+        if department is None or (department_id != employee.department_id
+                                  and not department.is_active):
+            errors["department_id"] = [_("Choose an active department.")]
+        elif department.branch_id != branch_id:
+            errors["department_id"] = [_("This department isn't in the employee's branch.")]
+    return errors
+
+
 def check_card(data: EmployeeInput, employee: Employee) -> dict:
     errors: dict[str, list[str]] = {}
     if not data.name.strip():
@@ -49,14 +66,7 @@ def check_card(data: EmployeeInput, employee: Employee) -> dict:
         errors["code"] = [_("Enter a code from 1.")]
     elif Employee.objects.filter(code=data.code).exclude(pk=employee.pk).exists():
         errors["code"] = [_("Another employee has this code.")]
-    if not Branch.objects.filter(pk=data.branch_id, is_active=True).exists():
-        errors["branch_id"] = [_("Choose an active branch.")]
-    if data.department_id is not None:
-        department = Department.objects.filter(pk=data.department_id, is_active=True).first()
-        if department is None:
-            errors["department_id"] = [_("Choose an active department.")]
-        elif department.branch_id != data.branch_id:
-            errors["department_id"] = [_("This department isn't in the employee's branch.")]
+    errors.update(check_placement(employee, data.branch_id, data.department_id))
     for name, choices in (("gender", Gender), ("marital_status", MaritalStatus),
                           ("military_status", MilitaryStatus)):
         value = getattr(data, name)

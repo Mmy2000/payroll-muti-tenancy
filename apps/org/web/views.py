@@ -7,6 +7,7 @@ from apps.iam.authz import permission_required
 
 from .. import permissions, selectors
 from ..listing import ListQuery
+from ..validators import branch_in_use, department_in_use
 
 
 @permission_required("org.branch.view")
@@ -20,6 +21,7 @@ def _branch_form(request, branch=None):
     return render(request, "org/branch_form.html", {
         "branch": branch,
         "departments": selectors.branch_departments(branch) if branch else [],
+        "in_use": branch is not None and branch_in_use(branch),
         "next_code": next_code,
         "endpoint": (reverse("branch-detail", args=[branch.pk]) if branch
                      else reverse("branch-list")),
@@ -52,6 +54,7 @@ def _department_form(request, department=None):
     allowed = request.actor.branch_ids(permissions.DEPARTMENT_MANAGE)
     return render(request, "org/department_form.html", {
         "department": department,
+        "in_use": department is not None and department_in_use(department),
         "branches": selectors.active_branches_by_code(allowed),
         "chosen_branch": department.branch_id if department else request.GET.get("branch", ""),
         "endpoint": (reverse("department-detail", args=[department.pk]) if department

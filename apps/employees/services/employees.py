@@ -7,16 +7,20 @@ the employees of those branches. Pay is a permission of its own (`employees.sala
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import date, time, timedelta
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.crypto import blind_index, encrypt
-from apps.core.errors import DomainError, NotFound, invalid_fields
+from apps.core.errors import DomainError, NotFound, ValidationError, invalid_fields
+from apps.iam import services as iam
+from apps.iam.models import MembershipStatus
 
 from ..models import Compensation, Employee, PayFrequency, WageType, WorkSchedule
 from ..permissions import MANAGE, SALARY_MANAGE
@@ -29,6 +33,8 @@ from ..validators import (
     check_schedule,
     normalize_national_id,
 )
+
+logger = logging.getLogger(__name__)
 
 # --- the card ------------------------------------------------------------------------------
 
@@ -240,11 +246,37 @@ def end_employment(employee_id: int, left_on: date, reason: str = "", *,
         employee.left_on, employee.leave_reason = left_on, reason.strip()
         employee.updated_by = getattr(actor, "user", None)
         employee.save(update_fields=["left_on", "leave_reason", "updated_by", "updated_at"])
+        if left_on < timezone.localdate():
+            _close_login(employee)
     return employee
 
 
-def reinstate(employee_id: int, *, actor=None) -> Employee:
-    """Undo a departure entered by mistake."""
+def _close_login(employee: Employee) -> None:
+    """Whoever has left signs in no more. The client's last Owner is kept, or nobody could get
+    in to put it right."""
+    if employee.member_id is None:
+        return
+    try:
+        with transaction.atomic():
+            iam.set_member_status(employee.member_id, MembershipStatus.SUSPENDED)
+    except ValidationError as error:
+        if error.code != "IAM_LAST_OWNER":
+            raise
+        logger.warning("Employee %s left but is the last owner: login kept", employee.pk)
+
+
+def close_leavers_logins() -> int:
+    """The logins of everyone whose last day has passed (a departure may be entered ahead)."""
+    leavers = Employee.objects.filter(left_on__lt=timezone.localdate(),
+                                      member__status=MembershipStatus.ACTIVE)
+    for employee in leavers:
+        _close_login(employee)
+    return len(leavers)
+
+
+def reinstate(employee_id: int, *, restore_login: bool = False, actor=None) -> Employee:
+    """Undo a departure entered by mistake. The login opens again only when asked, by someone
+    who may do that."""
     with transaction.atomic():
         employee = get_employee(employee_id, actor, MANAGE, lock=True)
         if actor is not None:
@@ -252,4 +284,11 @@ def reinstate(employee_id: int, *, actor=None) -> Employee:
         employee.left_on, employee.leave_reason = None, ""
         employee.updated_by = getattr(actor, "user", None)
         employee.save(update_fields=["left_on", "leave_reason", "updated_by", "updated_at"])
+        if restore_login:
+            _open_login(employee, actor)
     return employee
+
+
+def _open_login(employee: Employee, actor) -> None:
+    if employee.member_id is not None and employee.member.status != MembershipStatus.ACTIVE:
+        iam.set_member_status(employee.member_id, MembershipStatus.ACTIVE, actor=actor)

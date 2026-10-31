@@ -12,12 +12,23 @@ if TYPE_CHECKING:
     from .services import DepartmentInput
 
 
-_in_use_checks = []
+_department_checks = []
+_branch_checks = []
 
 
-def register_department_use(check) -> None:
-    """For an app whose records point at a department: `check(department)` says if any do."""
-    _in_use_checks.append(check)
+def register_use(*, department, branch) -> None:
+    """For an app whose records point at departments and branches: `department(row)` and
+    `branch(row)` say whether any do."""
+    _department_checks.append(department)
+    _branch_checks.append(branch)
+
+
+def department_in_use(department: Department) -> bool:
+    return any(check(department) for check in _department_checks)
+
+
+def branch_in_use(branch: Branch) -> bool:
+    return any(check(branch) for check in _branch_checks)
 
 
 def check_department(department: Department, data: DepartmentInput) -> dict:
@@ -28,7 +39,7 @@ def check_department(department: Department, data: DepartmentInput) -> dict:
     if not Branch.objects.filter(pk=data.branch_id, is_active=True).exists():
         errors["branch"] = [_("Choose an active branch.")]
     elif (department.pk and department.branch_id != data.branch_id
-          and any(check(department) for check in _in_use_checks)):
+          and department_in_use(department)):
         errors["branch"] = [_("This department has employees: move them first.")]
     if data.code is not None and neighbours.filter(code=data.code).exists():
         errors["code"] = [_("Another department in this branch has this code.")]

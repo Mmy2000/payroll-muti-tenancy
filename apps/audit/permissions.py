@@ -4,4 +4,4 @@ from apps.iam.catalog import register_permissions
 
 register_permissions(_("Administration"), [
     ("admin.audit.history", _("See the history of changes (who changed what, and when)")),
-])
+], company_wide=("admin.audit.history",))
