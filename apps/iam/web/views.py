@@ -100,6 +100,8 @@ def _role_form(request, role=None):
         "granted": granted,
         "sections": selectors.permission_sections(request.actor.disabled),
         "gaps": selectors.role_gaps(granted - {WILDCARD}),
+        "limited_holders": selectors.limited_holders(role) if role else [],
+        "company_wide_held": selectors.company_wide_labels(granted),
         "endpoint": endpoint,
         "method": "PUT" if role else "POST",
     })

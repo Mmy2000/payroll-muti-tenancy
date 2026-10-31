@@ -97,6 +97,13 @@ def role_gaps(codes) -> list[dict]:
             for code, missing in missing_needs(codes).items()]
 
 
+def limited_holders(role: Role) -> QuerySet[Membership]:
+    """Active members who hold `role` for selected branches only."""
+    return (Membership.objects.filter(roles__role=role, roles__all_branches=False,
+                                      status=MembershipStatus.ACTIVE)
+            .select_related("user").order_by("username").distinct())
+
+
 def company_wide_labels(codes) -> list:
     """Of `codes`, those that do nothing unless the role is given for every branch."""
     catalog = permissions()

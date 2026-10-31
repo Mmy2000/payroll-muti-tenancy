@@ -14,7 +14,8 @@
 {% block content %}
 <form class="grid grid-cols-1 gap-6 lg:grid-cols-3" data-api-form data-shape="role" data-endpoint="{{ endpoint }}"
       data-method="{{ method }}" data-redirect="{% url 'roles' %}" data-success="{% translate 'Saved.' %}"
-      data-also-on="{% translate 'Also turned on:' %}" data-also-off="{% translate 'Also turned off:' %}" novalidate>
+      data-also-on="{% translate 'Also turned on:' %}" data-also-off="{% translate 'Also turned off:' %}"
+      data-only-all="{% translate 'This works only when the role is given for all branches.' %}" novalidate>
   <div class="space-y-6 lg:col-span-2">
     <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>
     <section class="card">
@@ -41,7 +42,21 @@
     </div>
     {% endif %}
 
-    <p class="flex gap-2 text-xs text-slate-500">{% icon "info" "size-4 shrink-0" %}{% translate "Seeing a screen comes first. Ticking a step also ticks what it needs, or the person would have nothing to open." %}</p>
+    {% if limited_holders %}
+    <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" data-branch-warning role="status" {% if not company_wide_held %}hidden{% endif %}>
+      <p class="font-medium">{% translate "These permissions won't work for everyone who holds this role:" %}</p>
+      <p class="mt-1" data-branch-warning-steps>{{ company_wide_held|join:" · " }}</p>
+      <p class="mt-2">{% translate "They have this role for selected branches. Give it to them for all branches on their user page:" %}</p>
+      <ul class="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        {% for member in limited_holders %}<li><a class="font-medium underline" href="{% url 'user-edit' member.pk %}">{{ member.user.display_name|default:member.username }}</a></li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="space-y-1 text-xs text-slate-500">
+      <p class="flex gap-2">{% icon "info" "size-4 shrink-0" %}{% translate "Seeing a screen comes first. Ticking a step also ticks what it needs, or the person would have nothing to open." %}</p>
+      <p class="flex gap-2">{% icon "info" "size-4 shrink-0" %}{% translate "Permissions marked Only with all branches do nothing when the role is given for selected branches." %}</p>
+    </div>
 
     {% for section in sections %}
     <section class="card overflow-hidden" data-permission-group>
@@ -59,11 +74,11 @@
             {% for step in screen.steps %}
             <label class="flex items-start gap-2.5 rounded-lg p-2 hover:bg-slate-50">
               <input type="checkbox" class="mt-0.5 size-4 shrink-0 rounded border-slate-300 accent-brand-600" data-permission="{{ step.code }}"
-                     data-needs="{{ step.needs }}" {% if step.code in granted %}checked{% endif %}>
+                     data-needs="{{ step.needs }}" {% if step.company_wide %}data-company-wide{% endif %} {% if step.code in granted %}checked{% endif %}>
               <span class="min-w-0">
                 <span class="block text-sm text-slate-900" data-step-label>{{ step.label }}</span>
                 {% if step.needs_elsewhere %}<span class="block text-[11px] text-slate-500">{% translate "needs" %} {{ step.needs_elsewhere|join:" · " }}</span>{% endif %}
-                {% if step.company_wide %}<span class="mt-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-500">{% translate "All branches" %}</span>{% endif %}
+                {% if step.company_wide %}<span class="mt-1 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-800">{% translate "Only with all branches" %}</span>{% endif %}
                 {% if step.off %}<span class="mt-1 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-800">{% translate "Not in your plan" %}</span>{% endif %}
               </span>
             </label>

@@ -45,8 +45,21 @@ document.addEventListener("change", (event) => {
     group.querySelectorAll("[data-permission]").forEach((box) => (box.checked = target.checked));
     keepRoleWhole(target.form, target.checked);
   }
-  if (target.matches("[data-permission]")) keepRoleWhole(target.form, target.checked);
+  if (target.matches("[data-permission]")) {
+    keepRoleWhole(target.form, target.checked);
+    if (target.checked && target.matches("[data-company-wide]")) toast(target.form.dataset.onlyAll);
+  }
+  if (target.matches("[data-permission], [data-group-toggle]")) refreshBranchWarning(target.form);
 });
+
+// Members holding this role for selected branches don't get its company-wide permissions.
+function refreshBranchWarning(form) {
+  const warning = document.querySelector("[data-branch-warning]");
+  if (!warning) return;
+  const held = Array.from(form.querySelectorAll("[data-company-wide]:checked"), labelOf);
+  warning.hidden = held.length === 0;
+  warning.querySelector("[data-branch-warning-steps]").textContent = held.join(" · ");
+}
 
 const boxOf = (form, code) => form.querySelector(`[data-permission="${code}"]`);
 const needsOf = (box) => box.dataset.needs.split(" ").filter(Boolean);

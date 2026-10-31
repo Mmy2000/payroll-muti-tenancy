@@ -126,3 +126,29 @@ def test_the_role_page_marks_what_the_plan_switched_off(tenant_a):
     features.forget(tenant_a.pk)
     page = login(tenant_a, language="en").get("/settings/roles/new/").content.decode()
     assert "Not in your plan" in page
+
+
+def test_the_role_page_names_who_a_company_wide_permission_wont_reach(tenant_a, make_member):
+    with tenant_context(tenant_a.id):
+        head = Branch.objects.get(code=1)
+        role = services.create_role("Admin", "", ["admin.users.view", "admin.users.manage"])
+    limited = make_member(tenant_a, "local", "viewer")
+    full = make_member(tenant_a, "wide", "viewer")
+    with tenant_context(tenant_a.id):
+        services.assign_role(limited, role, branches=[head])
+        services.assign_role(full, role)
+    page = login(tenant_a, language="en").get(f"/settings/roles/{role.pk}/").content.decode()
+    warning = page[page.index("data-branch-warning"):page.index("Seeing a screen comes first")]
+    assert "work for everyone" in warning
+    assert "Local" in warning and "Wide" not in warning
+    assert "View users" in warning
+    assert 'hidden' not in warning.split(">")[0]
+
+
+def test_nobody_limited_means_no_warning(tenant_a):
+    with tenant_context(tenant_a.id):
+        role = services.create_role("Admin", "", ["admin.users.view"])
+    page = login(tenant_a, language="en").get(f"/settings/roles/{role.pk}/").content.decode()
+    assert "data-branch-warning" not in page.replace("data-only-all", "")
+    assert "Only with all branches" in page
+
