@@ -79,6 +79,16 @@ class Actor:
                 result = _merge(result, scope)
         return result
 
+    def holds_everywhere(self, code: str) -> bool:
+        return code not in self.disabled and self.branch_ids(code) is ALL_BRANCHES
+
+    def require_everywhere(self, code: str) -> None:
+        """For what reaches beyond one branch: a new branch, moving the head office."""
+        self.require(code)
+        if not self.holds_everywhere(code):
+            raise PermissionDenied(_("This needs the permission in every branch."),
+                                   code="PERMISSION_DENIED")
+
     def limit(self, key: str) -> Decimal:
         """A member's numeric limit (e.g. max discount rate). Explicit values win; Owners
         (wildcard) are otherwise unlimited (1 = 100 %); everyone else gets the default."""

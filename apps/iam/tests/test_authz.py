@@ -57,7 +57,7 @@ class TestRoles:
             head = Branch.objects.get(code=1)
         assert actor.can("org.department.manage", branch=second)
         assert not actor.can("org.department.manage", branch=head)
-        assert not actor.can("org.branch.manage", branch=second)  # about the whole client
+        assert not actor.can("org.settings.manage")  # about the whole client
 
     def test_owner_role_is_locked_and_unknown_codes_rejected(self, tenant_a):
         from apps.core.errors import ValidationError

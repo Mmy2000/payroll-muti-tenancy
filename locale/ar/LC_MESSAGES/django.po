@@ -1757,6 +1757,9 @@ msgstr "حسابات الموظفين على تطبيق الموبايل، تُ�
 msgid "Employees' own logins to the mobile app."
 msgstr "حسابات الموظفين على تطبيق الموبايل."
 
+msgid "Employees' pay"
+msgstr "رواتب الموظفين"
+
 msgid "Employer"
 msgstr "صاحب العمل"
 

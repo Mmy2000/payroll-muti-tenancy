@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -12,8 +13,9 @@ from ..validators import branch_in_use, department_in_use
 
 @permission_required("org.branch.view")
 def branches(request):
-    return render(request, "org/branches.html",
-                  {"branches": selectors.branches_with_department_counts()})
+    return render(request, "org/branches.html", {
+        "branches": selectors.branches_with_department_counts(),
+        "can_create": request.actor.holds_everywhere(permissions.BRANCH_MANAGE)})
 
 
 def _branch_form(request, branch=None):
@@ -22,6 +24,7 @@ def _branch_form(request, branch=None):
         "branch": branch,
         "departments": selectors.branch_departments(branch) if branch else [],
         "in_use": branch is not None and branch_in_use(branch),
+        "can_choose_head_office": request.actor.holds_everywhere(permissions.BRANCH_MANAGE),
         "next_code": next_code,
         "endpoint": (reverse("branch-detail", args=[branch.pk]) if branch
                      else reverse("branch-list")),
@@ -29,15 +32,17 @@ def _branch_form(request, branch=None):
     })
 
 
-@permission_required("org.branch.manage")
+@permission_required(permissions.BRANCH_MANAGE)
 def branch_new(request):
+    if not request.actor.holds_everywhere(permissions.BRANCH_MANAGE):
+        raise PermissionDenied
     return _branch_form(request)
 
 
-@permission_required("org.branch.manage")
+@permission_required(permissions.BRANCH_MANAGE)
 def branch_edit(request, pk):
     branch = selectors.branch_by_id(pk)
-    if branch is None:
+    if branch is None or not request.actor.can(permissions.BRANCH_MANAGE, branch=branch):
         raise Http404
     return _branch_form(request, branch)
 

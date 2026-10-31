@@ -72,7 +72,7 @@ of the app under a name that says what they are.
 | Rendering a page | `web/views.py` and templates | services |
 | A route of the browser's API | the app's `api/urls.py` | views |
 | A route of a page | `config/urls.py` | the apps |
-| A permission code | the app's `permissions.py` | strings invented in a view |
+| A permission code | the app's `permissions.py`, and its place in `apps/iam/flow.py` | strings invented in a view |
 | Background work | a `@task` in `jobs.py`, queued with `enqueue()` | threads, `on_commit` sends |
 | A reaction in another app | `handlers.py`, on a domain event | a direct import of that app |
 | A document number | `apps.core.sequences.allocate_number` | `max(number) + 1` |

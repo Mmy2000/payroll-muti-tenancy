@@ -10,8 +10,9 @@ register_permissions(_("Organisation"), [
     ("org.department.manage", _("Manage departments")),
     ("org.position.view", _("View positions")),
     ("org.position.manage", _("Manage positions")),
-], company_wide=("org.branch.manage", "org.settings.manage", "org.position.manage"))
+], company_wide=("org.settings.manage", "org.position.manage"))
 
 
+BRANCH_MANAGE = "org.branch.manage"
 DEPARTMENT_VIEW, DEPARTMENT_MANAGE = "org.department.view", "org.department.manage"
 POSITION_VIEW, POSITION_MANAGE = "org.position.view", "org.position.manage"

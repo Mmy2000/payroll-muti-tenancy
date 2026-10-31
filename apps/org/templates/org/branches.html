@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Branches" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% translate "Your shops and offices." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'branch-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New branch" %}</a>{% endif %}
+  {% if can_create %}<a href="{% url 'branch-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New branch" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -22,6 +22,7 @@
       </tr></thead>
       <tbody>
       {% for branch in branches %}
+      {% can "org.branch.manage" branch as can_edit %}
         <tr>
           <td><span class="num text-slate-500">{{ branch.code|stringformat:"02d" }}</span></td>
           <td class="font-medium text-slate-900">{{ branch.name }}</td>
@@ -31,7 +32,7 @@
             {% if branch.is_head_office %}<span class="badge badge-brand">{% translate "Head office" %}</span>{% endif %}
           </td>
           <td>{% if branch.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
-          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'branch-edit' branch.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+          <td class="text-end">{% if can_edit %}<a class="btn btn-ghost text-xs" href="{% url 'branch-edit' branch.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

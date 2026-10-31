@@ -95,7 +95,7 @@ def _role_form(request, role=None):
         "role": role,
         "is_owner": WILDCARD in granted,
         "granted": granted,
-        "groups": selectors.permission_groups(),
+        "sections": selectors.permission_sections(),
         "endpoint": endpoint,
         "method": "PUT" if role else "POST",
     })

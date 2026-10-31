@@ -13,7 +13,7 @@ from apps.core.errors import NotFound, ValidationError
 from apps.core.media import replace_file
 
 from .models import Branch, Department, Position, TenantProfile
-from .permissions import DEPARTMENT_MANAGE, POSITION_MANAGE
+from .permissions import BRANCH_MANAGE, DEPARTMENT_MANAGE, POSITION_MANAGE
 from .selectors import next_department_code
 from .validators import check_department, check_position
 
@@ -24,7 +24,7 @@ class BranchInput:
     name: str
     phone: str = ""
     address: str = ""
-    is_head_office: bool = False
+    is_head_office: bool | None = None  # None: stays as it is
     # Where it is, for the mobile app's geofence (both or neither).
     latitude: Decimal | None = None
     longitude: Decimal | None = None
@@ -36,7 +36,8 @@ def _save(branch: Branch, data: BranchInput, actor) -> Branch:
     branch.name = data.name.strip()
     branch.phone = data.phone.strip()
     branch.address = data.address.strip()
-    branch.is_head_office = data.is_head_office
+    if data.is_head_office is not None:
+        branch.is_head_office = data.is_head_office
     if (data.latitude is None) != (data.longitude is None):
         raise ValidationError(_("Please correct the highlighted fields."),
                               fields={"longitude": [_("Enter both the latitude and the "
@@ -61,7 +62,7 @@ def _save(branch: Branch, data: BranchInput, actor) -> Branch:
 
 def create_branch(data: BranchInput, *, actor=None) -> Branch:
     if actor is not None:
-        actor.require("org.branch.manage")
+        actor.require_everywhere(BRANCH_MANAGE)
     from .limits import check_branch_limit
 
     check_branch_limit()
@@ -69,20 +70,28 @@ def create_branch(data: BranchInput, *, actor=None) -> Branch:
 
 
 def update_branch(branch_id: int, data: BranchInput, *, actor=None) -> Branch:
+    """A member limited to some branches edits those. Which branch is the head office concerns
+    them all."""
     if actor is not None:
-        actor.require("org.branch.manage")
+        actor.require(BRANCH_MANAGE)
     branch = Branch.objects.filter(pk=branch_id).first()
     if branch is None:
         raise NotFound(_("Not found."))
+    if actor is not None:
+        actor.require(BRANCH_MANAGE, branch=branch.pk)
+        if data.is_head_office not in (None, branch.is_head_office):
+            actor.require_everywhere(BRANCH_MANAGE)
     return _save(branch, data, actor)
 
 
 def set_branch_active(branch_id: int, active: bool, *, actor=None) -> Branch:
     if actor is not None:
-        actor.require("org.branch.manage")
+        actor.require(BRANCH_MANAGE)
     branch = Branch.objects.filter(pk=branch_id).first()
     if branch is None:
         raise NotFound(_("Not found."))
+    if actor is not None:
+        actor.require(BRANCH_MANAGE, branch=branch.pk)
     if not active and branch.is_head_office:
         raise ValidationError(_("The head office cannot be deactivated."),
                               code="ORG_HEAD_OFFICE_ACTIVE")

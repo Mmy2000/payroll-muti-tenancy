@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-
 from django.db.models import Count, OuterRef, QuerySet, Subquery
 
 from .catalog import permissions
+from .flow import FLOW
 from .models import Membership, MembershipStatus, Role, SignInEvent, SignInOutcome
 
 
@@ -70,8 +69,10 @@ def granted_codes(role: Role) -> set[str]:
     return set(role.grants.values_list("permission", flat=True))
 
 
-def permission_groups() -> list[tuple]:
-    groups = defaultdict(list)
-    for definition in permissions().values():
-        groups[str(definition.group)].append(definition)
-    return sorted(groups.items())
+def permission_sections() -> list[dict]:
+    """The permissions for the role page, in the order people work (apps/iam/flow.py)."""
+    catalog = permissions()
+    return [{"title": section.title,
+             "screens": [{"title": screen.title, "steps": [catalog[c] for c in screen.codes]}
+                         for screen in section.screens]}
+            for section in FLOW]

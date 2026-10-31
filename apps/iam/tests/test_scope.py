@@ -63,15 +63,43 @@ def test_a_company_wide_permission_counts_only_in_every_branch(tenant_a, branche
         assert full.pk in told and limited.pk not in told
 
 
-def test_a_branch_limited_member_cant_touch_a_branch_or_list_users(tenant_a, branches,
-                                                                   make_member):
+def test_a_branch_manager_keeps_to_their_own_branch(tenant_a, branches, make_member):
     a, b = branches
-    member, _role = _member(tenant_a, make_member, "one",
-                            ["org.branch.manage", "admin.users.view"], [a])
-    with tenant_context(tenant_a.id), pytest.raises(PermissionDenied):
-        org.set_branch_active(b.pk, False, actor=_actor(member))
-    client = login(tenant_a, "one")
-    assert client.get("/api/web/iam/members/").status_code == 403
+    make_member(tenant_a, "local", "manager", branches=[a])
+    with tenant_context(tenant_a.id):
+        actor = _actor(Membership.objects.get(username="local"))
+        org.update_branch(a.pk, org.BranchInput(code=a.code, name="Renamed"), actor=actor)
+        assert Branch.objects.get(pk=a.pk).name == "Renamed"
+        assert Branch.objects.get(pk=a.pk).is_head_office  # left as it was
+        org.set_branch_active(b.pk, False)
+        with pytest.raises(PermissionDenied):
+            org.update_branch(b.pk, org.BranchInput(code=b.code, name="No"), actor=actor)
+        with pytest.raises(PermissionDenied):
+            org.set_branch_active(b.pk, True, actor=actor)
+        with pytest.raises(PermissionDenied):
+            org.create_branch(org.BranchInput(code=3, name="New"), actor=actor)
+        with pytest.raises(PermissionDenied):
+            org.update_branch(a.pk, org.BranchInput(code=a.code, name="R", is_head_office=False),
+                              actor=actor)
+
+
+def test_the_branch_pages_show_a_branch_manager_their_own(tenant_a, branches, make_member):
+    a, b = branches
+    make_member(tenant_a, "local", "manager", branches=[a])
+    client = login(tenant_a, "local", language="en")
+    listing = client.get("/branches/").content.decode()
+    assert f"/branches/{a.pk}/" in listing and f"/branches/{b.pk}/" not in listing
+    assert "/branches/new/" not in listing
+    assert client.get(f"/branches/{a.pk}/").status_code == 200
+    assert 'name="is_head_office"' not in client.get(f"/branches/{a.pk}/").content.decode()
+    assert client.get(f"/branches/{b.pk}/").status_code == 404
+    assert client.get("/branches/new/").status_code == 403
+
+
+def test_a_branch_limited_member_cant_list_users(tenant_a, branches, make_member):
+    a, _b = branches
+    _member(tenant_a, make_member, "one", ["admin.users.view"], [a])
+    assert login(tenant_a, "one").get("/api/web/iam/members/").status_code == 403
 
 
 def test_nobody_grants_beyond_where_they_hold_a_permission(tenant_a, branches, make_member):

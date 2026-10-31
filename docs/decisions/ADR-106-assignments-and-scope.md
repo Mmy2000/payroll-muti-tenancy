@@ -21,8 +21,9 @@ users and widen their own scope. An employee leaving did nothing to their login.
   reports and imports don't change. Job titles in use became positions; a human may merge variants.
 - **A person who returns keeps their record.** `rehire` closes the last period on the assignment
   row (`ended_on`, `leave_reason`), and the card starts over.
-- **`company_wide` permissions** (users, roles, branches, company settings, positions, the History,
-  sign-ins) count only when held in every branch. A grant is checked against the branches the actor
+- **`company_wide` permissions** (users, roles, company settings, positions, the History, sign-ins)
+  count only when held in every branch. `org.branch.manage` stays per branch: a member edits the
+  branches it covers, and a new branch or a new head office needs it in every branch. A grant is checked against the branches the actor
   holds it in, and an Owner must cover every branch.
 - **Leaving suspends the login** the day after the last working day, by service and by a daily job.
   A client's last Owner keeps theirs, or nobody could get in to put it right.

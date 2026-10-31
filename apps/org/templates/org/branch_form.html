@@ -45,10 +45,12 @@
             <input id="f-radius" name="radius_m" class="form-input num text-start" inputmode="numeric" value="{{ branch.radius_m|default:200 }}"><p class="form-error" data-error-for="radius_m"></p></div>
           <p class="text-xs text-slate-500 sm:col-span-3">{% translate "Where the branch is: with the geofence on, punches from the mobile app are only accepted within this distance of it." %}</p>
         </div>
+        {% if can_choose_head_office %}
         <label class="flex items-center gap-3 sm:col-span-2">
           <input type="checkbox" name="is_head_office" class="size-4 rounded border-slate-300 accent-brand-600" {% if branch.is_head_office %}checked{% endif %}>
           <span class="text-sm text-slate-700">{% translate "Head office" %}</span>
         </label>
+        {% endif %}
       </div>
     </section>
   </div>

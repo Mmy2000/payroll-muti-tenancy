@@ -30,24 +30,31 @@
       </div>
     </section>
 
-    {% for group, definitions in groups %}
-    <section class="card" data-permission-group>
+    {% for section in sections %}
+    <section class="card overflow-hidden" data-permission-group>
       <div class="card-header">
-        <h2 class="card-title">{{ group }}</h2>
+        <h2 class="card-title">{{ section.title }}</h2>
         <label class="flex items-center gap-2 text-xs text-slate-500">
           <input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-group-toggle>{% translate "All" %}
         </label>
       </div>
-      <div class="card-body grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {% for definition in definitions %}
-        <label class="flex items-start gap-3 rounded-lg p-2 hover:bg-slate-50">
-          <input type="checkbox" class="mt-0.5 size-4 rounded border-slate-300 accent-brand-600" data-permission="{{ definition.code }}"
-                 {% if definition.code in granted %}checked{% endif %}>
-          <span>
-            <span class="block text-sm text-slate-900">{{ definition.label }}</span>
-            <span class="block text-xs text-slate-400" dir="ltr">{{ definition.code }}</span>
-          </span>
-        </label>
+      <div class="divide-y divide-slate-100">
+        {% for screen in section.screens %}
+        <div class="grid grid-cols-1 gap-2 px-5 py-3 md:grid-cols-[8.5rem_minmax(0,1fr)] md:gap-4">
+          <h3 class="pt-2 text-sm font-medium text-slate-700">{{ screen.title }}</h3>
+          <div class="grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-2">
+            {% for step in screen.steps %}
+            <label class="flex items-start gap-2.5 rounded-lg p-2 hover:bg-slate-50">
+              <input type="checkbox" class="mt-0.5 size-4 shrink-0 rounded border-slate-300 accent-brand-600" data-permission="{{ step.code }}"
+                     {% if step.code in granted %}checked{% endif %}>
+              <span class="min-w-0">
+                <span class="block text-sm text-slate-900">{{ step.label }}</span>
+                {% if step.company_wide %}<span class="mt-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-500">{% translate "All branches" %}</span>{% endif %}
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
         {% endfor %}
       </div>
     </section>

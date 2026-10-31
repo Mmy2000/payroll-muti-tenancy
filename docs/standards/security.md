@@ -36,8 +36,10 @@ role doesn't allow.** These rules are part of normal work and of every code revi
   - A sign-in that names its phone can be revoked at once, checked against the database on every
     request (`apps/mobile/services/devices.py`).
 - **Permissions about the whole client** (`company_wide` in `register_permissions`: users, roles,
-  branches, company settings, the History, sign-ins) count only when held in every branch. A
+  company settings, positions, the History, sign-ins) count only when held in every branch. A
   role with one of them, given for some branches, doesn't grant it.
+- **A branch manager keeps to their branches:** `org.branch.manage` edits or deactivates the
+  branches it covers. A new branch, or moving the head office, needs it in every branch.
 - **Nobody hands out more than they hold, or wider:** `ensure_can_grant` compares the branches of
   a grant with the actor's own. An Owner covers every branch.
 - **Leaving ends access:** a login is suspended the day after the last working day, except a
