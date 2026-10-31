@@ -181,7 +181,7 @@ def _office_member(username):
 def test_app_logins_have_a_limit_of_their_own(staff, tenant_a, make_employee):
     from apps.iam import services as iam
     from apps.iam.models import MembershipStatus, Role
-    from apps.mobile.access import give_login, take_login
+    from apps.mobile.services.access import give_login, take_login
 
     tenant_a.max_users, tenant_a.max_app_logins = 1, 2  # the owner fills the office place
     tenant_a.save()
@@ -223,7 +223,7 @@ def test_app_logins_have_a_limit_of_their_own(staff, tenant_a, make_employee):
 
 
 def test_the_plan_sets_the_app_login_limit(tenant_a, make_employee):
-    from apps.mobile.access import give_login
+    from apps.mobile.services.access import give_login
 
     Plan.objects.filter(code="standard").update(max_app_logins=0)
     tenant_a.refresh_from_db()

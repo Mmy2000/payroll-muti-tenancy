@@ -2,13 +2,13 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.attendance import approvals, entries, hourly, leave
 from apps.attendance.models import HourlyLeave, LeaveRequest, LeaveType
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import GroupFields
 from apps.employees.api.targets import outcome_response
 
+from ..services import approvals, entries, hourly, leave
 from .serializers import (
     ClearDaySerializer,
     DecisionSerializer,
@@ -110,7 +110,7 @@ class LeaveTypeViewSet(ActivateMixin, ServiceViewSet):
 
 
 class DecisionMixin:
-    """POST …/approve/, …/reject/, …/cancel/ on a request (apps.attendance.approvals).
+    """POST …/approve/, …/reject/, …/cancel/ on a request (apps.attendance.services.approvals).
     A subclass names `decision_service(request_id, move, note=…, actor=…)`."""
 
     decision_service = None

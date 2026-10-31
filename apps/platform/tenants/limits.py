@@ -3,7 +3,7 @@
 Members come in two kinds with separate limits:
 * office users: anyone holding a role other than the built-in "Employee (app)" one;
 * app logins: employees' own logins to the mobile app, holding only that role
-  (apps/mobile/access.py).
+  (apps/mobile/services/access.py).
 A member is counted while active; suspended ones free their place.
 """
 

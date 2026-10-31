@@ -13,23 +13,23 @@ from decimal import Decimal as D
 
 from django.utils import timezone
 
-from apps.adjustments import services as adjustments
 from apps.adjustments.models import AdjustmentType
-from apps.attendance import hourly, leave
+from apps.adjustments.services import batches as adjustments
 from apps.attendance.models import LeaveRequest, LeaveType, Punch, PunchSource
 from apps.attendance.selectors import ScheduleHistory
+from apps.attendance.services import hourly, leave
 from apps.compensation.models import PayItem
 from apps.compensation.services import AssignmentInput, PayItemInput, give_items, save_pay_item
-from apps.employees import services as employees
 from apps.employees.models import Employee
-from apps.employees.targets import BRANCH, DEPARTMENT, EMPLOYEE, Target
-from apps.loans import advances
-from apps.loans import services as loans
+from apps.employees.selectors import BRANCH, DEPARTMENT, EMPLOYEE, Target
+from apps.employees.services import employees
 from apps.loans.models import Loan
+from apps.loans.services import advances, loans
 from apps.org.models import Branch, Department
 from apps.org.services import DepartmentInput, save_department
-from apps.payroll import services as payroll
 from apps.payroll.models import PayrollRun
+from apps.payroll.services import lifecycle as payroll_lifecycle
+from apps.payroll.services import runs as payroll
 from apps.policies import services as policies
 from apps.policies.domain.bands import Band
 from apps.policies.domain.tax import Bracket
@@ -219,8 +219,8 @@ def seed_payroll() -> None:
             insured_salary=D(5500), note="Paid weekly from now on"))
     paid = payroll.create_run(payroll.RunInput(frequency="monthly", day=last_month))
     if paid.payslips.exists() and not paid.payslips.filter(blocking__gt=0).exists():
-        payroll.approve_run(paid.pk)
-        payroll.record_payment(paid.pk, payroll.PaymentInput(
+        payroll_lifecycle.approve_run(paid.pk)
+        payroll_lifecycle.record_payment(paid.pk, payroll_lifecycle.PaymentInput(
             paid_on=today.replace(day=1), method="Bank transfer", reference="Demo"))
     payroll.create_run(payroll.RunInput(frequency="monthly", day=today))
     payroll.create_run(payroll.RunInput(frequency="weekly", day=today - timedelta(days=7)))
@@ -230,9 +230,9 @@ def seed_integrations(tenant, password: str) -> None:
     """The demo client tries the phase 6 integrations: the mobile app (one employee has a login),
     a fingerprint device (its serial is free to use with a real one), and WhatsApp (the console
     in development: nothing leaves the machine)."""
-    from apps.devices import services as devices
     from apps.devices.models import Device
-    from apps.mobile import access
+    from apps.devices.services import devices
+    from apps.mobile.services import access
 
     from . import features
     from .models import TenantFeature

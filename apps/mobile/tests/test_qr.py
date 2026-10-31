@@ -14,11 +14,12 @@ from apps.core.tenancy import tenant_context
 from apps.employees.models import Employee
 from apps.iam.authz import build_actor
 from apps.iam.models import MembershipStatus
-from apps.mobile import access, devices, qr
 from apps.mobile.models import AppDevice, AppLinkCode, BiometricEnrollment
 from apps.mobile.tests.test_contract import App, _switch
 from apps.org.models import TenantProfile
 from conftest import PASSWORD, login
+
+from ..services import access, devices, qr
 
 pytestmark = pytest.mark.django_db
 

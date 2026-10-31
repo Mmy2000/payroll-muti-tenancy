@@ -10,8 +10,8 @@ import pytest
 from apps.audit import catalog
 from apps.audit.labels import COLUMNS, TABLES
 from apps.core.tenancy import tenant_context
-from apps.employees import services as employees
-from apps.loans import services as loans
+from apps.employees.services import employees
+from apps.loans.services import loans
 from apps.org import services as org
 from apps.org.models import Branch
 from conftest import login

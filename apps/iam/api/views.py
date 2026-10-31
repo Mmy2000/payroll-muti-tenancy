@@ -39,9 +39,10 @@ class MeView(APIView):
 
 def _link_employee(membership, data, actor) -> None:
     """The user form also says which employee the user is: saved with the user, in the same
-    transaction. The rules are the mobile app's (apps.mobile.access), imported here only."""
+    transaction. The rules are the mobile app's (apps.mobile.services.access), imported here
+    only."""
     if "employee" in data:
-        from apps.mobile.access import link_member
+        from apps.mobile.services.access import link_member
 
         link_member(membership.pk, data["employee"], actor=actor)
 

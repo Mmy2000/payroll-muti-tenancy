@@ -3,10 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.employees.api.scoped import EmployeeRowsViewSet
-from apps.loans import advances, services
 from apps.loans.models import Advance, Loan
 
 from .. import permissions
+from ..services import advances, loans
 from .serializers import (
     AdvanceSerializer,
     AdvanceWriteSerializer,
@@ -61,14 +61,14 @@ class LoanViewSet(EmployeeRowsViewSet):
         return Response(self.get_serializer(self.get_object()).data)
 
     def create(self, request):
-        loan = services.grant_loan(services.LoanInput(**_valid(LoanWriteSerializer,
+        loan = loans.grant_loan(loans.LoanInput(**_valid(LoanWriteSerializer,
                                                                request.data)),
                                    actor=request.actor)
         return Response(self.get_serializer(loan).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
-        return Response(self.get_serializer(services.cancel_loan(int(pk),
+        return Response(self.get_serializer(loans.cancel_loan(int(pk),
                                                                  actor=request.actor)).data)
 
 
@@ -79,5 +79,5 @@ class InstallmentViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def postpone(self, request, pk=None):
-        loan = services.postpone_installment(int(pk), actor=request.actor)
+        loan = loans.postpone_installment(int(pk), actor=request.actor)
         return Response(LoanSerializer(loan, context=self.get_serializer_context()).data)

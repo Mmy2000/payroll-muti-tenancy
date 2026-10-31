@@ -40,7 +40,7 @@ class DeviceMethod(models.TextChoices):
 
 
 class AppDevice(TenantScopedModel):
-    """A phone signed in to the app (apps/mobile/devices.py)."""
+    """A phone signed in to the app (apps/mobile/services/devices.py)."""
 
     member = models.ForeignKey("iam.Membership", on_delete=models.CASCADE,
                                related_name="app_devices")
@@ -59,7 +59,7 @@ class AppDevice(TenantScopedModel):
 
 
 class AppLinkCode(TenantScopedModel):
-    """A QR for signing in (apps/mobile/qr.py). Only the code's fingerprint is kept."""
+    """A QR for signing in (apps/mobile/services/qr.py). Only the code's fingerprint is kept."""
 
     employee = models.ForeignKey("employees.Employee", on_delete=models.CASCADE,
                                  related_name="+")

@@ -10,6 +10,7 @@ from apps.core.errors import ValidationError
 from apps.core.tenancy import tenant_context
 from apps.evaluations import services
 from apps.notifications.services import notify
+from apps.payroll.services import lifecycle as payroll_lifecycle
 from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 from conftest import login
@@ -44,7 +45,7 @@ def test_columns_are_thin_rounded_and_labelled_sparingly():
 
 @pytest.mark.django_db
 def test_an_evaluation_and_its_card(tenant_a, make_employee):
-    from apps.employees.services import CompensationInput, change_pay
+    from apps.employees.services.employees import CompensationInput, change_pay
 
     person = make_employee(tenant_a, 1, name="Mona Adel", salary=D(6000), hired_on=date(2024, 3, 1))
     with tenant_context(tenant_a.id):
@@ -88,8 +89,8 @@ def test_evaluation_pages_and_who_sees_pay(tenant_a, make_employee, make_member)
 
 @pytest.mark.django_db
 def test_the_bell_counts_lists_and_marks_read(tenant_a, make_employee):
-    from apps.attendance import leave
     from apps.attendance.models import LeaveType
+    from apps.attendance.services import leave
     from apps.iam.models import Membership
 
     person = make_employee(tenant_a, 1)
@@ -113,14 +114,14 @@ def test_the_bell_counts_lists_and_marks_read(tenant_a, make_employee):
 
 @pytest.mark.django_db
 def test_the_dashboard_shows_what_each_member_may_see(tenant_a, make_employee, make_member):
-    from apps.payroll import services as payroll
+    from apps.payroll.services import runs as payroll
 
     TenantFeature.objects.create(tenant=tenant_a, key="attendance", enabled=False)
     features.forget(tenant_a.pk)
     make_employee(tenant_a, 1, salary=D(6000))
     with tenant_context(tenant_a.id):
         run = payroll.create_run(payroll.RunInput(frequency="monthly", day=date(2026, 9, 15)))
-        payroll.approve_run(run.pk)
+        payroll_lifecycle.approve_run(run.pk)
     owner = login(tenant_a, language="en").get("/").content.decode()
     assert "Net pay by department" in owner and "New hires each month" in owner
     assert "Present each day" not in owner  # attendance is off

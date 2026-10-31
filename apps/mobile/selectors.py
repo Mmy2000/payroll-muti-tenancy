@@ -11,6 +11,7 @@ from apps.attendance.models import LeaveRequest, LeaveType, Punch, RequestStatus
 from apps.attendance.selectors import ScheduleHistory
 from apps.attendance.selectors import balance as attendance_balance
 from apps.employees.models import Employee
+from apps.platform.tenants import features
 
 from .contract import AppError
 from .models import BiometricEnrollment
@@ -58,3 +59,42 @@ def work_day(employee: Employee, moment: datetime) -> date:
     row = ScheduleHistory(employee.schedules.all()).on(local.date())
     return work_date_of(moment, row.starts_at, timezone.get_current_timezone()) if row \
         else local.date()
+
+
+TRACK_INTERVAL_SECONDS = 120
+
+
+TRACK_DISTANCE_FILTER_M = 50
+
+
+TRACK_BATCH_SIZE = 10
+
+
+TRACK_MAX_SESSION_HOURS = 14
+
+
+TRACK_RETENTION_DAYS = 14
+
+
+def employee_of(member, *, status: int = 404) -> Employee:
+    employee = getattr(member, "employee", None) if member is not None else None
+    if employee is None or (employee.left_on and employee.left_on < timezone.localdate()):
+        raise AppError("no_employee", status=status)
+    return employee
+
+
+def switched_on(key: str) -> bool:
+    from apps.core.tenancy.context import require_current_tenant_id
+
+    return features.is_enabled(require_current_tenant_id(), key)
+
+
+def config() -> dict:
+    return {"track_interval_seconds": TRACK_INTERVAL_SECONDS,
+            "track_distance_filter_m": TRACK_DISTANCE_FILTER_M,
+            "track_batch_size": TRACK_BATCH_SIZE,
+            "track_max_session_hours": TRACK_MAX_SESSION_HOURS,
+            "track_retention_days": TRACK_RETENTION_DAYS,
+            "enforce_geofence": switched_on("geofence"),
+            "tracking_required": switched_on("gps_tracking"),
+            "biometric_required": switched_on("biometric")}

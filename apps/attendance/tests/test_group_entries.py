@@ -8,15 +8,16 @@ from zoneinfo import ZoneInfo
 import pytest
 from django.utils import timezone, translation
 
-from apps.attendance import entries, hourly
 from apps.attendance.models import AttendanceDay, HourlyLeave, Punch, PunchSource, RequestStatus
 from apps.attendance.selectors import evaluate
 from apps.core.bulk import BulkFailed
 from apps.core.errors import ValidationError
 from apps.core.tenancy import tenant_context
-from apps.employees.targets import Group
+from apps.employees.selectors import Group
 from apps.org.models import Branch
 from conftest import login
+
+from ..services import entries, hourly
 
 pytestmark = pytest.mark.django_db
 CAIRO = ZoneInfo("Africa/Cairo")

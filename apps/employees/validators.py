@@ -18,7 +18,7 @@ from apps.policies.models import LatenessPolicy, OvertimePolicy
 from .models import Employee, Gender, MaritalStatus, MilitaryStatus, PayFrequency, WageType, Weekday
 
 if TYPE_CHECKING:
-    from .services import CompensationInput, EmployeeInput, ScheduleInput
+    from .services.employees import CompensationInput, EmployeeInput, ScheduleInput
 
 
 NATIONAL_ID_PURPOSE = "employees.national_id"

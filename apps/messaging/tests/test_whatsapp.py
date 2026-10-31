@@ -10,7 +10,8 @@ from apps.core.errors import Conflict, DomainError
 from apps.core.tenancy import tenant_context
 from apps.messaging import gateways, services
 from apps.messaging.models import LinkStatus, Message, MessageStatus
-from apps.payroll import services as payroll
+from apps.payroll.services import lifecycle as payroll_lifecycle
+from apps.payroll.services import runs as payroll
 from apps.platform.jobs.models import Job
 from apps.platform.jobs.worker import run_pending
 from apps.platform.tenants import features
@@ -41,7 +42,7 @@ def paid_run(tenant_a, make_employee):
     make_employee(tenant_a, 2, name="Karim Fathy", salary=D(3000))  # no phone
     with tenant_context(tenant_a.id):
         run = payroll.create_run(payroll.RunInput(frequency="monthly", day=date(2026, 10, 15)))
-        payroll.approve_run(run.pk)
+        payroll_lifecycle.approve_run(run.pk)
         services.start_link()
         services.look()  # the console "scans" the QR
         services.look()
@@ -104,7 +105,7 @@ def test_nothing_is_sent_unlinked_unapproved_or_switched_off(tenant_a, make_empl
         assert services.look()["status"] == LinkStatus.LINKED
         with pytest.raises(Conflict):  # a draft run
             services.send_payslips(run.pk)
-        payroll.approve_run(run.pk)
+        payroll_lifecycle.approve_run(run.pk)
         services.send_payslips(run.pk)
     _switch(tenant_a, whatsapp=False)
     gateways.OUTBOX.clear()

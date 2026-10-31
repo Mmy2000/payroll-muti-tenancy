@@ -12,7 +12,6 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.adjustments import services
 from apps.adjustments.domain.amounts import CHOICES
 from apps.adjustments.models import Adjustment, AdjustmentKind, AdjustmentType
 from apps.adjustments.selectors import visible_batches
@@ -21,6 +20,8 @@ from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import TargetFields
 
 from .. import permissions
+from ..services import batches as batches_services
+from ..services import types
 from .serializers import (
     AddSerializer,
     AdjustmentSerializer,
@@ -48,13 +49,13 @@ class _TypeViewSet(ActivateMixin, ServiceViewSet):
         return AdjustmentType.objects.filter(kind=self.kind)
 
     def to_input(self, data):
-        return services.TypeInput(kind=self.kind, **data)
+        return types.TypeInput(kind=self.kind, **data)
 
     def save(self, data, pk, actor):
-        return services.save_type(data, type_id=pk, actor=actor)
+        return types.save_type(data, type_id=pk, actor=actor)
 
     def set_active(self, pk, active, actor):
-        return services.set_type_active(pk, active, actor=actor)
+        return types.set_type_active(pk, active, actor=actor)
 
 
 TYPE_ACTIONS = {"list": "view", "retrieve": "view", "create": "manage", "update": "manage",
@@ -93,14 +94,14 @@ class _RowViewSet(EmployeeRowsViewSet):
     def partial_update(self, request, pk=None):
         self.get_object()
         data = _valid(RowQuantitySerializer, request.data)
-        row = services.set_row_quantity(int(pk), data["quantity"],
+        row = batches_services.set_row_quantity(int(pk), data["quantity"],
                                         reason=data["change_reason"], actor=request.actor)
         return Response(self.get_serializer(row).data)
 
     def destroy(self, request, pk=None):
         self.get_object()
         data = _valid(ChangeReasonSerializer, request.data)
-        services.remove_row(int(pk), reason=data["change_reason"], actor=request.actor)
+        batches_services.remove_row(int(pk), reason=data["change_reason"], actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -160,49 +161,51 @@ class _BatchViewSet(viewsets.GenericViewSet):
         target, approve = TargetFields.target(data), data.pop("approve")
         if not AdjustmentType.objects.filter(pk=data["type_id"], kind=self.kind).exists():
             data["type_id"] = 0  # another kind's type: refused as unknown
-        batch = services.give(services.AdjustmentInput(target=target, **data), approve=approve,
-                              actor=request.actor)
+        batch = batches_services.give(batches_services.AdjustmentInput(target=target, **data),
+                                      approve=approve,
+                                      actor=request.actor)
         return self._show(batch, status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         data = _valid(DetailsSerializer, request.data)
         reason = data.pop("change_reason")
-        batch = services.update_draft(self._visible(pk), services.BatchInput(**data),
-                                      reason=reason, actor=request.actor)
+        batch = batches_services.update_draft(self._visible(pk),
+                                              batches_services.BatchInput(**data),
+                                              reason=reason, actor=request.actor)
         return self._show(batch)
 
     def destroy(self, request, pk=None):
-        services.delete_draft(self._visible(pk), actor=request.actor)
+        batches_services.delete_draft(self._visible(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"])
     def add(self, request, pk=None):
         data = _valid(AddSerializer, request.data)
-        services.add_to_draft(self._visible(pk), TargetFields.target(data),
+        batches_services.add_to_draft(self._visible(pk), TargetFields.target(data),
                               reason=data["change_reason"], actor=request.actor)
         return self._show(self.get_object())
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
-        return self._show(services.approve(self._visible(pk), actor=request.actor))
+        return self._show(batches_services.approve(self._visible(pk), actor=request.actor))
 
     @action(detail=True, methods=["post"])
     def reopen(self, request, pk=None):
         data = _valid(ReasonSerializer, request.data)
-        return self._show(services.reopen(self._visible(pk), data["reason"],
+        return self._show(batches_services.reopen(self._visible(pk), data["reason"],
                                           actor=request.actor))
 
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         data = _valid(ReasonSerializer, request.data)
-        return self._show(services.cancel(self._visible(pk), data["reason"],
+        return self._show(batches_services.cancel(self._visible(pk), data["reason"],
                                           actor=request.actor))
 
     @action(detail=True, methods=["post"])
     def correct(self, request, pk=None):
         data = _valid(CorrectionSerializer, request.data)
         quantities = {row["row_id"]: row["quantity"] for row in data["rows"]}
-        fix = services.correct(self._visible(pk), services.CorrectionInput(
+        fix = batches_services.correct(self._visible(pk), batches_services.CorrectionInput(
             date=data["date"], reason=data["reason"], quantities=quantities),
             approve=data["approve"], actor=request.actor)
         return self._show(fix, status.HTTP_201_CREATED)

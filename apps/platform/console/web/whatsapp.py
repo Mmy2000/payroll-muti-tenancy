@@ -22,8 +22,8 @@ from apps.messaging.models import LinkStatus, Message, MessageStatus, WhatsAppLi
 from apps.platform.tenants import features
 from apps.platform.tenants.models import Tenant, TenantStatus, WhatsAppService
 
+from .common import record, staff_required
 from .forms import WhatsAppServiceForm
-from .views import record, staff_required
 
 GATEWAY_DIR = settings.BASE_DIR / "ops" / "wa-gateway"
 

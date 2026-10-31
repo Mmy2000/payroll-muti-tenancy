@@ -12,8 +12,7 @@ from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.errors import Conflict, NotFound, ValidationError
-from apps.employees.selectors import visible_employees
-from apps.employees.targets import Target, resolve
+from apps.employees.selectors import Target, resolve, visible_employees
 
 from .models import (
     AssignmentStatus,

@@ -9,13 +9,14 @@ from decimal import Decimal as D
 import pytest
 from openpyxl import load_workbook
 
-from apps.adjustments import services as adjustments
 from apps.adjustments.models import AdjustmentType
+from apps.adjustments.services import batches as adjustments
 from apps.core.tenancy import tenant_context
-from apps.employees.targets import Target
-from apps.loans import services as loans
+from apps.employees.selectors import Target
+from apps.loans.services import loans
 from apps.org.models import Branch
-from apps.payroll import services as payroll
+from apps.payroll.services import lifecycle as payroll_lifecycle
+from apps.payroll.services import runs as payroll
 from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 from apps.printing import pdf
@@ -58,7 +59,7 @@ def paid_october(tenant_a, make_employee):
                                          amount=D(1200), installments=3,
                                          first_month=date(2026, 10, 1)))
         run = payroll.create_run(payroll.RunInput(frequency="monthly", day=date(2026, 10, 15)))
-        payroll.approve_run(run.pk)
+        payroll_lifecycle.approve_run(run.pk)
     return run
 
 

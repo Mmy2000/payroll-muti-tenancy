@@ -19,7 +19,8 @@ from django.views.decorators.csrf import csrf_exempt
 from apps.iam.signals import client_ip
 from apps.platform.tenants import features
 
-from . import protocol, selectors, services
+from . import protocol, selectors
+from .services import sync
 
 logger = logging.getLogger(__name__)
 FEATURE = "zk_devices"
@@ -46,7 +47,7 @@ def device_call(view):
             logger.warning("refused device call %s SN=%r", request.path,
                            request.GET.get("SN", "")[:40])
             return _text("UNKNOWN DEVICE\n", status=403)
-        services.seen(device, ip=client_ip(request), info=request.GET.get("INFO", ""))
+        sync.seen(device, ip=client_ip(request), info=request.GET.get("INFO", ""))
         return view(request, device)
 
     return wrapped
@@ -55,12 +56,12 @@ def device_call(view):
 @device_call
 def cdata(request, device):
     if request.method == "GET":
-        return _text(services.handshake(device))
+        return _text(sync.handshake(device))
     table = request.GET.get("table", "").upper()
     if table == "ATTLOG":
-        count = services.receive_punches(device, protocol.parse_attlog(_body(request)))
+        count = sync.receive_punches(device, protocol.parse_attlog(_body(request)))
     elif table in ("OPERLOG", "USERINFO"):
-        count = services.receive_users(device, protocol.parse_users(_body(request)))
+        count = sync.receive_users(device, protocol.parse_users(_body(request)))
     else:
         count = 0
     return _text(f"OK: {count}\n")
@@ -68,10 +69,10 @@ def cdata(request, device):
 
 @device_call
 def getrequest(request, device):
-    return _text(protocol.command_lines(services.next_commands(device)))
+    return _text(protocol.command_lines(sync.next_commands(device)))
 
 
 @device_call
 def devicecmd(request, device):
-    services.record_replies(device, protocol.parse_replies(_body(request)))
+    sync.record_replies(device, protocol.parse_replies(_body(request)))
     return _text("OK\n")

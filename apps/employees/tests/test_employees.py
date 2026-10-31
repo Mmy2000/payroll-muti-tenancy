@@ -7,10 +7,11 @@ from decimal import Decimal
 import pytest
 
 from apps.core.tenancy import tenant_context
-from apps.employees import services
 from apps.employees.models import Compensation, Employee
 from apps.org.models import Branch
 from conftest import login
+
+from ..services import employees
 
 pytestmark = pytest.mark.django_db
 
@@ -35,11 +36,11 @@ def _head(tenant):
 def _create(tenant, code=1, branch=None, **extra):
     branch = branch or _head(tenant)
     with tenant_context(tenant.id):
-        return services.create_employee(
-            services.EmployeeInput(code=code, name=f"Employee {code}", branch_id=branch.pk,
+        return employees.create_employee(
+            employees.EmployeeInput(code=code, name=f"Employee {code}", branch_id=branch.pk,
                                    hired_on=date(2025, 1, 1), **extra),
-            services.CompensationInput(effective_from=None, salary=Decimal(6000)),
-            services.ScheduleInput(effective_from=None, starts_at=time(9), ends_at=time(17)))
+            employees.CompensationInput(effective_from=None, salary=Decimal(6000)),
+            employees.ScheduleInput(effective_from=None, starts_at=time(9), ends_at=time(17)))
 
 
 def test_the_owner_adds_an_employee_with_pay_and_hours(tenant_a):

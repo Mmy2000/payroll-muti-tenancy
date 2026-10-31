@@ -37,7 +37,7 @@ PayRole's code (there was no other documentation); `apps/mobile/tests/` checks i
   `{"detail":"User not found","code":"user_not_found"}`. Wrong method: 405.
 - The signed-in user → employee: the member's linked employee, still employed (an app login
   given on the employee's page, or an existing user linked on their user form, as PayRole's
-  `Users.emp`; apps/mobile/access.py); none →
+  `Users.emp`; apps/mobile/services/access.py); none →
   `no_employee` (`"لا يوجد ملف موظف مرتبط بهذا المستخدم"`): **404** everywhere except
   `attendance/punch` and `DELETE leaves/<ser>` (**400**); `login` and `me` for a superuser give
   `employee: null`.

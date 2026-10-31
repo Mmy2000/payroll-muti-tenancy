@@ -19,8 +19,8 @@ from .selectors import allowance, balance, minutes_used, overlapping_leave, work
 PLANNABLE = {DayKind.EXCUSED, DayKind.DAY_OFF}
 
 if TYPE_CHECKING:
-    from .entries import DayEntryInput
-    from .leave import LeaveRequestInput
+    from .services.entries import DayEntryInput
+    from .services.leave import LeaveRequestInput
 
 
 def check_balance(request: LeaveRequest) -> None:

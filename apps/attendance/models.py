@@ -109,7 +109,8 @@ class RequestStatus(models.TextChoices):
 
 
 class ApprovableRequest(TenantScopedModel):
-    """A request whose status moves through apps.attendance.approvals (pending → approved or
+    """A request whose status moves through apps.attendance.services.approvals (pending →
+    approved or
     rejected; pending or approved → cancelled)."""
 
     employee = models.ForeignKey("employees.Employee", on_delete=models.PROTECT,

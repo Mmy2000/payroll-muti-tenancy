@@ -1,4 +1,4 @@
-{% load i18n static ui %}{# Signing in to the app by QR, and the phones signed in (apps/mobile/qr.py, devices.py). #}
+{% load i18n static ui %}{# Signing in to the app by QR, and the phones signed in (apps/mobile/services/qr.py, devices.py). #}
 {% if allowed %}
 <section class="card" data-app-qr data-endpoint="{% url 'app-qr-detail' employee.pk %}">
   <div class="card-body space-y-3">

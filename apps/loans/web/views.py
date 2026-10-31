@@ -13,8 +13,9 @@ from apps.employees.selectors import visible_employees
 from apps.employees.web.targets import employee_choices
 from apps.iam.authz import permission_required
 
-from .. import advances, permissions, validators
+from .. import permissions, validators
 from ..models import Advance, AdvanceStatus, Loan, LoanStatus
+from ..services import advances
 
 ADVANCE_TABS = [(AdvanceStatus.OPEN, _lazy("To be recovered")),
                 (AdvanceStatus.RECOVERED, _lazy("Recovered")),

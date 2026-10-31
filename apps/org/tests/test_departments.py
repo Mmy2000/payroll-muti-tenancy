@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from apps.core.errors import PermissionDenied, ValidationError
 from apps.core.tenancy import tenant_context
-from apps.employees import services as employees
+from apps.employees.services import employees
 from apps.org import services
 from apps.org.models import Branch
 from conftest import login

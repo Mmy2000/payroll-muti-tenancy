@@ -18,7 +18,7 @@ from django.utils.translation import gettext as _
 
 from apps.core.errors import Conflict
 
-from .models import RequestStatus
+from ..models import RequestStatus
 
 APPROVE, REJECT, CANCEL = "approve", "reject", "cancel"
 MOVES: dict[str, tuple[frozenset[str], str]] = {

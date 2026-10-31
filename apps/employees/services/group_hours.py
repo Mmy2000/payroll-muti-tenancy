@@ -23,10 +23,10 @@ from apps.core import bulk
 from apps.core.errors import ValidationError
 from apps.core.history import in_effect
 
-from .models import Employee, WorkSchedule
-from .permissions import MANAGE
-from .services import ScheduleInput, change_schedule
-from .targets import Group, resolve_group
+from ..models import Employee, WorkSchedule
+from ..permissions import MANAGE
+from ..selectors import Group, resolve_group
+from .employees import ScheduleInput, change_schedule
 
 
 @dataclass(frozen=True)

@@ -24,7 +24,7 @@ PASSWORD = "Demo-Pass-2026"
 SKIP = re.compile(r"\.(pdf|xlsx|csv)$|/logout/|/i18n/|/media/|/static/")
 CONTROLS = ("input", "select", "textarea")
 AFTER_THE_BASIC_CHECKS = {
-    ("payroll/new/", "reason"),  # apps/payroll/services.py: an off-cycle run says why
+    ("payroll/new/", "reason"),  # apps/payroll/services/runs.py: an off-cycle run says why
     ("settings/users/new/", "password"),  # apps/iam/api/views.py: only a new user needs one
 }
 

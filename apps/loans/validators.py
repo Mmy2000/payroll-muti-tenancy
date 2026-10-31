@@ -11,7 +11,7 @@ from apps.core.errors import invalid_fields
 from .domain.installments import CENT
 
 if TYPE_CHECKING:
-    from .services import LoanInput
+    from .services.loans import LoanInput
 
 
 MAX_INSTALLMENTS = 120

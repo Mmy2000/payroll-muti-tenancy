@@ -11,16 +11,17 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from apps.attendance.leave import decide_leave
 from apps.attendance.models import LeaveRequest, Punch, PunchSource
+from apps.attendance.services.leave import decide_leave
 from apps.core.tenancy import tenant_context
-from apps.mobile import access
 from apps.mobile.models import TrackSession
 from apps.notifications.models import Notification
 from apps.org.models import Branch
 from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 from conftest import PASSWORD
+
+from ..services import access
 
 pytestmark = pytest.mark.django_db
 CAIRO = ZoneInfo("Africa/Cairo")
@@ -395,7 +396,7 @@ def test_every_app_endpoint_needs_the_app():
     """/api/v1/ answers only members who may use the app, but for signing in."""
     from django.urls import get_resolver
 
-    from ..api.v1.views import CanUseApp
+    from ..api.v1.views.base import CanUseApp
 
     public = {"api_login", "api_qr_login", "api_refresh", "api_verify"}
     loose = []

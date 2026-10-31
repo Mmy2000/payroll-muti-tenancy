@@ -3,13 +3,13 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.employees import group_hours, services
 from apps.employees.api.serializers import GroupFields
 from apps.employees.api.targets import outcome_response
 from apps.employees.models import Weekday
 
 from .. import selectors
 from ..permissions import MANAGE, SALARY_MANAGE, VIEW
+from ..services import employees, group_hours
 from .serializers import (
     CardWriteSerializer,
     EmployeeSerializer,
@@ -59,39 +59,39 @@ class EmployeeViewSet(viewsets.GenericViewSet):
     def create(self, request):
         data = _valid(NewEmployeeSerializer, request.data)
         pay, schedule = data.pop("pay"), data.pop("schedule")
-        employee = services.create_employee(
-            services.EmployeeInput(**data), services.CompensationInput(**pay),
-            services.ScheduleInput(**schedule), actor=request.actor)
+        employee = employees.create_employee(
+            employees.EmployeeInput(**data), employees.CompensationInput(**pay),
+            employees.ScheduleInput(**schedule), actor=request.actor)
         return self._show(employee, status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         data = _valid(CardWriteSerializer, request.data)
-        employee = services.update_employee(int(pk), services.EmployeeInput(**data),
+        employee = employees.update_employee(int(pk), employees.EmployeeInput(**data),
                                             actor=request.actor)
         return self._show(employee)
 
     @action(detail=True, methods=["post"])
     def pay(self, request, pk=None):
         data = _valid(PayWriteSerializer, request.data)
-        services.change_pay(int(pk), services.CompensationInput(**data), actor=request.actor)
+        employees.change_pay(int(pk), employees.CompensationInput(**data), actor=request.actor)
         return self._show(self.get_object())
 
     @action(detail=True, methods=["post"])
     def schedule(self, request, pk=None):
         data = _valid(ScheduleWriteSerializer, request.data)
-        services.change_schedule(int(pk), services.ScheduleInput(**data), actor=request.actor)
+        employees.change_schedule(int(pk), employees.ScheduleInput(**data), actor=request.actor)
         return self._show(self.get_object())
 
     @action(detail=True, methods=["post"])
     def leave(self, request, pk=None):
         data = _valid(LeaveSerializer, request.data)
-        employee = services.end_employment(int(pk), data["left_on"], data["reason"],
+        employee = employees.end_employment(int(pk), data["left_on"], data["reason"],
                                            actor=request.actor)
         return self._show(employee)
 
     @action(detail=True, methods=["post"])
     def reinstate(self, request, pk=None):
-        return self._show(services.reinstate(int(pk), actor=request.actor))
+        return self._show(employees.reinstate(int(pk), actor=request.actor))
 
 
 class PayChangeViewSet(viewsets.GenericViewSet):
@@ -100,7 +100,7 @@ class PayChangeViewSet(viewsets.GenericViewSet):
     required_permissions = {"destroy": SALARY_MANAGE}
 
     def destroy(self, request, pk=None):
-        services.delete_pay_change(int(pk), actor=request.actor)
+        employees.delete_pay_change(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -110,7 +110,7 @@ class ScheduleChangeViewSet(viewsets.GenericViewSet):
     required_permissions = {"destroy": MANAGE}
 
     def destroy(self, request, pk=None):
-        services.delete_schedule_change(int(pk), actor=request.actor)
+        employees.delete_schedule_change(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

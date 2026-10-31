@@ -66,7 +66,7 @@ class AdjustmentBatch(TenantScopedModel):
     method = models.CharField(max_length=8, choices=CHOICES)
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
     reason = models.CharField(max_length=300, blank=True)
-    # Who it was given to (apps.employees.targets); empty for a correction.
+    # Who it was given to (apps.employees.selectors); empty for a correction.
     target_kind = models.CharField(max_length=10, blank=True)
     target_id = models.BigIntegerField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=BatchStatus.choices,

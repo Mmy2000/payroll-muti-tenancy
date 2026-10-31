@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from apps.core.errors import NotFound
 
-from .models import AppDevice, BiometricEnrollment
+from ..models import AppDevice, BiometricEnrollment
 
 MANAGE = "mobile.qr.manage"
 

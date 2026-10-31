@@ -20,11 +20,11 @@ from apps.core.events import publish
 from apps.core.months import add_months, months
 from apps.employees.selectors import get_employee
 
-from .domain.installments import split
-from .events import LoanGranted
-from .models import InstallmentStatus, Loan, LoanInstallment, LoanStatus
-from .permissions import MANAGE
-from .validators import check_loan
+from ..domain.installments import split
+from ..events import LoanGranted
+from ..models import InstallmentStatus, Loan, LoanInstallment, LoanStatus
+from ..permissions import MANAGE
+from ..validators import check_loan
 
 
 @dataclass(frozen=True)

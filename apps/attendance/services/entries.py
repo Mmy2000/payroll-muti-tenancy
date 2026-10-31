@@ -22,14 +22,13 @@ from django.utils.translation import gettext as _
 from apps.core import bulk, locks
 from apps.core.errors import NotFound, invalid_fields
 from apps.employees.models import Employee
-from apps.employees.selectors import visible_employees
-from apps.employees.targets import Group, resolve_group
+from apps.employees.selectors import Group, resolve_group, visible_employees
 
-from .domain.days import Status
-from .domain.workday import times_on
-from .models import AttendanceDay, DayKind
-from .selectors import ScheduleHistory, evaluate
-from .validators import check_day
+from ..domain.days import Status
+from ..domain.workday import times_on
+from ..models import AttendanceDay, DayKind
+from ..selectors import ScheduleHistory, evaluate
+from ..validators import check_day
 
 MANAGE = "attendance.day.manage"
 

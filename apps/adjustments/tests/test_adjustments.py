@@ -8,22 +8,23 @@ from decimal import Decimal as D
 import pytest
 from django.utils import translation
 
-from apps.adjustments import services
 from apps.adjustments.domain.amounts import METHODS
 from apps.adjustments.models import Adjustment, AdjustmentBatch, AdjustmentType, BatchStatus
 from apps.core.errors import Conflict, DomainError, ValidationError
 from apps.core.tenancy import tenant_context
 from apps.employees.domain.rates import PayTerms
-from apps.employees.targets import Target
+from apps.employees.selectors import Target
 from apps.iam.models import Role
 from apps.iam.services import assign_role, set_role_permissions
 from apps.org.models import Branch, Department
-from apps.payroll import services as payroll
+from apps.payroll.services import lifecycle as payroll_lifecycle
+from apps.payroll.services import runs as payroll
 from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 from conftest import login
 
 from .. import selectors
+from ..services import batches
 
 MONTHLY = PayTerms("fixed", "monthly", D(6000), D(8))
 OCTOBER = date(2026, 10, 5)
@@ -204,35 +205,35 @@ def test_payroll_pays_approved_batches_and_corrections_settle_the_difference(pay
                                                                             make_employee):
     employee = make_employee(pay_client, salary=D(6000))
     with tenant_context(pay_client.id), translation.override("en"):
-        penalty = services.give(services.AdjustmentInput(
+        penalty = batches.give(batches.AdjustmentInput(
             type_id=AdjustmentType.objects.filter(kind="penalty").first().pk,
             target=Target.employee(employee.pk), date=OCTOBER, method="days",
             quantity=D(2)))
         run, lines = _payroll(OCTOBER)
         assert "penalty" not in lines  # a draft is never paid
-        services.approve(penalty.pk)
+        batches.approve(penalty.pk)
         lines = _lines(payroll.calculate_run(run.pk))  # the draft run sees it now
         assert lines["penalty"][1] == D(400)
-        payroll.approve_run(run.pk)
+        payroll_lifecycle.approve_run(run.pk)
 
         with pytest.raises(DomainError) as paid:
-            services.reopen(penalty.pk, "Too much")
+            batches.reopen(penalty.pk, "Too much")
         assert paid.value.code == "ADJUSTMENTS_PAID"
         with pytest.raises(DomainError):
-            services.cancel(penalty.pk, "Too much")
+            batches.cancel(penalty.pk, "Too much")
 
         row = penalty.rows.get()
-        fix = services.correct(penalty.pk, services.CorrectionInput(
+        fix = batches.correct(penalty.pk, batches.CorrectionInput(
             date=date(2026, 11, 3), reason="One day, not two", quantities={row.pk: D(1)}))
         assert fix.status == BatchStatus.DRAFT and fix.rows.get().amount == D(-200)
         with pytest.raises(Conflict):  # one draft correction at a time
-            services.correct(penalty.pk, services.CorrectionInput(
+            batches.correct(penalty.pk, batches.CorrectionInput(
                 date=date(2026, 11, 3), reason="Again", quantities={row.pk: D(0)}))
         with pytest.raises(DomainError):  # a correction isn't edited, it's redone
-            services.update_draft(fix.pk, services.BatchInput(
+            batches.update_draft(fix.pk, batches.BatchInput(
                 type_id=fix.adjustment_type_id, date=fix.date, method="days",
                 quantity=D(1)))
-        services.approve(fix.pk)
+        batches.approve(fix.pk)
         assert selectors.effective_amounts(penalty) == {row.pk: D(200)}
         penalty.refresh_from_db()
         assert penalty.rows.get().amount == D(400)  # the original never changes
@@ -243,9 +244,9 @@ def test_payroll_pays_approved_batches_and_corrections_settle_the_difference(pay
         assert "correction of 2026-10-05" in label
 
         with pytest.raises(ValidationError):  # already what it should be
-            services.correct(penalty.pk, services.CorrectionInput(
+            batches.correct(penalty.pk, batches.CorrectionInput(
                 date=date(2026, 11, 3), reason="Same", quantities={row.pk: D(1)}))
-        back = services.correct(penalty.pk, services.CorrectionInput(
+        back = batches.correct(penalty.pk, batches.CorrectionInput(
             date=date(2026, 11, 4), reason="Forgiven", quantities={row.pk: D(0)}),
             approve=True)
         assert back.rows.get().amount == D(-200)  # what is left of it

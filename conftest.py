@@ -98,7 +98,7 @@ def make_employee(db):
     from datetime import date, time
     from decimal import Decimal
 
-    from apps.employees import services
+    from apps.employees.services import employees
     from apps.org.models import Branch
 
     def _make(tenant, code: int = 1, *, branch=None, hired_on=date(2025, 1, 1),
@@ -106,13 +106,13 @@ def make_employee(db):
               annual_leave_days=21, permission_hours=Decimal(0), **card):
         with tenant_context(tenant.id):
             branch = branch or Branch.objects.get(code=1)
-            return services.create_employee(
-                services.EmployeeInput(code=code, name=card.pop("name", f"Employee {code}"),
+            return employees.create_employee(
+                employees.EmployeeInput(code=code, name=card.pop("name", f"Employee {code}"),
                                        branch_id=branch.pk, hired_on=hired_on, **card),
-                services.CompensationInput(effective_from=None, salary=salary,
+                employees.CompensationInput(effective_from=None, salary=salary,
                                            annual_leave_days=annual_leave_days,
                                            permission_hours=permission_hours),
-                services.ScheduleInput(effective_from=None, starts_at=starts_at,
+                employees.ScheduleInput(effective_from=None, starts_at=starts_at,
                                        ends_at=ends_at, days_off=list(days_off)))
 
     return _make

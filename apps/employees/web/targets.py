@@ -3,7 +3,7 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.employees.targets import BRANCH, DEPARTMENT, EMPLOYEE, EMPLOYEES
+from apps.employees.selectors import BRANCH, DEPARTMENT, EMPLOYEE, EMPLOYEES
 from apps.org.models import Branch
 from apps.org.selectors import visible_departments
 

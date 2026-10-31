@@ -16,9 +16,10 @@ from apps.iam.authz import permission_required
 from apps.org.models import Branch
 from apps.org.selectors import visible_departments
 
-from .. import permissions, printing, services
+from .. import permissions, printing
 from ..models import Frequency, MonthlyRule, PeriodKind, RunStatus, ScopeKind
 from ..selectors import issue_text, line_label, visible_runs
+from ..services import calendars as calendar_services
 
 RUN_TABS = [(RunStatus.DRAFT, _lazy("Drafts")), (RunStatus.APPROVED, _lazy("Approved")),
             (RunStatus.PAID, _lazy("Paid")), (RunStatus.REVERSED, _lazy("Reversed")),
@@ -76,7 +77,8 @@ def run_new(request):
     today = timezone.localdate()
     return render(request, "payroll/run_form.html", {
         "frequencies": Frequency.choices, "kinds": PeriodKind.choices, "today": today,
-        "periods": [(label, services.period_on(f, today)) for f, label in Frequency.choices],
+        "periods": [(label, calendar_services.period_on(f, today))
+                    for f, label in Frequency.choices],
         # A member limited to some branches runs payroll branch by branch.
         "all_branches": allowed is None,
         "branches": branches if allowed is None else branches.filter(pk__in=allowed),
@@ -163,6 +165,6 @@ def run_payslips_pdf(request, pk):
 @permission_required(permissions.SETUP)
 def calendars(request):
     return render(request, "payroll/calendars.html", {
-        "calendars": [services.calendar_for(f) for f in Frequency.values],
+        "calendars": [calendar_services.calendar_for(f) for f in Frequency.values],
         "monthly_rules": MonthlyRule.choices, "today": timezone.localdate(),
     })

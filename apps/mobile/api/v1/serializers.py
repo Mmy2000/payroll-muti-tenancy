@@ -13,8 +13,10 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from apps.employees.models import Weekday
 
-from ... import contract, devices, services
+from ... import contract
 from ...contract import day, decimal, moment
+from ...services import devices
+from ...services import punches as punches_services
 from .auth import DEVICE_CLAIM, TENANT_CLAIM, active_membership
 
 DAY_CODES = {Weekday.MONDAY: "mo", Weekday.TUESDAY: "tu", Weekday.WEDNESDAY: "we",
@@ -57,7 +59,7 @@ def attendance(punch, direction: int) -> dict:
 
 
 def attendance_list(punches) -> list[dict]:
-    directions = services.directions(punches)
+    directions = punches_services.directions(punches)
     return [attendance(p, directions[p.pk]) for p in punches]
 
 

@@ -9,8 +9,9 @@ from apps.employees.selectors import visible_employees
 from apps.iam.authz import permission_required
 from apps.org.models import Branch
 
-from .. import permissions, selectors, services
+from .. import permissions, selectors
 from ..models import DeviceUser
+from ..services import sync
 
 RECENT = 50
 
@@ -37,7 +38,7 @@ def device(request, pk):
     found = selectors.visible_devices(request.actor).filter(pk=pk).first()
     if found is None:
         raise Http404
-    services.expire_commands(found)
+    sync.expire_commands(found)
     found.online = selectors.is_online(found)
     users = list(DeviceUser.objects.filter(branch=found.branch).select_related("employee")
                  .order_by("removed", "pin"))

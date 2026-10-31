@@ -8,11 +8,12 @@ import pytest
 from apps.core.bulk import BulkFailed
 from apps.core.history import in_effect
 from apps.core.tenancy import tenant_context
-from apps.employees import services
-from apps.employees.group_hours import GroupHoursInput, change_hours_for_group
-from apps.employees.targets import Group
 from apps.org.models import Branch
 from conftest import login
+
+from ..selectors import Group
+from ..services import employees
+from ..services.group_hours import GroupHoursInput, change_hours_for_group
 
 pytestmark = pytest.mark.django_db
 START = date(2026, 11, 1)
@@ -48,7 +49,7 @@ def test_a_change_inside_the_range_fails_that_row(tenant_a, make_employee):
     first = make_employee(tenant_a, 1)
     second = make_employee(tenant_a, 2)
     with tenant_context(tenant_a.id):
-        services.change_schedule(second.pk, services.ScheduleInput(
+        employees.change_schedule(second.pk, employees.ScheduleInput(
             effective_from=date(2026, 11, 15), starts_at=time(7), ends_at=time(15)))
         data = _ramadan(Group("employees", (first.pk, second.pk)), until=date(2026, 11, 30),
                         days_off=(4, 5))
@@ -66,7 +67,7 @@ def test_a_change_inside_the_range_fails_that_row(tenant_a, make_employee):
 def test_a_later_change_is_kept_and_said(tenant_a, make_employee):
     first = make_employee(tenant_a, 1)
     with tenant_context(tenant_a.id):
-        services.change_schedule(first.pk, services.ScheduleInput(
+        employees.change_schedule(first.pk, employees.ScheduleInput(
             effective_from=date(2027, 1, 1), starts_at=time(8), ends_at=time(16)))
         outcome = change_hours_for_group(_ramadan(Group("employees", (first.pk,))), save=True)
         assert "2027-01-01" in outcome.rows[0].warnings[0]

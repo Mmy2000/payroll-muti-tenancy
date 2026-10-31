@@ -64,7 +64,7 @@ def test_publishing_reaches_every_subscriber_and_only_for_its_event():
 
 def test_a_published_event_notifies(tenant_a, make_employee):
     from apps.attendance.models import LeaveRequest, LeaveType
-    from apps.mobile import access
+    from apps.mobile.services import access
     from conftest import PASSWORD
 
     employee = make_employee(tenant_a, 1, name="Mona")

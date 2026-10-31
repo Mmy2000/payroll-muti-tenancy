@@ -9,6 +9,6 @@ class AdjustmentsConfig(AppConfig):
     def ready(self):
         from apps.core.seeding import register_seed
 
-        from .services import seed_types
+        from .services.types import seed_types
 
         register_seed("adjustments.types", seed_types)

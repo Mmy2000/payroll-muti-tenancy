@@ -16,11 +16,11 @@ from apps.employees.models import WorkSchedule
 from apps.platform.tenants import features
 from apps.policies.models import PublicHoliday
 
-from .approvals import ACTIVE
 from .domain.days import DayFacts, DayResult, ManualEntry, Shift, evaluate_day
 from .domain.leave import Balance, days_between, spans_overlap
 from .domain.workday import work_date_of
 from .models import AttendanceDay, HourlyLeave, LeaveRequest, Punch, RequestStatus
+from .services.approvals import ACTIVE
 
 # An employee's schedule rows, to find the one in effect on a day.
 ScheduleHistory = Timeline

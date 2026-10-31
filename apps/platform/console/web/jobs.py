@@ -16,7 +16,7 @@ from apps.platform.jobs.models import Job, JobStatus, Worker
 from apps.platform.jobs.registry import TASKS
 from apps.platform.jobs.worker import retry
 
-from .views import record, staff_required
+from .common import record, staff_required
 
 ALIVE_WITHIN = timedelta(seconds=60)  # workers heartbeat every 15 s between jobs
 VIEWS = ("problems", "waiting", "done", "all")

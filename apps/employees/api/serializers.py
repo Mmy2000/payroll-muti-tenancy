@@ -18,9 +18,9 @@ from apps.employees.models import (
     Weekday,
     WorkSchedule,
 )
-from apps.employees.targets import GROUP_KINDS, KINDS, Group, Target
 
 from ..permissions import MANAGE, SALARY_READ
+from ..selectors import GROUP_KINDS, KINDS, Group, Target
 
 
 class CompensationSerializer(serializers.ModelSerializer):

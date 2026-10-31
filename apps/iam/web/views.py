@@ -65,8 +65,8 @@ def _user_form(request, membership=None):
 
 
 def _employee_link(actor, membership) -> dict:
-    """The employee this user is, when the mobile app is on (apps.mobile.access)."""
-    from apps.mobile import access
+    """The employee this user is, when the mobile app is on (apps.mobile.services.access)."""
+    from apps.mobile.services import access
 
     if not access.can_link(actor):
         return {}

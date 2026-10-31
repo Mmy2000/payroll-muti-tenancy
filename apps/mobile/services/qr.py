@@ -29,10 +29,10 @@ from apps.iam import validators as iam_validators
 from apps.iam.authz import build_actor
 from apps.org.models import TenantProfile
 
+from ..contract import AppError
+from ..models import AppLinkCode, DeviceMethod
 from . import access, devices
-from .contract import AppError
-from .devices import MANAGE  # noqa: F401 (the web API's permission)
-from .models import AppLinkCode, DeviceMethod
+from .devices import MANAGE
 
 CODE_BYTES = 32  # far beyond guessing: the limit on tries is only there to stop abuse
 SIGNIN = "mobile.signin"

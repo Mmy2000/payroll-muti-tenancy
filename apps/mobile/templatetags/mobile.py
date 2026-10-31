@@ -2,7 +2,7 @@
 
 from django import template
 
-from apps.mobile import devices, qr
+from ..services import devices, qr
 
 register = template.Library()
 

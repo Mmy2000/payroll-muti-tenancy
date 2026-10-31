@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.devices import services
+from ..services import devices
 
 
 class DeviceWriteSerializer(serializers.Serializer):
@@ -16,7 +16,7 @@ class DeviceWriteSerializer(serializers.Serializer):
 
 class AskSerializer(serializers.Serializer):
     kind = serializers.ChoiceField(choices=[(k, k) for k in (
-        services.TEST, services.PULL_USERS, services.PULL_PUNCHES)])
+        devices.TEST, devices.PULL_USERS, devices.PULL_PUNCHES)])
     start = serializers.DateField(required=False, allow_null=True, default=None)
     end = serializers.DateField(required=False, allow_null=True, default=None)
 

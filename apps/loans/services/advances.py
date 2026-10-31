@@ -18,9 +18,9 @@ from apps.core.events import publish
 from apps.core.history import in_effect
 from apps.employees.selectors import get_employee
 
-from .events import AdvanceGiven
-from .models import Advance, AdvanceStatus
-from .selectors import month_advances
+from ..events import AdvanceGiven
+from ..models import Advance, AdvanceStatus
+from ..selectors import month_advances
 
 VIEW, MANAGE = "loans.advance.view", "loans.advance.manage"
 

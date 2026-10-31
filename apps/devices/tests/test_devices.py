@@ -8,15 +8,16 @@ from django.test import Client
 from django.utils import timezone
 
 from apps.attendance.models import Punch, PunchSource
+from apps.core import locks
 from apps.core.errors import DomainError, ValidationError
 from apps.core.tenancy import tenant_context
-from apps.devices import protocol, services
 from apps.devices.models import CommandStatus, DevicePunch, DeviceUser
 from apps.org.models import Branch
 from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 
-from .. import selectors
+from .. import protocol, selectors
+from ..services import devices, links
 
 SERIAL = "CEXF201960123"
 
@@ -67,7 +68,7 @@ def device(tenant_a):
     _switch_on(tenant_a)
     with tenant_context(tenant_a.id):
         branch = Branch.objects.get(code=1)
-        return services.save_device(services.DeviceInput(SERIAL, "Gate", branch.pk))
+        return devices.save_device(devices.DeviceInput(SERIAL, "Gate", branch.pk))
 
 
 def _call(tenant, path, *, body=None, **query):
@@ -83,7 +84,7 @@ def _call(tenant, path, *, body=None, **query):
 def test_a_device_sends_punches_that_become_attendance(device, tenant_a, make_employee):
     employee = make_employee(tenant_a, 7, name="Mona Adel")
     with tenant_context(tenant_a.id):
-        assert services.link_by_code(device.branch_id) == 0  # nobody enrolled yet
+        assert links.link_by_code(device.branch_id) == 0  # nobody enrolled yet
     hello = _call(tenant_a, "cdata", options="all", pushver="2.4.1")
     assert hello.status_code == 200 and hello["Content-Type"].startswith("text/plain")
     assert hello.content.decode().startswith(f"GET OPTION FROM: {SERIAL}\n")
@@ -95,7 +96,7 @@ def test_a_device_sends_punches_that_become_attendance(device, tenant_a, make_em
     with tenant_context(tenant_a.id):
         assert DevicePunch.objects.count() == 3  # the same moment twice is one punch
         assert not Punch.objects.exists()  # PIN 7 isn't linked yet
-        assert services.link_by_code(device.branch_id) == 1  # PIN 7 = employee code 7
+        assert links.link_by_code(device.branch_id) == 1  # PIN 7 = employee code 7
         punches = list(Punch.objects.filter(employee=employee).order_by("at"))
         assert [p.source for p in punches] == [PunchSource.DEVICE] * 2
         assert timezone.localtime(punches[0].at).strftime("%H:%M") == "08:58"
@@ -114,22 +115,22 @@ def test_users_from_the_device_and_links(device, tenant_a, make_employee):
     with tenant_context(tenant_a.id):
         five = DeviceUser.objects.get(pin="5")
         assert five.name == "Five"
-        services.link(five.pk, second.pk)
+        links.link(five.pk, second.pk)
         with pytest.raises(ValidationError):  # one PIN per employee on a branch's devices
-            services.link(DeviceUser.objects.get(pin="1").pk, second.pk)
+            links.link(DeviceUser.objects.get(pin="1").pk, second.pk)
     _call(tenant_a, "cdata", body="5\t2026-10-05 09:00:00\t0\t1\n", table="ATTLOG")
     with tenant_context(tenant_a.id):
         assert Punch.objects.filter(employee=second).count() == 1
         with pytest.raises(DomainError):  # its punches are someone's attendance now
-            services.link(five.pk, first.pk)
+            links.link(five.pk, first.pk)
 
 
 @pytest.mark.django_db
 def test_commands_one_at_a_time_and_their_replies(device, tenant_a):
     with tenant_context(tenant_a.id):
-        test = services.ask(device.pk, services.CommandInput(services.TEST))
-        pull = services.ask(device.pk, services.CommandInput(
-            services.PULL_PUNCHES, start=date(2026, 10, 1), end=date(2026, 10, 5)))
+        test = devices.ask(device.pk, devices.CommandInput(devices.TEST))
+        pull = devices.ask(device.pk, devices.CommandInput(
+            devices.PULL_PUNCHES, start=date(2026, 10, 1), end=date(2026, 10, 5)))
     first = _call(tenant_a, "getrequest", INFO="Ver 8.0.4,12,10,2311").content.decode()
     assert first == f"C:{test.pk}:INFO\n"
     second = _call(tenant_a, "getrequest").content.decode()
@@ -147,9 +148,9 @@ def test_commands_one_at_a_time_and_their_replies(device, tenant_a):
 @pytest.mark.django_db
 def test_a_locked_day_keeps_its_punches_out(device, tenant_a, make_employee, monkeypatch):
     employee = make_employee(tenant_a, 7)
-    monkeypatch.setattr(services.locks, "period_locked", lambda pk, start, end=None: True)
+    monkeypatch.setattr(locks, "period_locked", lambda pk, start, end=None: True)
     with tenant_context(tenant_a.id):
-        services.link_by_code(device.branch_id)
+        links.link_by_code(device.branch_id)
     _call(tenant_a, "cdata", body="7\t2026-10-05 08:58:12\t0\t1\n", table="ATTLOG")
     with tenant_context(tenant_a.id):
         assert DevicePunch.objects.count() == 1 and not Punch.objects.filter(
@@ -166,7 +167,7 @@ def test_unknown_devices_and_other_clients_are_refused(device, tenant_a, tenant_
     assert _call(tenant_a, "cdata").status_code == 403  # devices switched off
     _switch_on(tenant_b)
     with tenant_context(tenant_b.id), pytest.raises(ValidationError) as taken:
-        services.save_device(services.DeviceInput(SERIAL.lower(), "Theirs",
+        devices.save_device(devices.DeviceInput(SERIAL.lower(), "Theirs",
                                                   Branch.objects.get(code=1).pk))
     assert "serial" in taken.value.fields  # one company per device
 

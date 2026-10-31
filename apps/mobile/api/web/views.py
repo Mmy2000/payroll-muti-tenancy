@@ -6,7 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from ... import access, devices, qr
+from ...services import access, devices, qr
 from .serializers import LoginWriteSerializer
 
 

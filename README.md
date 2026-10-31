@@ -55,8 +55,8 @@ rules apply, but their examples name Gweb's apps (sales, ledger…), which this 
 
 ### Phase 3: advances, loans, incentives, penalties, pay items given
 
-- **Advances** (`apps/loans/advances.py`): within a month's pay; recovered by that month's payroll.
-  **Loans** (`apps/loans/services.py`): equal installments (remainder on the last), one loan at a
+- **Advances** (`apps/loans/services/advances.py`): within a month's pay; recovered by that month's payroll.
+  **Loans** (`apps/loans/services/loans.py`): equal installments (remainder on the last), one loan at a
   time, postponing moves the rest a month on, cancelling only before the first payment.
 - **Incentives and penalties** (`apps/adjustments`): one catalogue of types with a kind; four
   amount methods as strategies (`domain/amounts.py`: fixed, % of salary, days, hours); each entry
@@ -64,7 +64,7 @@ rules apply, but their examples name Gweb's apps (sales, ledger…), which this 
 - **Pay items given** (`apps/compensation`, `PayItemAssignment`): an item for an employee from a
   date (to a date or open), once or every pay period, month or week; no two of the same item
   over the same days.
-- **Shared**: "who it's for" (one employee, a department, a branch) in `apps/employees/targets.py`
+- **Shared**: "who it's for" (one employee, a department, a branch) in `apps/employees/selectors.py`
   with one form partial and `static/core/js/reveal.js`; entries given together share a batch; `EmployeeRowsViewSet` for every API over employees' rows;
   `apps/core/months.py`; `MonthField`; `apps/core/migration_helpers.for_each_tenant`.
 - Features: `advances`, `loans`, `incentives`, `penalties`; `pay_items` now also covers giving them.
@@ -153,9 +153,9 @@ From "PayRole — the four gaps" (decisions of 2026-10-29).
   (`tid`) and are refused on another client's host. The fingerprint proof (HMAC, one phone per
   employee, nonces), GPS tracking and the geofence (branch location and radius) are features.
   An employee gets a login from their page (the built-in "Employee (app)" role), or a QR that
-  signs the app in with no address and no password (`apps/mobile/qr.py`: a one-time code, of
+  signs the app in with no address and no password (`apps/mobile/services/qr.py`: a one-time code, of
   which only the hash is kept, for the minutes set on the company page). Each phone has a record
-  (`apps/mobile/devices.py`), and signing one out takes effect at once.
+  (`apps/mobile/services/devices.py`), and signing one out takes effect at once.
 - **Notifications** (`apps/notifications`): what an employee or a decider is told (leave asked
   for and decided, hourly leave, incentives, penalties, advances, loans, pay paid), in PayRole's
   words; the app polls them.

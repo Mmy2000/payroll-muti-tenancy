@@ -13,8 +13,8 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core.imports import CellError, Cells, Column, SheetImport
 from apps.org.models import Branch, Department
 
-from . import services
 from .models import PayFrequency, WageType
+from .services import employees
 
 DAYS = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6,
         "الاثنين": 0, "الإثنين": 0, "الثلاثاء": 1, "الأربعاء": 2, "الاربعاء": 2, "الخميس": 3,
@@ -77,7 +77,7 @@ class EmployeeImport(SheetImport):
     def import_row(self, cells: Cells) -> None:
         branch_id = self._lookup(cells, "branch_code", self.branches,
                                  _("No active branch has this code."))
-        card = services.EmployeeInput(
+        card = employees.EmployeeInput(
             code=cells.integer("code", 0), name=cells.text("name"), branch_id=branch_id,
             department_id=self._lookup(cells, "department_code", self.departments[branch_id],
                                        _("This branch has no active department with this code."),
@@ -87,7 +87,7 @@ class EmployeeImport(SheetImport):
             job_title=cells.text("job_title"), national_id=cells.text("national_id"),
             gender=cells.text("gender").lower(), birth_date=cells.date("birth_date"),
             phone=cells.text("phone"), insurance_number=cells.text("insurance_number"))
-        pay = services.CompensationInput(
+        pay = employees.CompensationInput(
             effective_from=None,
             salary=cells.required("salary", cells.decimal("salary"), _("Enter the salary.")),
             wage_type=cells.text("wage_type").lower() or WageType.FIXED,
@@ -95,10 +95,10 @@ class EmployeeImport(SheetImport):
             hours_per_day=cells.decimal("hours_per_day", Decimal(8)),
             insured_salary=cells.decimal("insured_salary"),
             annual_leave_days=cells.integer("annual_leave_days", 21))
-        schedule = services.ScheduleInput(
+        schedule = employees.ScheduleInput(
             effective_from=None,
             starts_at=cells.required("starts_at", cells.time("starts_at"),
                                      _("Enter a time as HH:MM.")),
             ends_at=cells.required("ends_at", cells.time("ends_at"), _("Enter a time as HH:MM.")),
             days_off=weekdays(cells, "days_off"))
-        services.create_employee(card, pay, schedule, actor=self.actor)
+        employees.create_employee(card, pay, schedule, actor=self.actor)

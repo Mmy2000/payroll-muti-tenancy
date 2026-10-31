@@ -18,16 +18,10 @@ from apps.core import locks
 from apps.core.crypto import blind_index, encrypt
 from apps.core.errors import DomainError, NotFound, invalid_fields
 
-from .models import (
-    Compensation,
-    Employee,
-    PayFrequency,
-    WageType,
-    WorkSchedule,
-)
-from .permissions import MANAGE, SALARY_MANAGE
-from .selectors import get_employee, visible_employees
-from .validators import (
+from ..models import Compensation, Employee, PayFrequency, WageType, WorkSchedule
+from ..permissions import MANAGE, SALARY_MANAGE
+from ..selectors import get_employee, visible_employees
+from ..validators import (
     NATIONAL_ID_PURPOSE,
     check_card,
     check_change_date,

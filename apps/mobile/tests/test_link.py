@@ -9,9 +9,10 @@ from django.urls import reverse
 from apps.core.tenancy import tenant_context
 from apps.employees.models import Employee
 from apps.iam.models import Membership, MembershipStatus, Role
-from apps.mobile import access
 from apps.mobile.tests.test_contract import App, _switch
 from conftest import PASSWORD, login
+
+from ..services import access
 
 pytestmark = pytest.mark.django_db
 
