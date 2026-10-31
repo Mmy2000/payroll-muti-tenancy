@@ -74,3 +74,34 @@ def department_edit(request, pk):
     if department is None:
         raise Http404
     return _department_form(request, department)
+
+
+@permission_required(permissions.POSITION_VIEW)
+def positions(request):
+    found = ListQuery(request, permission=permissions.POSITION_VIEW, search=("name",),
+                      search_label=_("Position name"), date_field="", branch_field="")
+    rows = found.apply(selectors.positions())
+    return render(request, "org/positions.html", {"filters": found, "page": found.page(rows)})
+
+
+def _position_form(request, position=None):
+    return render(request, "org/position_form.html", {
+        "position": position,
+        "departments": selectors.active_departments(),
+        "endpoint": (reverse("position-detail", args=[position.pk]) if position
+                     else reverse("position-list")),
+        "method": "PUT" if position else "POST",
+    })
+
+
+@permission_required(permissions.POSITION_MANAGE)
+def position_new(request):
+    return _position_form(request)
+
+
+@permission_required(permissions.POSITION_MANAGE)
+def position_edit(request, pk):
+    position = selectors.find_position(pk)
+    if position is None:
+        raise Http404
+    return _position_form(request, position)

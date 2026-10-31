@@ -12,10 +12,10 @@ from django.utils.translation import gettext as _
 from apps.core.errors import NotFound, ValidationError
 from apps.core.media import replace_file
 
-from .models import Branch, Department, TenantProfile
-from .permissions import DEPARTMENT_MANAGE
+from .models import Branch, Department, Position, TenantProfile
+from .permissions import DEPARTMENT_MANAGE, POSITION_MANAGE
 from .selectors import next_department_code
-from .validators import check_department
+from .validators import check_department, check_position
 
 
 @dataclass(frozen=True)
@@ -153,3 +153,39 @@ def save_company(profile: TenantProfile, *, display_name: str, accent: str, logo
     replace_file(profile, "logo", logo)
     profile.save()
     return profile
+
+
+@dataclass(frozen=True)
+class PositionInput:
+    name: str
+    department_id: int | None = None
+
+
+def save_position(data: PositionInput, *, position_id: int | None = None, actor=None) -> Position:
+    if actor is not None:
+        actor.require(POSITION_MANAGE)
+    if position_id is None:
+        position = Position(created_by=getattr(actor, "user", None))
+    else:
+        position = Position.objects.filter(pk=position_id).first()
+        if position is None:
+            raise NotFound(_("Not found."))
+    errors = check_position(position, data)
+    if errors:
+        raise ValidationError(_("Please correct the highlighted fields."), fields=errors)
+    position.name = data.name.strip()
+    position.department_id = data.department_id
+    position.updated_by = getattr(actor, "user", None)
+    position.save()
+    return position
+
+
+def set_position_active(position_id: int, active: bool, *, actor=None) -> Position:
+    if actor is not None:
+        actor.require(POSITION_MANAGE)
+    position = Position.objects.filter(pk=position_id).first()
+    if position is None:
+        raise NotFound(_("Not found."))
+    position.is_active = active
+    position.save(update_fields=["is_active", "updated_at"])
+    return position

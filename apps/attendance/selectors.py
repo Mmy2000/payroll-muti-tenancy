@@ -1,5 +1,5 @@
 """Reading attendance: every day of a period for some employees, worked out by
-apps.attendance.domain.days. Six queries whatever the number of employees and days; the rules
+apps.attendance.domain.days. Seven queries whatever the number of employees and days; the rules
 run in Python. The daily sheet, an employee's month and payroll all read attendance here."""
 
 from __future__ import annotations
@@ -12,7 +12,8 @@ from django.utils import timezone
 
 from apps.core.history import Timeline, in_effect
 from apps.core.tenancy.context import require_current_tenant_id
-from apps.employees.models import WorkSchedule
+from apps.employees.domain.employment import closed_periods
+from apps.employees.models import EmployeeAssignment, WorkSchedule
 from apps.employees.selectors import employed_on, employee_rows, listed_employees
 from apps.platform.tenants import features
 from apps.policies.models import PublicHoliday
@@ -46,6 +47,17 @@ def holiday_name(holidays: dict, day: date, branch_id: int) -> str:
     return holidays.get((day, branch_id)) or holidays.get((day, None)) or ""
 
 
+def _employed(employee, past_periods: list, day: date) -> bool:
+    if employee.hired_on <= day and (employee.left_on is None or day <= employee.left_on):
+        return True
+    return any(first <= day <= last for first, last in past_periods)
+
+
+def _branch_on(employee, placed: Timeline | None, day: date) -> int:
+    row = placed.on(day) if placed else None
+    return row.branch_id if row else employee.branch_id
+
+
 def evaluate(employees, start: date, end: date, *, today: date | None = None
              ) -> dict[int, list[DayResult]]:
     """{employee id: the DayResult of each day from `start` to `end`}."""
@@ -58,6 +70,10 @@ def evaluate(employees, start: date, end: date, *, today: date | None = None
     for row in WorkSchedule.objects.filter(employee_id__in=ids, effective_from__lte=end):
         schedules[row.employee_id].append(row)
     schedules = {pk: ScheduleHistory(rows) for pk, rows in schedules.items()}
+    assignments = defaultdict(list)
+    for row in EmployeeAssignment.objects.filter(employee_id__in=ids, effective_from__lte=end):
+        assignments[row.employee_id].append(row)
+    assignments = {pk: ScheduleHistory(rows) for pk, rows in assignments.items()}
     holidays = holidays_between(start, end)
 
     leave = defaultdict(dict)  # employee → {day: (type name, paid)}
@@ -92,15 +108,16 @@ def evaluate(employees, start: date, end: date, *, today: date | None = None
     results = {}
     for employee in employees:
         rows = schedules.get(employee.pk)
+        placed = assignments.get(employee.pk)
+        past = closed_periods(placed.rows) if placed else []
         days = []
         for day in days_between(start, end):
             leave_name, leave_paid = leave[employee.pk].get(day, ("", True))
             facts = DayFacts(
                 day=day, today=today, tz=tz,
-                employed=employee.hired_on <= day and (employee.left_on is None
-                                                       or day <= employee.left_on),
+                employed=_employed(employee, past, day),
                 shift=_shift(rows.on(day) if rows else None),
-                holiday=holiday_name(holidays, day, employee.branch_id),
+                holiday=holiday_name(holidays, day, _branch_on(employee, placed, day)),
                 leave=leave_name, leave_paid=leave_paid,
                 manual=manual.get((employee.pk, day)),
                 punches=tuple(punches.get((employee.pk, day), ())),
@@ -138,6 +155,7 @@ def working_day_test(employee):
     """A function telling whether a day is a working day for `employee`: not a weekly day off
     in the schedule of that day, and not a public holiday of their branch."""
     history = ScheduleHistory(employee.schedules.all())
+    placed = ScheduleHistory(employee.assignments.all())
     cache: dict[tuple[date, date], dict] = {}
 
     def is_working_day(day: date) -> bool:
@@ -145,7 +163,7 @@ def working_day_test(employee):
         holidays = cache.setdefault(year, holidays_between(*year))
         row = history.on(day)
         return (row is not None and day.weekday() not in row.days_off
-                and not holiday_name(holidays, day, employee.branch_id))
+                and not holiday_name(holidays, day, _branch_on(employee, placed, day)))
 
     return is_working_day
 

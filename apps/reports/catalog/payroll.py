@@ -67,7 +67,7 @@ def _payslips(params, scope):
         run__status__in=STATUSES[params.get("runs")],
         run__period__end__range=(params.date("date_from"), params.date("date_to")),
         employee__in=scope.employees())
-        .select_related("employee__branch", "employee__department", "run__period"))
+        .select_related("employee", "branch", "department", "run__period"))
     return slips.order_by("run__period__start", "employee__code")
 
 
@@ -124,11 +124,11 @@ class PayrollSummary(Report):
     def run(self, params, scope):
         groups: dict = {}
         for slip in _payslips(params, scope):
-            key = (slip.run_id, slip.employee.branch_id)
+            key = (slip.run_id, slip.branch_id)
             group = groups.setdefault(key, {
                 "period": period_text(slip.run.period),
                 "run": slip.run.number or _("Draft"), "status": slip.run.get_status_display(),
-                "branch": slip.employee.branch.name, "people": 0, "earnings": ZERO,
+                "branch": slip.branch.name, "people": 0, "earnings": ZERO,
                 "deductions": ZERO, "net": ZERO, "employer": ZERO,
                 "_urls": {"run": reverse("payroll-run", args=[slip.run_id])}})
             group["people"] += 1

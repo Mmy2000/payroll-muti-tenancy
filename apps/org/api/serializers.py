@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.org.models import Branch, Department
+from apps.org.models import Branch, Department, Position
 
 
 class BranchSerializer(serializers.ModelSerializer):
@@ -16,6 +16,15 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ["id", "branch", "branch_name", "code", "name", "is_active"]
+
+
+class PositionSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source="department.label", default="",
+                                            read_only=True)
+
+    class Meta:
+        model = Position
+        fields = ["id", "name", "department", "department_name", "is_active"]
 
 
 class BranchWriteSerializer(serializers.Serializer):
@@ -39,3 +48,8 @@ class DepartmentWriteSerializer(serializers.Serializer):
     code = serializers.IntegerField(min_value=1, max_value=9999, required=False,
                                     allow_null=True, default=None)
     name = serializers.CharField(max_length=120)
+
+
+class PositionWriteSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=120)
+    department = serializers.IntegerField(required=False, allow_null=True, default=None)

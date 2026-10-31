@@ -60,8 +60,10 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ["id", "code", "name", "branch", "branch_name", "department", "department_name",
-                  "job_title", "hired_on", "left_on", "leave_reason", "is_active", "gender",
+        fields = ["id", "code", "name", "branch", "branch_name", "department",
+                  "department_name",
+                  "job_title", "position", "hired_on", "left_on", "leave_reason", "is_active",
+                  "gender",
                   "birth_date", "phone", "email", "address", "insurance_number", "insured_from",
                   "qualification", "marital_status", "children", "military_status", "notes"]
 
@@ -91,6 +93,7 @@ class CardWriteSerializer(serializers.Serializer):
     department_id = serializers.IntegerField(allow_null=True, required=False, default=None)
     hired_on = serializers.DateField()
     job_title = serializers.CharField(max_length=120, allow_blank=True, default="")
+    position_id = serializers.IntegerField(allow_null=True, required=False, default=None)
     gender = _choice(Gender.choices)
     national_id = serializers.CharField(max_length=30, allow_blank=True, default="")
     birth_date = serializers.DateField(allow_null=True, required=False, default=None)
@@ -141,6 +144,19 @@ class ScheduleWriteSerializer(serializers.Serializer):
 class NewEmployeeSerializer(CardWriteSerializer):
     pay = PayWriteSerializer()
     schedule = ScheduleWriteSerializer()
+
+
+class AssignmentWriteSerializer(serializers.Serializer):
+    effective_from = serializers.DateField()
+    branch_id = serializers.IntegerField()
+    department_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    job_title = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
+    position_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    note = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+
+
+class RehireSerializer(AssignmentWriteSerializer):
+    restore_login = serializers.BooleanField(default=False)
 
 
 class LeaveSerializer(serializers.Serializer):

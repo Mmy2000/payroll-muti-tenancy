@@ -48,6 +48,14 @@
             <input id="f-job" name="job_title" class="form-input" value="{{ employee.job_title|default:'' }}" maxlength="120">
           </div>
           <div class="sm:col-span-2">
+            <label class="form-label" for="f-position">{% translate "Position" %}</label>
+            <select id="f-position" name="position_id" class="form-input" data-empty="null">
+              <option value="">—</option>
+              {% for position in positions %}<option value="{{ position.pk }}" {% if employee.position_id == position.pk %}selected{% endif %}>{{ position.name }}</option>{% endfor %}
+            </select>
+            <p class="form-error" data-error-for="position_id"></p>
+          </div>
+          <div class="sm:col-span-2">
             <label class="form-label is-required" for="f-hired">{% translate "Hiring date" %}</label>
             <input id="f-hired" type="date" name="hired_on" class="form-input" value="{% if employee %}{{ employee.hired_on|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}" required>
             <p class="form-error" data-error-for="hired_on"></p>

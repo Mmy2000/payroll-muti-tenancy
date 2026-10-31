@@ -7,7 +7,7 @@ from datetime import date
 from django.db.models import Count, Q
 
 from apps.core.history import in_effect
-from apps.employees.selectors import visible_employees
+from apps.employees.selectors import assignment_on, visible_employees
 from apps.org.models import Branch
 from apps.org.selectors import visible_departments
 
@@ -63,10 +63,6 @@ def scope_names(runs) -> dict:
     return names
 
 
-def active_departments():
-    return visible_departments().filter(is_active=True)
-
-
 def visible_payslips(actor):
     return (Payslip.objects.filter(run__in=visible_runs(actor))
             .select_related("employee").prefetch_related("lines"))
@@ -81,7 +77,7 @@ def find_slip(run, pk):
 
 
 def slips_to_print(run):
-    return run.payslips.select_related("employee__branch", "employee__department")
+    return run.payslips.select_related("employee", "branch", "department")
 
 
 def find_slip_to_print(run, pk):
@@ -131,15 +127,20 @@ def frequency_of(employee, day: date) -> str | None:
     return pay.pay_frequency if pay else None
 
 
+def _in_scope(run: PayrollRun, placed) -> bool:
+    """A run's scope means where people were in its period, not where they are now."""
+    if run.scope == ScopeKind.BRANCH:
+        return placed.branch_id == run.scope_id
+    if run.scope == ScopeKind.DEPARTMENT:
+        return placed.department_id == run.scope_id
+    return True
+
+
 def candidates(run: PayrollRun, actor):
     """(employees to pay, the skipped with why) for the run's scope and frequency."""
     period = run.period
     people = visible_employees(actor, CALCULATE).filter(hired_on__lte=period.end).exclude(
         left_on__lt=period.start)
-    if run.scope == ScopeKind.BRANCH:
-        people = people.filter(branch_id=run.scope_id)
-    elif run.scope == ScopeKind.DEPARTMENT:
-        people = people.filter(department_id=run.scope_id)
     busy = {}
     if period.kind == PeriodKind.REGULAR:
         for slip in (Payslip.objects.filter(
@@ -151,6 +152,8 @@ def candidates(run: PayrollRun, actor):
     for employee in people.select_related("branch").order_by("code"):
         last = period.end if employee.left_on is None else min(period.end, employee.left_on)
         if frequency_of(employee, last) != period.frequency:
+            continue
+        if not _in_scope(run, assignment_on(employee, last) or employee):
             continue
         if employee.pk in busy:
             skipped.append({"employee_id": employee.pk, "name": employee.name,

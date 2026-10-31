@@ -55,6 +55,8 @@ NAVIGATION: list[NavSection] = [
                  "employees-hours")),
         NavItem(_("Departments"), "departments", "users-round", "org.department.view",
                 ("department-new", "department-edit")),
+        NavItem(_("Positions"), "positions", "briefcase", "org.position.view",
+                ("position-new", "position-edit")),
         NavItem(_("Evaluations"), "evaluations", "clipboard-check", "evaluations.evaluation.view",
                 ("evaluation-new", "evaluation")),
     ]),

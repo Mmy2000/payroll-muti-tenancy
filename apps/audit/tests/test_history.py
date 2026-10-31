@@ -32,13 +32,14 @@ def test_every_audited_model_and_column_has_a_name():
 
 
 def test_parts_follow_the_models():
-    from apps.employees.models import Compensation, Employee, WorkSchedule
+    from apps.employees.models import Compensation, Employee, EmployeeAssignment, WorkSchedule
     from apps.loans.models import Loan, LoanInstallment
     from apps.mobile.models import AppLinkCode, BiometricEnrollment
 
     assert set(catalog.parts(Employee)) == {(Compensation, "employee_id"),
                                             (WorkSchedule, "employee_id"),
                                             (BiometricEnrollment, "employee_id"),
+                                            (EmployeeAssignment, "employee_id"),
                                             (AppLinkCode, "employee_id")}
     assert catalog.parts(Loan) == [(LoanInstallment, "loan_id")]
 

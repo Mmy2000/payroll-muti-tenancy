@@ -94,6 +94,15 @@ def schedule_on(employee: Employee, day: date):
     return in_effect(employee.schedules.all(), day)
 
 
+def assignment_history(employee: Employee):
+    return (employee.assignments.select_related("branch", "department", "position")
+            .order_by("-effective_from", "-id"))
+
+
+def assignment_on(employee: Employee, day: date):
+    return in_effect(employee.assignments.all(), day)
+
+
 def pay_history(employee: Employee):
     return employee.pay_history.order_by("-effective_from", "-id")
 

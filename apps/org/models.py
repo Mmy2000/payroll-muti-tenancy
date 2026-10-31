@@ -116,3 +116,23 @@ class Department(TenantScopedModel):
     def label(self) -> str:
         """For lists across branches, where two departments may have the same name."""
         return f"{self.name} · {self.branch.name}"
+
+
+class Position(TenantScopedModel):
+    """A job in the company: what several employees can hold, unlike the free text of a job title.
+    It may belong to a department. Who holds it, and since when, is on the employee's assignments
+    (apps.employees.models.EmployeeAssignment)."""
+
+    name = models.CharField(max_length=120)
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.PROTECT,
+                                   related_name="positions")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "name"], name="org_position_name_uniq"),
+        ]
+
+    def __str__(self):
+        return self.name

@@ -1,0 +1,44 @@
+{% extends "layouts/app.html" %}
+{% load i18n ui authz %}
+{% block title %}{% translate "Positions" %}{% endblock %}
+{% block page_header %}
+{% can "org.position.manage" as can_manage %}
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="page-title">{% translate "Positions" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "The jobs in the company. Several employees can hold the same position." %}</p>
+  </div>
+  {% if can_manage %}<a href="{% url 'position-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New position" %}</a>{% endif %}
+</div>
+{% endblock %}
+{% block content %}
+{% can "org.position.manage" as can_manage %}
+<section class="card overflow-hidden">
+  {% include "components/list_filters.html" %}
+  {% if page.object_list %}
+  <div class="overflow-x-auto">
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
+      <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Department" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for position in page.object_list %}
+        <tr>
+          <td class="font-medium text-slate-900">{{ position.name }}</td>
+          <td class="text-slate-600">{% if position.department %}{{ position.department.label }}{% else %}—{% endif %}</td>
+          <td>{% if position.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'position-edit' position.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "components/pager.html" with query=filters.query %}
+  {% elif filters.active %}
+    {% translate "No positions match" as empty_title %}
+    {% include "components/empty_state.html" with icon="search" title=empty_title %}
+  {% else %}
+    {% translate "No positions yet" as empty_title %}
+    {% translate "Positions name the jobs employees hold, and keep a history of who held what." as empty_text %}
+    {% include "components/empty_state.html" with icon="briefcase" title=empty_title text=empty_text %}
+  {% endif %}
+</section>
+{% endblock %}

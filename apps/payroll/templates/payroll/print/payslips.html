@@ -33,7 +33,7 @@
   <div class="who-is">
     <div><p class="label">{% translate "Employee" %}</p><p><span class="num">#{{ employee.code }}</span> {{ employee.name }}</p></div>
     <div><p class="label">{% translate "Job" %}</p><p>{{ employee.job_title|default:"—" }}</p></div>
-    <div><p class="label">{% translate "Branch" %}</p><p>{{ employee.branch.name }}{% if employee.department %} · {{ employee.department.name }}{% endif %}</p></div>
+    <div><p class="label">{% translate "Branch" %}</p><p>{{ slip.branch.name }}{% if slip.department %} · {{ slip.department.name }}{% endif %}</p></div>
   </div>
   <div class="columns">
     <section>

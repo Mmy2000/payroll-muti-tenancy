@@ -45,6 +45,9 @@ urlpatterns = [
     path("departments/", org.departments, name="departments"),
     path("departments/new/", org.department_new, name="department-new"),
     path("departments/<int:pk>/", org.department_edit, name="department-edit"),
+    path("positions/", org.positions, name="positions"),
+    path("positions/new/", org.position_new, name="position-new"),
+    path("positions/<int:pk>/", org.position_edit, name="position-edit"),
 
     path("employees/", employees.employees, name="employees"),
     path("employees/new/", employees.employee_new, name="employee-new"),

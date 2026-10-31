@@ -59,6 +59,9 @@ class Employee(TenantScopedModel):
     department = models.ForeignKey("org.Department", null=True, blank=True,
                                    on_delete=models.PROTECT, related_name="+")
     job_title = models.CharField(max_length=120, blank=True)
+    position = models.ForeignKey("org.Position", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    # The start of this period of employment: an earlier one is on the assignments.
     hired_on = models.DateField()
     # The last day worked. PayRole: `l_date` (an employee is active while it is empty).
     left_on = models.DateField(null=True, blank=True)
@@ -96,6 +99,31 @@ class Employee(TenantScopedModel):
     @property
     def is_active(self) -> bool:
         return self.left_on is None or self.left_on >= timezone.localdate()
+
+
+class EmployeeAssignment(EffectiveDatedModel):
+    """Where the employee works and as what from `effective_from` on. The card's branch,
+    department, job title and position are the row in effect today, kept for every query that
+    asks about now; anything about a past day reads the row of that day.
+
+    `ended_on` and `leave_reason` close a period of employment when the person is hired again:
+    the card then starts over, and this row keeps how the last period ended."""
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="assignments")
+    branch = models.ForeignKey("org.Branch", on_delete=models.PROTECT, related_name="+")
+    department = models.ForeignKey("org.Department", null=True, blank=True,
+                                   on_delete=models.PROTECT, related_name="+")
+    job_title = models.CharField(max_length=120, blank=True)
+    position = models.ForeignKey("org.Position", null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="+")
+    ended_on = models.DateField(null=True, blank=True)
+    leave_reason = models.CharField(max_length=300, blank=True)
+
+    class Meta(EffectiveDatedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "employee", "effective_from"],
+                                    name="employees_assignment_from_uniq"),
+        ]
 
 
 class WageType(models.TextChoices):

@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 from django.utils.translation import gettext as _
 
-from .models import Branch, Department
+from .models import Branch, Department, Position
 
 if TYPE_CHECKING:
-    from .services import DepartmentInput
+    from .services import DepartmentInput, PositionInput
 
 
 _department_checks = []
@@ -45,4 +45,17 @@ def check_department(department: Department, data: DepartmentInput) -> dict:
         errors["code"] = [_("Another department in this branch has this code.")]
     if neighbours.filter(name=data.name.strip()).exists():
         errors["name"] = [_("Another department in this branch has this name.")]
+    return errors
+
+
+def check_position(position: Position, data: PositionInput) -> dict:
+    errors: dict[str, list[str]] = {}
+    name = data.name.strip()
+    if not name:
+        errors["name"] = [_("Enter a name.")]
+    elif Position.objects.filter(name=name).exclude(pk=position.pk).exists():
+        errors["name"] = [_("Another position has this name.")]
+    if (data.department_id is not None and data.department_id != position.department_id
+            and not Department.objects.filter(pk=data.department_id, is_active=True).exists()):
+        errors["department"] = [_("Choose an active department.")]
     return errors

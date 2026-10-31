@@ -1,4 +1,5 @@
-"""What changes with the calendar alone: a last working day passing."""
+"""What changes with the calendar alone: a last working day passing, an assignment's day
+arriving."""
 
 from datetime import time
 
@@ -7,11 +8,12 @@ from django.utils.translation import gettext_lazy as _
 from apps.platform.jobs.registry import daily, task
 
 
-@task("employees.close_leavers_logins", label=_("Close the logins of employees who left"))
-def close_leavers_logins():
-    from .services.employees import close_leavers_logins
+@task("employees.daily_upkeep", label=_("Close leavers' logins and apply dated assignments"))
+def daily_upkeep():
+    from .services.employees import apply_due_assignments, close_leavers_logins
 
     close_leavers_logins()
+    apply_due_assignments()
 
 
-daily("employees.close_leavers_logins", at=time(0, 30))
+daily("employees.daily_upkeep", at=time(0, 30))

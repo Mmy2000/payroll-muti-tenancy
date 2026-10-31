@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from django.db.models import Count, Max, Q
 
-from .models import Branch, Department, TenantProfile
+from .models import Branch, Department, Position, TenantProfile
 from .permissions import DEPARTMENT_VIEW
 
 
@@ -65,6 +65,10 @@ def visible_department(actor, pk, permission: str = DEPARTMENT_VIEW) -> Departme
     return visible_departments(actor, permission).filter(pk=pk).first()
 
 
+def active_departments():
+    return visible_departments().filter(is_active=True)
+
+
 def next_department_code(branch_id: int) -> int:
     return (Department.objects.filter(branch_id=branch_id)
             .aggregate(top=Max("code"))["top"] or 0) + 1
@@ -76,3 +80,15 @@ def tenant_profile() -> TenantProfile:
 
 def tenant_profile_or_none() -> TenantProfile | None:
     return TenantProfile.objects.first()
+
+
+def positions():
+    return Position.objects.select_related("department__branch").order_by("name")
+
+
+def active_positions():
+    return positions().filter(is_active=True)
+
+
+def find_position(pk: int) -> Position | None:
+    return positions().filter(pk=pk).first()

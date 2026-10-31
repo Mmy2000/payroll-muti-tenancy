@@ -24,7 +24,7 @@ from apps.employees.models import (
 from apps.employees.web.targets import group_page
 from apps.iam.authz import permission_required
 from apps.org.listing import Choice, ListQuery
-from apps.org.selectors import visible_departments
+from apps.org.selectors import active_positions, visible_departments
 
 from .. import selectors
 from ..permissions import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
@@ -58,6 +58,7 @@ def _choices(request) -> dict:
     return {
         "branches": selectors.branch_choices(actor, MANAGE),
         "departments": selectors.department_choices(actor, MANAGE),
+        "positions": active_positions(),
         "lateness_policies": (selectors.active_lateness_policies()
                               if actor.can("policies.lateness.view") else []),
         "overtime_policies": (selectors.active_overtime_policies()
@@ -112,6 +113,7 @@ def employee(request, pk):
         "can_change_pay": actor.can(SALARY_MANAGE, branch=person.branch_id),
         "can_see_attendance": actor.can("attendance.day.view", branch=person.branch_id),
         "schedules": schedules,
+        "assignments": selectors.assignment_history(person),
         "schedule": selectors.schedule_on(person, today),
         "endpoint": reverse("employee-detail", args=[person.pk]),
     }

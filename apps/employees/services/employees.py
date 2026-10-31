@@ -19,10 +19,19 @@ from django.utils.translation import gettext as _
 from apps.core import locks
 from apps.core.crypto import blind_index, encrypt
 from apps.core.errors import DomainError, NotFound, ValidationError, invalid_fields
+from apps.core.history import in_effect
 from apps.iam import services as iam
 from apps.iam.models import MembershipStatus
+from apps.org.models import Position
 
-from ..models import Compensation, Employee, PayFrequency, WageType, WorkSchedule
+from ..models import (
+    Compensation,
+    Employee,
+    EmployeeAssignment,
+    PayFrequency,
+    WageType,
+    WorkSchedule,
+)
 from ..permissions import MANAGE, SALARY_MANAGE
 from ..selectors import get_employee, visible_employees
 from ..validators import (
@@ -30,6 +39,7 @@ from ..validators import (
     check_card,
     check_change_date,
     check_pay,
+    check_placement,
     check_schedule,
     normalize_national_id,
 )
@@ -47,6 +57,7 @@ class EmployeeInput:
     hired_on: date
     department_id: int | None = None
     job_title: str = ""
+    position_id: int | None = None
     gender: str = ""
     national_id: str = ""
     birth_date: date | None = None
@@ -62,15 +73,24 @@ class EmployeeInput:
     notes: str = ""
 
 
+def _job_title(job_title: str, position_id: int | None) -> str:
+    """What the employee is called: their own title, else the position's name."""
+    typed = job_title.strip()
+    if typed or position_id is None:
+        return typed
+    return Position.objects.filter(pk=position_id).values_list("name", flat=True).first() or ""
+
+
 def _apply_card(employee: Employee, data: EmployeeInput, actor) -> None:
     national_id = normalize_national_id(data.national_id)
     employee.code = data.code
     employee.name = data.name.strip()
     employee.branch_id = data.branch_id
     employee.department_id = data.department_id
+    employee.position_id = data.position_id
+    employee.job_title = _job_title(data.job_title, data.position_id)
     employee.hired_on = data.hired_on
-    for name in ("job_title", "phone", "email", "address", "insurance_number", "qualification",
-                 "notes"):
+    for name in ("phone", "email", "address", "insurance_number", "qualification", "notes"):
         setattr(employee, name, getattr(data, name).strip())
     for name in ("gender", "birth_date", "insured_from", "marital_status", "children",
                  "military_status"):
@@ -130,6 +150,123 @@ def _new_schedule(employee: Employee, data: ScheduleInput, actor) -> WorkSchedul
         created_by=getattr(actor, "user", None))
 
 
+# --- assignments -------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class AssignmentInput:
+    effective_from: date | None
+    branch_id: int
+    department_id: int | None = None
+    job_title: str = ""
+    position_id: int | None = None
+    note: str = ""
+
+
+def _placement(employee: Employee) -> dict:
+    return {"branch_id": employee.branch_id, "department_id": employee.department_id,
+            "job_title": employee.job_title, "position_id": employee.position_id}
+
+
+def _first_assignment(employee: Employee, actor) -> None:
+    EmployeeAssignment.objects.create(employee=employee, effective_from=employee.hired_on,
+                                      created_by=getattr(actor, "user", None),
+                                      **_placement(employee))
+
+
+def _record_placement(employee: Employee, actor) -> None:
+    """A change made on the card holds from today: the card can't say otherwise, and earlier
+    days keep what they had. An employee who left, or has yet to start, stays inside their
+    dates."""
+    day = timezone.localdate()
+    if employee.left_on is not None:
+        day = min(day, employee.left_on)
+    EmployeeAssignment.objects.update_or_create(
+        employee=employee, effective_from=max(day, employee.hired_on),
+        defaults={**_placement(employee), "created_by": getattr(actor, "user", None)})
+
+
+def _move_start(employee: Employee, hired_on: date) -> None:
+    """A corrected hiring date moves the first row of this period of employment with it."""
+    row = employee.assignments.filter(effective_from=employee.hired_on).first()
+    if row is None or row.effective_from == hired_on:
+        return
+    row.effective_from = hired_on
+    row.save(update_fields=["effective_from", "updated_at"])
+
+
+def _follow_assignment(employee: Employee) -> None:
+    """The card shows the row in effect today."""
+    row = in_effect(employee.assignments.all(), timezone.localdate())
+    if row is None:
+        return
+    placement = {name: getattr(row, name) for name in _placement(employee)}
+    if placement != _placement(employee):
+        for name, value in placement.items():
+            setattr(employee, name, value)
+        employee.save(update_fields=["branch", "department", "job_title", "position",
+                                     "updated_at"])
+
+
+def apply_due_assignments() -> int:
+    """Changes dated ahead take effect on their day. Looks back a week for a stopped worker."""
+    today = timezone.localdate()
+    due = (Employee.objects.filter(
+        assignments__effective_from__range=(today - timedelta(days=7), today)).distinct())
+    for employee in due:
+        _follow_assignment(employee)
+    return len(due)
+
+
+def _new_assignment(employee: Employee, data: AssignmentInput, actor) -> EmployeeAssignment:
+    return EmployeeAssignment.objects.create(
+        employee=employee, effective_from=data.effective_from, branch_id=data.branch_id,
+        department_id=data.department_id, position_id=data.position_id,
+        job_title=_job_title(data.job_title, data.position_id), note=data.note.strip(),
+        created_by=getattr(actor, "user", None))
+
+
+def change_assignment(employee_id: int, data: AssignmentInput, *,
+                      actor=None) -> EmployeeAssignment:
+    """A transfer or a new job from a date. Earlier days keep where they were: their holidays,
+    and the branch and department of their payslips."""
+    with transaction.atomic():
+        employee = get_employee(employee_id, actor, MANAGE, lock=True)
+        if actor is not None:
+            actor.require(MANAGE, branch=employee.branch_id)
+            actor.require(MANAGE, branch=data.branch_id)
+        start = check_change_date(employee, data.effective_from)
+        errors = check_placement(employee, data.branch_id, data.department_id, data.position_id)
+        if employee.assignments.filter(effective_from=start).exists():
+            errors["effective_from"] = [_("The assignment already changes on this date.")]
+        if errors:
+            raise invalid_fields(errors)
+        row = _new_assignment(employee, data, actor)
+        _follow_assignment(employee)
+    return row
+
+
+def delete_assignment(record_id: int, *, actor=None) -> None:
+    """Remove a change entered by mistake, unless an approved payroll covers it."""
+    with transaction.atomic():
+        record = EmployeeAssignment.objects.select_related("employee").filter(pk=record_id).first()
+        if record is None or (actor is not None and record.employee_id not in set(
+                visible_employees(actor, MANAGE).values_list("pk", flat=True))):
+            raise NotFound(_("Not found."))
+        employee = record.employee
+        if actor is not None:
+            actor.require(MANAGE, branch=employee.branch_id)
+        locks.ensure_open(employee.pk, record.effective_from, date.max)
+        if (record.effective_from == employee.hired_on or record.ended_on is not None
+                or not employee.assignments.filter(effective_from__lt=record.effective_from)
+                .exists()):
+            raise DomainError(_("This record starts or ends a period of employment, so it can't "
+                                "be removed. Change the values from a later date instead."),
+                              code="EMPLOYEES_FIRST_RECORD")
+        record.delete()
+        _follow_assignment(employee)
+
+
 def _prefixed(prefix: str, errors: dict) -> dict:
     return {f"{prefix}.{name}": messages for name, messages in errors.items()}
 
@@ -151,6 +288,7 @@ def create_employee(data: EmployeeInput, pay: CompensationInput, schedule: Sched
             raise invalid_fields(errors)
         _apply_card(employee, data, actor)
         employee.save()
+        _first_assignment(employee, actor)
         _new_pay(employee, pay, actor)
         _new_schedule(employee, schedule, actor)
     return employee
@@ -163,13 +301,23 @@ def update_employee(employee_id: int, data: EmployeeInput, *, actor=None) -> Emp
             actor.require(MANAGE, branch=employee.branch_id)
             actor.require(MANAGE, branch=data.branch_id)  # moving to another branch
         errors = check_card(data, employee)
-        first_pay = employee.pay_history.order_by("effective_from").first()
+        first_pay = (employee.pay_history.filter(effective_from__gte=employee.hired_on)
+                     .order_by("effective_from").first())
         if first_pay is not None and data.hired_on > first_pay.effective_from:
             errors.setdefault("hired_on", [_("Pay is recorded from an earlier date.")])
+        if employee.assignments.filter(effective_from__gt=employee.hired_on,
+                                       effective_from__lte=data.hired_on).exists():
+            errors.setdefault("hired_on", [_("The assignment changes on or before this date.")])
         if errors:
             raise invalid_fields(errors)
+        before, moved_branch = _placement(employee), data.branch_id != employee.branch_id
+        if moved_branch:
+            locks.ensure_open(employee.pk, timezone.localdate(), date.max)
+        _move_start(employee, data.hired_on)
         _apply_card(employee, data, actor)
         employee.save()
+        if _placement(employee) != before:
+            _record_placement(employee, actor)
     return employee
 
 
@@ -248,6 +396,37 @@ def end_employment(employee_id: int, left_on: date, reason: str = "", *,
         employee.save(update_fields=["left_on", "leave_reason", "updated_by", "updated_at"])
         if left_on < timezone.localdate():
             _close_login(employee)
+    return employee
+
+
+@transaction.atomic
+def rehire(employee_id: int, data: AssignmentInput, *, restore_login: bool = False,
+           actor=None) -> Employee:
+    """Someone who left comes back: `data.effective_from` is the new hiring date. The person
+    keeps their record, the last period stays on the assignments, and their pay and hours go on
+    until they are changed."""
+    employee = get_employee(employee_id, actor, MANAGE, lock=True)
+    if actor is not None:
+        actor.require(MANAGE, branch=employee.branch_id)
+        actor.require(MANAGE, branch=data.branch_id)
+    if employee.left_on is None:
+        raise DomainError(_("This employee hasn't left."), code="EMPLOYEES_NOT_LEFT")
+    errors = check_placement(employee, data.branch_id, data.department_id, data.position_id)
+    if data.effective_from is None or data.effective_from <= employee.left_on:
+        errors["effective_from"] = [_("Must be after the day they left.")]
+    if errors:
+        raise invalid_fields(errors)
+    last = employee.assignments.order_by("-effective_from", "-id").first()
+    last.ended_on, last.leave_reason = employee.left_on, employee.leave_reason
+    last.save(update_fields=["ended_on", "leave_reason", "updated_at"])
+    _new_assignment(employee, data, actor)
+    employee.hired_on, employee.left_on, employee.leave_reason = data.effective_from, None, ""
+    employee.updated_by = getattr(actor, "user", None)
+    employee.save(update_fields=["hired_on", "left_on", "leave_reason", "updated_by",
+                                 "updated_at"])
+    _follow_assignment(employee)
+    if restore_login:
+        _open_login(employee, actor)
     return employee
 
 

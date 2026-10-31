@@ -1,0 +1,30 @@
+{% load i18n %}{# Where the employee works and as what. `id` keeps the ids apart when two forms share a page. #}
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+  <div>
+    <label class="form-label is-required" for="{{ id }}-branch">{% translate "Branch" %}</label>
+    <select id="{{ id }}-branch" name="branch_id" class="form-input">
+      {% for branch in branches %}<option value="{{ branch.pk }}" {% if employee.branch_id == branch.pk %}selected{% endif %}>{{ branch.name }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="branch_id"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-department">{% translate "Department" %}</label>
+    <select id="{{ id }}-department" name="department_id" class="form-input" data-empty="null" data-depends-on="branch_id">
+      <option value="">—</option>
+      {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.branch_id }}" {% if employee.department_id == department.pk %}selected{% endif %}>{{ department.name }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="department_id"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-position">{% translate "Position" %}</label>
+    <select id="{{ id }}-position" name="position_id" class="form-input" data-empty="null">
+      <option value="">—</option>
+      {% for position in positions %}<option value="{{ position.pk }}" {% if employee.position_id == position.pk %}selected{% endif %}>{{ position.name }}</option>{% endfor %}
+    </select>
+    <p class="form-error" data-error-for="position_id"></p>
+  </div>
+  <div>
+    <label class="form-label" for="{{ id }}-job">{% translate "Job title" %}</label>
+    <input id="{{ id }}-job" name="job_title" class="form-input" value="{{ employee.job_title|default:'' }}" maxlength="120">
+  </div>
+</div>

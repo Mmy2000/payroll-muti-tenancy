@@ -149,6 +149,11 @@ class Payslip(TenantScopedModel):
     run = models.ForeignKey(PayrollRun, on_delete=models.CASCADE, related_name="payslips")
     employee = models.ForeignKey("employees.Employee", on_delete=models.PROTECT,
                                  related_name="payslips")
+    # Where the employee was at the end of the period: reports stay right after a transfer.
+    branch = models.ForeignKey("org.Branch", null=True, on_delete=models.PROTECT,
+                               related_name="+")
+    department = models.ForeignKey("org.Department", null=True, blank=True,
+                                   on_delete=models.PROTECT, related_name="+")
     earnings = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     deductions = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     net = models.DecimalField(max_digits=14, decimal_places=2, default=0)

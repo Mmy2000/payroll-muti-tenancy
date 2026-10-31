@@ -11,6 +11,8 @@ from .serializers import (
     BranchWriteSerializer,
     DepartmentSerializer,
     DepartmentWriteSerializer,
+    PositionSerializer,
+    PositionWriteSerializer,
 )
 
 
@@ -86,3 +88,27 @@ class DepartmentViewSet(ActivateMixin, ServiceViewSet):
 
     def set_active(self, pk, active, actor):
         return services.set_department_active(pk, active, actor=actor)
+
+
+class PositionViewSet(ActivateMixin, ServiceViewSet):
+    queryset = selectors.positions()
+    serializer_class = PositionSerializer
+    write_serializer_class = PositionWriteSerializer
+    filterset_fields = ["is_active", "department"]
+    required_permissions = {
+        "list": "org.position.view",
+        "retrieve": "org.position.view",
+        "create": "org.position.manage",
+        "update": "org.position.manage",
+        "deactivate": "org.position.manage",
+        "activate": "org.position.manage",
+    }
+
+    def to_input(self, data):
+        return services.PositionInput(name=data["name"], department_id=data["department"])
+
+    def save(self, data, pk, actor):
+        return services.save_position(data, position_id=pk, actor=actor)
+
+    def set_active(self, pk, active, actor):
+        return services.set_position_active(pk, active, actor=actor)

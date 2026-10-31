@@ -227,3 +227,37 @@ def test_loans_are_repaid_when_their_last_installment_is_paid(client_a, make_emp
         lifecycle.approve_run(_run().pk)
         loan.refresh_from_db()
         assert loan.status == LoanStatus.SETTLED
+
+
+def test_a_payslip_keeps_where_the_employee_was(client_a, make_employee):
+    from apps.employees.services import employees
+    from apps.org import services as org
+
+    person = make_employee(client_a)
+    with tenant_context(client_a.id):
+        first = person.branch_id
+        other = org.create_branch(org.BranchInput(code=2, name="Other"))
+        run = _run()
+        slip = run.payslips.get()
+        assert slip.branch_id == first
+        employees.change_assignment(person.pk, employees.AssignmentInput(
+            effective_from=date(2026, 11, 1), branch_id=other.pk))
+        runs.calculate_run(run.pk)  # recalculated after the move: October stays at the first
+        assert run.payslips.get().branch_id == first
+
+
+def test_a_run_for_a_branch_means_who_was_there_in_its_period(client_a, make_employee):
+    from apps.employees.services import employees
+    from apps.org import services as org
+
+    person = make_employee(client_a)
+    with tenant_context(client_a.id):
+        first = person.branch_id
+        other = org.create_branch(org.BranchInput(code=2, name="Other"))
+        employees.change_assignment(person.pk, employees.AssignmentInput(
+            effective_from=date(2026, 11, 1), branch_id=other.pk))
+        Employee = person.__class__
+        Employee.objects.filter(pk=person.pk).update(branch=other)
+        run = _run(scope="branch", scope_id=first)
+        assert run.payslips.filter(employee=person).exists()
+

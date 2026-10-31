@@ -28,6 +28,7 @@ its code cites Gweb's decisions. The ones that apply here:
 | [ADR-103](ADR-103-seeding-registry.md) | A seeding registry for new clients | Accepted | 2026-10-28 |
 | [ADR-104](ADR-104-web-api-and-mobile-api.md) | The browser's API at `/api/web/`; `/api/v1/` keeps PayRole's mobile contract | Accepted | 2026-10-28 |
 | [ADR-105](ADR-105-one-app-structure.md) | One structure for every app | Accepted | 2026-10-31 |
+| [ADR-106](ADR-106-assignments-and-scope.md) | Dated assignments, company-wide permissions, leaving ends access | Accepted | 2026-11-01 |
 
 ## When to write one
 

@@ -30,6 +30,7 @@ from apps.core.errors import (
     NotFound,
     invalid_fields,
 )
+from apps.employees.selectors import assignment_on
 
 from ..domain.engine import WARNING, calculate
 from ..domain.inputs import OFF_CYCLE, REGULAR, to_snapshot
@@ -137,7 +138,9 @@ def save_payslip(run: PayrollRun, employee, gatherer: Gatherer) -> Payslip | Non
         return None
     result = calculate(data)
     # Recalculated in place: a payslip keeps its id (and address) through a draft's life.
+    placed = assignment_on(employee, run.period.end) or employee
     slip, _created = Payslip.objects.update_or_create(run=run, employee=employee, defaults={
+        "branch_id": placed.branch_id, "department_id": placed.department_id,
         "earnings": result.earnings, "deductions": result.deductions, "net": result.net,
         "employer_cost": result.employer_cost, "blocking": result.blocking,
         "warnings": sum(1 for i in result.issues if i.severity == WARNING),

@@ -165,7 +165,7 @@ Apps form layers. An app imports its own layer and the ones above it in this tab
 |---|---|---|
 | 0 | `core` | Tools with no business in them: tenancy, errors, numbers, imports, events |
 | 1 | `platform.tenants` | Clients, plans, features, domains, traffic |
-| 2 | `org` | Branches, departments, the company profile; language, time zone and lists follow it |
+| 2 | `org` | Branches, departments, positions, the company profile; language, time zone and lists follow it |
 | 3 | `iam`, `audit`, `printing`, `platform.jobs` | Who may do what, the History, PDFs, the worker |
 | 4 | `policies` | Lateness, overtime, tax, insurance, holidays |
 | 5 | `employees` | The employee, their pay and hours |

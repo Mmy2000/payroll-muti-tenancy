@@ -11,11 +11,13 @@ from .. import selectors
 from ..permissions import MANAGE, SALARY_MANAGE, VIEW
 from ..services import employees, group_hours
 from .serializers import (
+    AssignmentWriteSerializer,
     CardWriteSerializer,
     EmployeeSerializer,
     LeaveSerializer,
     NewEmployeeSerializer,
     PayWriteSerializer,
+    RehireSerializer,
     ReinstateSerializer,
     ScheduleWriteSerializer,
 )
@@ -36,8 +38,8 @@ class EmployeeViewSet(viewsets.GenericViewSet):
     serializer_class = EmployeeSerializer
     filterset_fields = ["branch", "department"]
     required_permissions = {"list": VIEW, "retrieve": VIEW, "create": MANAGE, "update": MANAGE,
-                            "pay": SALARY_MANAGE, "schedule": MANAGE, "leave": MANAGE,
-                            "reinstate": MANAGE}
+                            "pay": SALARY_MANAGE, "schedule": MANAGE, "assignment": MANAGE,
+                            "leave": MANAGE, "reinstate": MANAGE, "rehire": MANAGE}
 
     def get_queryset(self):
         return selectors.listed_employees(self.request.actor)
@@ -83,6 +85,20 @@ class EmployeeViewSet(viewsets.GenericViewSet):
         return self._show(self.get_object())
 
     @action(detail=True, methods=["post"])
+    def assignment(self, request, pk=None):
+        data = _valid(AssignmentWriteSerializer, request.data)
+        employees.change_assignment(int(pk), employees.AssignmentInput(**data),
+                                    actor=request.actor)
+        return self._show(self.get_object())
+
+    @action(detail=True, methods=["post"])
+    def rehire(self, request, pk=None):
+        data = dict(_valid(RehireSerializer, request.data))
+        restore_login = data.pop("restore_login")
+        return self._show(employees.rehire(int(pk), employees.AssignmentInput(**data),
+                                           restore_login=restore_login, actor=request.actor))
+
+    @action(detail=True, methods=["post"])
     def leave(self, request, pk=None):
         data = _valid(LeaveSerializer, request.data)
         employee = employees.end_employment(int(pk), data["left_on"], data["reason"],
@@ -113,6 +129,16 @@ class ScheduleChangeViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         employees.delete_schedule_change(int(pk), actor=request.actor)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AssignmentChangeViewSet(viewsets.GenericViewSet):
+    """DELETE a transfer or a change of job entered by mistake."""
+
+    required_permissions = {"destroy": MANAGE}
+
+    def destroy(self, request, pk=None):
+        employees.delete_assignment(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -28,7 +28,15 @@ new code follows are in [docs/standards/](docs/standards/) and
   (`Compensation`) and working hours (`WorkSchedule`): a change applies from a date and earlier
   months keep their values. Pay has its own permissions (`employees.salary.*`). Excel import,
   all rows or none.
-- **Departments** (`apps/org`).
+- **Departments and positions** (`apps/org`): a department belongs to one branch. A position is a
+  job several employees can hold, optionally in a department; its permissions are
+  `org.position.*`.
+- **Assignments** (`apps/employees`, `EmployeeAssignment`): where an employee works and as what,
+  by date. The card holds the row in effect today, and anything about a past day reads the row of
+  that day: its holidays, and the branch and department of its payslips (`Payslip.branch`,
+  `department`). A transfer can't enter a period an approved payroll covers. A daily job applies
+  changes dated ahead. Someone who left can be hired again on the same record: the last row keeps
+  how that period ended.
 - **Pay policies** (`apps/policies`): lateness and overtime policies with minute bands, income
   tax tables with brackets, social insurance rates, public holidays; pure calculations in
   `domain/`. Features: `lateness`, `overtime`, `income_tax`, `insurance`, `public_holidays`.
@@ -41,13 +49,13 @@ new code follows are in [docs/standards/](docs/standards/) and
   now, devices and the mobile app in phase 6.
 - **Day status is computed, never stored** (`domain/days.py`): a chain of rules (not employed →
   manual entry → clock → leave → holiday → weekly off → not yet → absent), with late, early and
-  extra minutes. `selectors.evaluate()` reads any employees over any period in six queries; the
+  extra minutes. `selectors.evaluate()` reads any employees over any period in seven queries; the
   daily sheet, an employee's month and payroll (phase 4) all use it.
-- **Manual entries** (`entries.py`): worked / absent / excused / day off for a day, winning over
+- **Manual entries** (`services/entries.py`): worked / absent / excused / day off for a day, winning over
   the punches without touching them; one by one or for ticked employees at once.
-- **Leave** (`leave.py`): leave types (seeded for new clients), requests counted in working
-  days, the yearly balance checked on approval. **Hourly leave** (`hourly.py`) within the monthly
-  allowance. Both use one state machine (`approvals.py`).
+- **Leave** (`services/leave.py`): leave types (seeded for new clients), requests counted in working
+  days, the yearly balance checked on approval. **Hourly leave** (`services/hourly.py`) within the monthly
+  allowance. Both use one state machine (`services/approvals.py`).
 - **Shared**: every request runs in the client's time zone (`apps/org/timezones.py`); Excel
   imports share `apps/core/imports.py` (Template Method) and one page (`apps/core/import_page.py`).
 - Features: `attendance`, `attendance_import`, `leave`, `hourly_leave`; `lateness` and
@@ -106,13 +114,13 @@ From "PayRole — the four gaps" (decisions of 2026-10-29).
   `layouts/bulk_form.html`): each employee's row runs the same service as a single entry inside
   a savepoint; the preview is the save, rolled back. Saving keeps every row, or (when asked) the
   ones that pass; a second submission fails on the first one's rows. Groups:
-  `employees.targets.Group` (chosen employees, a department, a branch).
-  - Hourly leave for a group, one or more spans a day (`attendance/hourly.py`); several
+  `employees.selectors.Group` (chosen employees, a department, a branch).
+  - Hourly leave for a group, one or more spans a day (`attendance/services/hourly.py`); several
     non-overlapping hourly leaves a day are allowed now.
   - Attendance by hand for a group, the same times or each their own, with a reason
-    (`attendance/entries.py`); judged like clock times.
+    (`attendance/services/entries.py`); judged like clock times.
   - Working hours for a group from a date, for good or until a last day
-    (`employees/group_hours.py`); earlier days and approved payroll are never rewritten.
+    (`employees/services/group_hours.py`); earlier days and approved payroll are never rewritten.
 - **Incentive and penalty batches** (`AdjustmentBatch`): draft (edited freely, never paid) →
   approved; reopened or cancelled with a reason while unpaid; once paid, a correction batch pays
   or takes back the difference in a later payroll. `adjustments.<kind>.approve` is a new
@@ -192,7 +200,7 @@ server and document-design pages):
 - **Overview:** active clients, office users and app logins, employees working,
   payslips approved in 30 days, changes saved per day by all clients, the clients that need a
   look (idle, never used, suspended). Each client's figures are read inside its own
-  tenant_context (`console/metrics.py`).
+  tenant_context (`console/selectors/metrics.py`).
 - **Clients:** sign a client up in one step (company, address `<slug>.<TENANT_BASE_DOMAIN>`,
   language, country, currency, time zone, owner, plan, trial, limits, contact); its page:
   plan, limits (the one in effect: the client's, else the plan's), company settings, extra
@@ -201,7 +209,7 @@ server and document-design pages):
   suspended, archived) and its activity.
 - **Limits:** branches, office users and employees' app logins, each its own limit (a plan's,
   or the client's own). An app login is a member holding only the "Employee (app)" role; it
-  never takes an office user's place (`apps/platform/tenants/limits.py`). Adding, reactivating
+  never takes an office user's place (`apps/iam/limits.py`). Adding, reactivating
   or changing the roles of a member checks the limit of their kind.
 - **Custom domains** open as soon as they are added: `HostCheckMiddleware` answers the fixed
   hosts (`DJANGO_ALLOWED_HOSTS`), the platform hosts and every client's domains, and refuses any
@@ -211,7 +219,7 @@ server and document-design pages):
   `{ on_demand_tls { ask https://admin.example.com/tls/allowed/ } }` and a site block
   `https:// { tls { on_demand } reverse_proxy 127.0.0.1:8000 }`. The client points the domain
   at the server (DNS) before it is added.
-- **WhatsApp** is run from the console (`console/whatsapp.py`, `tenants.WhatsAppService`), not
+- **WhatsApp** is run from the console (`console/web/whatsapp.py`, `tenants.WhatsAppService`), not
   from `.env`: on or off, the address, the key (made for you, encrypted, never shown), whether
   the gateway answers, and each client's number and messages this month. `manage.py
   run_wa_gateway` (started by `ops/dev.py`; one service in production) keeps the gateway in line

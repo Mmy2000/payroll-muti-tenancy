@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from apps.core import locks
 from apps.core.crypto import blind_index
 from apps.core.errors import invalid_fields
-from apps.org.models import Branch, Department, TenantProfile
+from apps.org.models import Branch, Department, Position, TenantProfile
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .models import Employee, Gender, MaritalStatus, MilitaryStatus, PayFrequency, WageType, Weekday
@@ -41,7 +41,8 @@ def national_id_problem(value: str) -> str | None:
     return None
 
 
-def check_placement(employee: Employee, branch_id: int, department_id: int | None) -> dict:
+def check_placement(employee: Employee, branch_id: int, department_id: int | None,
+                    position_id: int | None = None) -> dict:
     """Where the employee works. Someone already in a deactivated branch or department stays
     valid: only a move into one is refused."""
     errors: dict[str, list[str]] = {}
@@ -55,6 +56,9 @@ def check_placement(employee: Employee, branch_id: int, department_id: int | Non
             errors["department_id"] = [_("Choose an active department.")]
         elif department.branch_id != branch_id:
             errors["department_id"] = [_("This department isn't in the employee's branch.")]
+    if (position_id is not None and position_id != employee.position_id
+            and not Position.objects.filter(pk=position_id, is_active=True).exists()):
+        errors["position_id"] = [_("Choose an active position.")]
     return errors
 
 
@@ -66,7 +70,8 @@ def check_card(data: EmployeeInput, employee: Employee) -> dict:
         errors["code"] = [_("Enter a code from 1.")]
     elif Employee.objects.filter(code=data.code).exclude(pk=employee.pk).exists():
         errors["code"] = [_("Another employee has this code.")]
-    errors.update(check_placement(employee, data.branch_id, data.department_id))
+    errors.update(check_placement(employee, data.branch_id, data.department_id,
+                                  data.position_id))
     for name, choices in (("gender", Gender), ("marital_status", MaritalStatus),
                           ("military_status", MilitaryStatus)):
         value = getattr(data, name)

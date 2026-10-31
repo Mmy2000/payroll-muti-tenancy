@@ -86,11 +86,11 @@ def attendance(actor, today: date) -> dict:
 
 def _department(row: dict, rows) -> str:
     """A department's name; with its branch when another branch has one of the same name."""
-    name = row["employee__department__name"]
+    name = row["department__name"]
     if name is None:
         return _("No department")
-    same = sum(1 for other in rows if other["employee__department__name"] == name)
-    return f"{name} · {row['employee__department__branch__name']}" if same > 1 else name
+    same = sum(1 for other in rows if other["department__name"] == name)
+    return f"{name} · {row['department__branch__name']}" if same > 1 else name
 
 
 def payroll(actor, today: date) -> dict | None:
@@ -105,8 +105,8 @@ def payroll(actor, today: date) -> dict | None:
     month = latest.period.end.replace(day=1)
     by_department = (slips.filter(run__period__end__year=month.year,
                                   run__period__end__month=month.month)
-                     .values("employee__department__name",
-                             "employee__department__branch__name").annotate(net=Sum("net")))
+                     .values("department__name",
+                             "department__branch__name").annotate(net=Sum("net")))
     months = _months_back(today, 12)
     net = dict(slips.filter(run__period__end__gte=months[0])
                .annotate(month=TruncMonth("run__period__end")).values("month")
