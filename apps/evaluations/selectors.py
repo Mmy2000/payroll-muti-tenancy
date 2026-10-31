@@ -24,6 +24,14 @@ def visible(actor):
     return rows.filter(employee__in=visible_employees(actor, VIEW))
 
 
+def newest_first(actor):
+    return visible(actor).order_by("-year", "-number")
+
+
+def find(actor, pk):
+    return visible(actor).filter(pk=pk).first()
+
+
 def next_number() -> int:
     return (Evaluation.objects.aggregate(top=Max("number"))["top"] or 0) + 1
 

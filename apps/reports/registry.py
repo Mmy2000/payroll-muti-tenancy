@@ -94,14 +94,14 @@ class Params:
     today), months (their first day), years, the chosen branch / department / employee (or
     None for all), choices."""
 
-    values: dict
+    chosen: dict
 
     def date(self, key: str) -> date:
-        raw = self.values.get(key)
+        raw = self.chosen.get(key)
         return raw if isinstance(raw, date) else timezone.localdate()
 
     def get(self, key: str, default=None):
-        return self.values.get(key, default)
+        return self.chosen.get(key, default)
 
 
 @dataclass(frozen=True)

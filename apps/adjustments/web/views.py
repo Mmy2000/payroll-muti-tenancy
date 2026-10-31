@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from django.db.models import Count, Sum
 from django.http import Http404
 from django.shortcuts import render
 from django.utils import timezone
@@ -14,14 +13,12 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core.listing import Choice, ListQuery
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
 from apps.org.selectors import visible_departments
 
 from .. import selectors
 from ..domain.amounts import METHODS
-from ..models import AdjustmentBatch, AdjustmentKind, AdjustmentType, BatchStatus
+from ..models import AdjustmentKind, BatchStatus
 from ..permissions import permission
-from ..selectors import visible_batches
 
 
 @dataclass(frozen=True)
@@ -62,18 +59,10 @@ STATUS_TABS = [(BatchStatus.DRAFT, _lazy("Drafts")), (BatchStatus.APPROVED, _laz
                (BatchStatus.CANCELLED, _lazy("Cancelled")), ("all", _lazy("All"))]
 
 
-def _by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
-def _for_employee(queryset, employee_id):
-    return queryset.filter(rows__employee_id=employee_id)
-
-
 def _target_names(batches) -> None:
     """`target_name` on each batch: who it was given to, in words."""
     names = {"department": {d.pk: d.label for d in visible_departments()},
-             "branch": dict(Branch.objects.values_list("pk", "name"))}
+             "branch": selectors.branch_names()}
     for batch in batches:
         if batch.corrects_id:
             batch.target_name = _("Correction")
@@ -84,20 +73,16 @@ def _target_names(batches) -> None:
 
 
 def _list(request, page: KindPage):
-    types = list(AdjustmentType.objects.filter(kind=page.kind).values_list("pk", "name"))
+    types = selectors.type_choices(page.kind)
     found = ListQuery(request, permission=page.view, search=("reason", "rows__employee__name"),
-                      date_field="date", branch_field="", party=_for_employee,
+                      date_field="date", branch_field="", party=selectors.for_employee,
                       party_param="employee", party_model="employees.Employee",
                       choices=[Choice("type", _("Type"), [("", _("All types"))] + types,
                                       "adjustment_type_id"),
-                               Choice("status", _("Status"), STATUS_TABS, apply=_by_status,
-                                      value="all", tabs=True)])
-    # Filter first, count after: a search through the rows must not count a row twice.
-    matching = found.apply(visible_batches(request.actor, page.kind)).values("pk")
-    result = found.page(AdjustmentBatch.objects.filter(pk__in=matching)
-                        .select_related("adjustment_type")
-                        .annotate(people=Count("rows"), total=Sum("rows__amount"))
-                        .order_by("-date", "-id"))
+                               Choice("status", _("Status"), STATUS_TABS,
+                                      apply=selectors.by_status, value="all", tabs=True)])
+    matching = found.apply(selectors.visible_batches(request.actor, page.kind))
+    result = found.page(selectors.batches_with_totals(matching))
     _target_names(result.object_list)
     return render(request, "adjustments/list.html", {
         "page_kind": page, "filters": found, "page": result,
@@ -107,7 +92,7 @@ def _list(request, page: KindPage):
 def _form(request, page: KindPage):
     return render(request, "adjustments/form.html", {
         "page_kind": page, "today": timezone.localdate(), "methods": METHODS.values(),
-        "types": AdjustmentType.objects.filter(kind=page.kind, is_active=True),
+        "types": selectors.active_types(page.kind),
         "selected": request.GET.get("employee", ""),
         "can_approve": request.actor.can(page.approve),
         **target_choices(request.actor, page.manage)})
@@ -115,17 +100,13 @@ def _form(request, page: KindPage):
 
 def _batch(request, page: KindPage, pk: int):
     actor = request.actor
-    batch = (visible_batches(actor, page.kind).select_related(
-        "adjustment_type", "approved_by", "created_by", "updated_by", "corrects")
-        .filter(pk=pk).first())
+    batch = selectors.batch_for_page(actor, page.kind, pk)
     if batch is None:
         raise Http404
     _target_names([batch])
     paid, now = selectors.paid_rows(batch), selectors.effective_amounts(batch)
-    rows = list(batch.rows.select_related("employee", "corrects").order_by("employee__code"))
-    latest = dict(batch.rows.model.objects.filter(
-        corrects__batch=batch, batch__status=BatchStatus.APPROVED).order_by("id")
-        .values_list("corrects_id", "quantity"))  # the last approved correction wins
+    rows = list(selectors.batch_rows(batch))
+    latest = selectors.corrected_quantities(batch)
     for row in rows:
         row.paid, row.effective = row.pk in paid, now[row.pk]
         row.current_quantity = latest.get(row.pk, row.quantity)
@@ -135,23 +116,23 @@ def _batch(request, page: KindPage, pk: int):
     return render(request, "adjustments/batch.html", {
         "page_kind": page, "batch": batch, "rows": rows, "paid": bool(paid),
         "total": sum((row.amount for row in rows), 0),
-        "corrections": batch.corrections.select_related("adjustment_type").order_by("-id"),
+        "corrections": selectors.corrections_of(batch),
         "can_edit": editable and actor.can(page.manage),
         "can_delete": draft and actor.can(page.manage),
         "can_approve": draft and may_approve,
-        "can_reopen": approved and may_approve and not paid and not batch.corrections.exclude(
-            status=BatchStatus.CANCELLED).exists(),
+        "can_reopen": approved and may_approve and not paid
+        and not selectors.has_live_correction(batch),
         "can_correct": approved and may_approve and batch.corrects_id is None
-        and not batch.corrections.filter(status=BatchStatus.DRAFT).exists(),
+        and not selectors.has_draft_correction(batch),
         "today": timezone.localdate(), "methods": METHODS.values(),
-        "types": AdjustmentType.objects.filter(kind=page.kind, is_active=True),
+        "types": selectors.active_types(page.kind),
         **(target_choices(actor, page.manage) if editable else {}),
     })
 
 
 def _types(request, page: KindPage):
     return render(request, "adjustments/types.html", {
-        "page_kind": page, "types": AdjustmentType.objects.filter(kind=page.kind),
+        "page_kind": page, "types": selectors.types_of(page.kind),
         "can_manage": request.actor.can(page.manage)})
 
 

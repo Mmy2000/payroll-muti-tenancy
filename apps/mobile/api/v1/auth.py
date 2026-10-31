@@ -16,7 +16,7 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidTok
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.iam.authz import build_actor
-from apps.iam.models import Membership, MembershipStatus
+from apps.iam.selectors import active_membership
 
 from ...services import devices
 
@@ -37,11 +37,6 @@ def check_tenant(token, request) -> None:
     if tenant is None or token.get(TENANT_CLAIM) != tenant.id:
         raise InvalidToken({"detail": "Given token not valid for any token type",
                             "messages": []})
-
-
-def active_membership(user):
-    return (Membership.objects.select_related("user", "default_branch")
-            .filter(user=user, status=MembershipStatus.ACTIVE).first())
 
 
 class AppTokenAuthentication(JWTAuthentication):

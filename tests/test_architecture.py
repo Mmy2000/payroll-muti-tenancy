@@ -1,6 +1,7 @@
 """The structure of every app (docs/standards/architecture.md), checked so that it can't drift."""
 
 import ast
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,3 +80,39 @@ def test_views_hold_no_queries():
              and "core" not in path.parts and path.stem not in NOT_VIEWS]
     found = [query for path in sorted(views) for query in _queries_in(path)]
     assert not found, "move these to selectors or services:\n" + "\n".join(found)
+
+
+def test_the_standards_point_at_what_exists():
+    """A standard that names files which do not exist stops being followed."""
+    wrong = []
+    for page in sorted((ROOT / "docs" / "standards").glob("*.md")):
+        text = page.read_text(encoding="utf-8")
+        for link in re.findall(r"\]\(([^)#\s]+\.md)", text):
+            if not (page.parent / link).exists():
+                wrong.append(f"{page.name}: {link}")
+        for path in re.findall(r"`((?:apps|tests|config|ops)/[\w./-]+\.py)", text):
+            if not (ROOT / path).exists():
+                wrong.append(f"{page.name}: {path}")
+    assert not wrong, wrong
+
+
+def test_no_function_assigns_over_an_imported_module():
+    """`calendars = calendars.x()` fails only when that line runs, and nothing else reports it."""
+    found = []
+    for path in _code():
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        modules = {alias.asname or alias.name for node in tree.body
+                   if isinstance(node, ast.ImportFrom) and "services" in (node.module or "")
+                   or isinstance(node, ast.ImportFrom) and node.level
+                   for alias in node.names}
+        for function in ast.walk(tree):
+            if not isinstance(function, ast.FunctionDef):
+                continue
+            names = list(ast.walk(function))
+            stored = {n.id for n in names if isinstance(n, ast.Name)
+                      and isinstance(n.ctx, ast.Store)}
+            used_as_module = {n.value.id for n in names if isinstance(n, ast.Attribute)
+                              and isinstance(n.value, ast.Name)}
+            for name in stored & used_as_module & modules:
+                found.append(f"{_name(path)}: {function.name}: {name}")
+    assert not found, found

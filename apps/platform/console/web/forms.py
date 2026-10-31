@@ -239,6 +239,12 @@ PlatformLinkFormSet = forms.modelformset_factory(
     PlatformLink, form=PlatformLinkForm, extra=2, can_delete=True)
 
 
+def link_changes(links) -> tuple[list[PlatformLink], list[PlatformLink]]:
+    """What a valid links formset asks for, unsaved: the rows to delete and the rows to save."""
+    to_save = links.save(commit=False)
+    return links.deleted_objects, to_save
+
+
 class WhatsAppServiceForm(Styled, forms.ModelForm):
     secret = forms.CharField(
         label=_("Key"), required=False, strip=True,
@@ -327,12 +333,8 @@ class PlanForm(Styled, forms.ModelForm):
     def feature_rows(self):
         return [(feature, self[name]) for feature, name in self.feature_fields]
 
-    def save_features(self, plan) -> None:
-        from apps.platform.tenants.models import PlanFeature
-
-        for feature, name in self.feature_fields:
-            PlanFeature.objects.update_or_create(
-                plan=plan, key=feature.key, defaults={"enabled": self.cleaned_data[name]})
+    def feature_choices(self) -> dict[str, bool]:
+        return {feature.key: self.cleaned_data[name] for feature, name in self.feature_fields}
 
 
 class PlanDeleteForm(Styled, forms.Form):

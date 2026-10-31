@@ -3,16 +3,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.compensation import services
-from apps.compensation.models import (
-    ItemFrequency,
-    PayItem,
-    PayItemAssignment,
-)
+from apps.compensation.models import ItemFrequency, PayItemAssignment
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import TargetFields
 
-from .. import permissions
+from .. import permissions, selectors
 from .serializers import (
     AssignmentSerializer,
     CancelSerializer,
@@ -23,7 +19,6 @@ from .serializers import (
 
 
 class PayItemViewSet(ActivateMixin, ServiceViewSet):
-    queryset = PayItem.objects.all()
     serializer_class = PayItemSerializer
     write_serializer_class = PayItemWriteSerializer
     filterset_fields = ["is_active", "kind"]
@@ -35,6 +30,9 @@ class PayItemViewSet(ActivateMixin, ServiceViewSet):
         "deactivate": "compensation.item.manage",
         "activate": "compensation.item.manage",
     }
+
+    def get_queryset(self):
+        return selectors.pay_items()
 
     def to_input(self, data):
         return services.PayItemInput(**data)

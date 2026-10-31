@@ -2,39 +2,45 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db import transaction
-from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.core.errors import ValidationError
-from apps.core.media import replace_file
-from apps.core.tenancy import tenant_context
 from apps.platform.tenants import features as feature_registry
-from apps.platform.tenants.models import Plan, Tenant, TenantDomain, TenantStatus
-from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
+from apps.platform.tenants.models import Tenant, TenantStatus
+from apps.platform.tenants.services import (
+    LIMIT_FIELDS,
+    ProvisionTenantCommand,
+    add_domain,
+    attr,
+    create_client,
+    remove_domain,
+    set_client_status,
+    update_client,
+    update_client_profile,
+)
 
 from ..selectors import metrics
-from .common import attr, back, get_tenant, record, show_form_errors, staff_required
+from ..selectors.events import client_events
+from ..selectors.tenants import (
+    LIVE_STATUSES,
+    client_domains,
+    client_owners,
+    client_profile,
+    find_domain,
+    primary_domain,
+    search_clients,
+)
+from .common import back, get_tenant, show_form_errors, staff_required
 from .forms import DomainForm, ProfileForm, TenantCreateForm, TenantSettingsForm, domain_for
-
-LIMIT_FIELDS = ("plan", "trial_ends_on", "max_branches", "max_users", "max_app_logins",
-                "contact_name", "contact_email", "contact_phone", "notes")
-
 
 # The traffic pages' enable/disable switch moves a client between these two only.
 ACCESS_STATUSES = (TenantStatus.ACTIVE, TenantStatus.SUSPENDED)
-
-
-LIVE_STATUSES = (TenantStatus.ACTIVE, TenantStatus.SUSPENDED)
 
 
 # Which statuses can be set from the console (the key), and from which. Suspending stops every
@@ -47,28 +53,13 @@ TRANSITIONS = {
 }
 
 
-def _primary_domain(tenant: Tenant) -> str | None:
-    domain = next((d for d in tenant.domains.all() if d.is_primary), None)
-    return domain.domain if domain else None
-
-
 @staff_required
 def tenants(request):
     term = request.GET.get("q", "").strip()
     status = request.GET.get("status", "")
-    queryset = Tenant.objects.select_related("plan").prefetch_related("domains").order_by("name")
-    if term:
-        queryset = queryset.filter(Q(name__icontains=term) | Q(slug__icontains=term)
-                                   | Q(contact_name__icontains=term)
-                                   | Q(contact_email__icontains=term)
-                                   | Q(domains__domain__icontains=term)).distinct()
-    if status in TenantStatus.values:
-        queryset = queryset.filter(status=status)
-    plan_code = request.GET.get("plan", "")
-    if plan_code:
-        queryset = queryset.filter(plan_id=plan_code)
+    queryset = search_clients(term, status, request.GET.get("plan", ""))
     page = Paginator(queryset, 25).get_page(request.GET.get("page"))
-    rows = [{"tenant": t, "domain": _primary_domain(t),
+    rows = [{"tenant": t, "domain": primary_domain(t),
              "usage": metrics.tenant_usage(t) if t.status in LIVE_STATUSES else None}
             for t in page.object_list]
     return render(request, "console/tenants.html", {
@@ -84,51 +75,28 @@ def tenant_new(request):
     if request.method == "POST" and form.is_valid():
         d = form.cleaned_data
         try:
-            with transaction.atomic():
-                tenant = provision_tenant(ProvisionTenantCommand(
-                    slug=d["slug"], name=d["name"], domain=domain_for(d["slug"]),
-                    owner_username=d["owner_username"],
-                    owner_password=d["owner_password"] or None, owner_email=d["owner_email"],
-                    owner_display_name=d["owner_display_name"],
-                    link_existing_owner=d["link_existing_owner"],
-                    functional_currency=d["functional_currency"], timezone=d["timezone"],
-                    locale=d["locale"], country=d["country"]))
-                for name in LIMIT_FIELDS:
-                    setattr(tenant, attr(name), d[name] if d[name] is not None else
-                            Tenant._meta.get_field(name).get_default())
-                plan = Plan.objects.get(code=tenant.plan_id)
-                if tenant.trial_ends_on is None and plan.trial_days:
-                    tenant.trial_ends_on = timezone.localdate() + timedelta(days=plan.trial_days)
-                tenant.save()
+            tenant = create_client(ProvisionTenantCommand(
+                slug=d["slug"], name=d["name"], domain=domain_for(d["slug"]),
+                owner_username=d["owner_username"],
+                owner_password=d["owner_password"] or None, owner_email=d["owner_email"],
+                owner_display_name=d["owner_display_name"],
+                link_existing_owner=d["link_existing_owner"],
+                functional_currency=d["functional_currency"], timezone=d["timezone"],
+                locale=d["locale"], country=d["country"]), limits=d, actor=request.user)
         except ValidationError as exc:
             form.add_error(None, exc.message)
         else:
-            record(request, "tenant.created", tenant, slug=tenant.slug, plan=tenant.plan_id)
             messages.success(request, _("%(name)s is ready.") % {"name": tenant.name})
             return redirect("console-tenant", tenant.pk)
     return render(request, "console/tenant_new.html", {
         "form": form, "base_domain": domain_for(""), "section": "new"})
 
 
-def _owners(tenant: Tenant) -> list:
-    from apps.iam.catalog import OWNER
-    from apps.iam.models import Membership
-
-    with tenant_context(tenant.id):
-        return list(Membership.objects.select_related("user").filter(
-            roles__role__code=OWNER).order_by("username"))
-
-
 @staff_required
 def tenant(request, pk):
-    from apps.org.models import TenantProfile
-
     tenant = get_tenant(pk)
     usage = metrics.tenant_usage(tenant) if tenant.status in LIVE_STATUSES else None
-    profile = None
-    if tenant.status != TenantStatus.PURGED:
-        with tenant_context(tenant.id):
-            profile = TenantProfile.objects.first()
+    profile = client_profile(tenant)
     settings_form = TenantSettingsForm(initial={
         "name": tenant.name, **{name: getattr(tenant, attr(name)) for name in LIMIT_FIELDS}})
     profile_form = ProfileForm(initial={
@@ -137,11 +105,11 @@ def tenant(request, pk):
         "accent": profile.accent, "logo": profile.logo or None} if profile else None)
     return render(request, "console/tenant.html", {
         "tenant": tenant, "usage": usage, "profile": profile,
-        "domains": tenant.domains.order_by("-is_primary", "domain"),
-        "primary": _primary_domain(tenant),
-        "owners": _owners(tenant) if profile else [],
+        "domains": client_domains(tenant),
+        "primary": primary_domain(tenant),
+        "owners": client_owners(tenant) if profile else [],
         "profile_logo_url": profile.logo.url if profile and profile.logo else "",
-        "events": tenant.events.select_related("actor")[:12],
+        "events": client_events(tenant),
         "feature_states": feature_registry.states(tenant),
         "settings_form": settings_form, "profile_form": profile_form, "domain_form": DomainForm(),
         "transitions": [(s, TenantStatus(s).label) for s in TRANSITIONS
@@ -158,14 +126,7 @@ def tenant_settings(request, pk):
     if not form.is_valid():
         show_form_errors(request, form)
         return redirect("console-tenant", pk)
-    before = {name: getattr(tenant, attr(name)) for name in ("name", *LIMIT_FIELDS)}
-    tenant.name = form.cleaned_data["name"]
-    for name in LIMIT_FIELDS:
-        setattr(tenant, attr(name), form.cleaned_data[name])
-    tenant.save()
-    changed = {name: getattr(tenant, attr(name)) for name in before
-               if getattr(tenant, attr(name)) != before[name]}
-    record(request, "tenant.updated", tenant, **changed)
+    update_client(tenant, data=form.cleaned_data, actor=request.user)
     messages.success(request, _("Saved."))
     return redirect("console-tenant", pk)
 
@@ -173,37 +134,15 @@ def tenant_settings(request, pk):
 @staff_required
 @require_POST
 def tenant_profile(request, pk):
-    from apps.org.models import TenantProfile
-
     tenant = get_tenant(pk)
     form = ProfileForm(request.POST, request.FILES)
     if not form.is_valid():
         show_form_errors(request, form)
         return redirect("console-tenant", pk)
-    data = dict(form.cleaned_data)
-    logo = data.pop("logo")
-    with tenant_context(tenant.id):
-        profile = TenantProfile.objects.first()
-        if profile is None:
-            raise Http404
-        for name, value in data.items():
-            setattr(profile, name, value)
-        replace_file(profile, "logo", logo)
-        profile.save()
-    if logo is not None:
-        data["logo"] = _("removed") if logo is False else logo.name
-    record(request, "profile.updated", tenant, **data)
+    if update_client_profile(tenant, data=form.cleaned_data, actor=request.user) is None:
+        raise Http404
     messages.success(request, _("Saved."))
     return redirect("console-tenant", pk)
-
-
-def _set_status(request, tenant: Tenant, status: str) -> None:
-    if tenant.status == status:
-        return
-    previous = tenant.status
-    tenant.status = status
-    tenant.save(update_fields=["status", "updated_at"])
-    record(request, "tenant.status", tenant, before=previous, after=status)
 
 
 @staff_required
@@ -214,7 +153,7 @@ def tenant_status(request, pk):
     if status not in TRANSITIONS or tenant.status not in TRANSITIONS[status]:
         messages.error(request, _("That change is not allowed."))
         return redirect("console-tenant", pk)
-    _set_status(request, tenant, status)
+    set_client_status(tenant, status=status, actor=request.user)
     messages.success(request, _("%(name)s is now %(status)s.")
                      % {"name": tenant.name, "status": tenant.get_status_display()})
     return redirect("console-tenant", pk)
@@ -228,9 +167,7 @@ def domain_add(request, pk):
     if not form.is_valid():
         show_form_errors(request, form)
         return redirect("console-tenant", pk)
-    domain = form.cleaned_data["domain"]
-    TenantDomain.objects.create(tenant=tenant, domain=domain)
-    record(request, "domain.added", tenant, domain=domain)
+    add_domain(tenant, domain=form.cleaned_data["domain"], actor=request.user)
     messages.success(request, _("Domain added."))
     return redirect("console-tenant", pk)
 
@@ -239,14 +176,13 @@ def domain_add(request, pk):
 @require_POST
 def domain_remove(request, pk, domain_id):
     tenant = get_tenant(pk)
-    domain = tenant.domains.filter(pk=domain_id).first()
+    domain = find_domain(tenant, domain_id)
     if domain is None:
         raise Http404
     if domain.is_primary:
         messages.error(request, _("The main address cannot be removed."))
         return redirect("console-tenant", pk)
-    record(request, "domain.removed", tenant, domain=domain.domain)
-    domain.delete()
+    remove_domain(tenant, domain=domain, actor=request.user)
     messages.success(request, _("Domain removed."))
     return redirect("console-tenant", pk)
 
@@ -265,7 +201,7 @@ def tenant_access(request, pk):
             return JsonResponse({"error": {"message": message}}, status=409)
         messages.error(request, message)
     else:
-        _set_status(request, tenant, target)
+        set_client_status(tenant, status=target, actor=request.user)
         message = (_("%(name)s is enabled.") if target == TenantStatus.ACTIVE
                    else _("%(name)s is disabled.")) % {"name": tenant.name}
         if wants_json:

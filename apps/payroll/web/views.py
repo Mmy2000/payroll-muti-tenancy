@@ -13,12 +13,9 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
-from apps.org.selectors import visible_departments
 
-from .. import permissions, printing
+from .. import permissions, printing, selectors
 from ..models import Frequency, MonthlyRule, PeriodKind, RunStatus, ScopeKind
-from ..selectors import issue_text, line_label, visible_runs
 from ..services import calendars as calendar_services
 
 RUN_TABS = [(RunStatus.DRAFT, _lazy("Drafts")), (RunStatus.APPROVED, _lazy("Approved")),
@@ -26,23 +23,8 @@ RUN_TABS = [(RunStatus.DRAFT, _lazy("Drafts")), (RunStatus.APPROVED, _lazy("Appr
             ("all", _lazy("All"))]
 
 
-def _by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
-def _scope_names(runs) -> dict:
-    """{(scope, id): name} for the branches and departments the runs are for."""
-    ids = {kind: {r.scope_id for r in runs if r.scope == kind}
-           for kind in (ScopeKind.BRANCH, ScopeKind.DEPARTMENT)}
-    names = {(ScopeKind.BRANCH, b.pk): b.name
-             for b in Branch.objects.filter(pk__in=ids[ScopeKind.BRANCH])}
-    names.update({(ScopeKind.DEPARTMENT, d.pk): d.label
-                  for d in visible_departments().filter(pk__in=ids[ScopeKind.DEPARTMENT])})
-    return names
-
-
 def _with_scope_names(runs):
-    names = _scope_names(runs)
+    names = selectors.scope_names(runs)
     for run in runs:
         run.scope_name = (_("Everyone") if run.scope == ScopeKind.ALL
                           else names.get((run.scope, run.scope_id), "—"))
@@ -50,7 +32,7 @@ def _with_scope_names(runs):
 
 
 def _run_or_404(request, pk):
-    run = visible_runs(request.actor).filter(pk=pk).first()
+    run = selectors.find_run(request.actor, pk)
     if run is None:
         raise Http404
     return run
@@ -60,11 +42,11 @@ def _run_or_404(request, pk):
 def runs(request):
     found = ListQuery(request, permission=permissions.READ, search=("number", "note"),
                       date_field="period__end", branch_field="",
-                      choices=[Choice("status", _("Status"), RUN_TABS, apply=_by_status,
+                      choices=[Choice("status", _("Status"), RUN_TABS, apply=selectors.with_status,
                                       value=RunStatus.DRAFT, tabs=True),
                                Choice("frequency", _("Pay frequency"), Frequency.choices,
                                       "period__frequency")])
-    page = found.page(found.apply(visible_runs(request.actor)).order_by("-period__start", "-id"))
+    page = found.page(found.apply(selectors.runs_newest_first(request.actor)))
     _with_scope_names(page.object_list)
     return render(request, "payroll/runs.html", {
         "filters": found, "page": page, "can_calculate": request.actor.can(permissions.CALCULATE)})
@@ -73,7 +55,6 @@ def runs(request):
 @permission_required(permissions.CALCULATE)
 def run_new(request):
     allowed = request.actor.branch_ids(permissions.CALCULATE)
-    branches = Branch.objects.filter(is_active=True).order_by("code")
     today = timezone.localdate()
     return render(request, "payroll/run_form.html", {
         "frequencies": Frequency.choices, "kinds": PeriodKind.choices, "today": today,
@@ -81,8 +62,8 @@ def run_new(request):
                     for f, label in Frequency.choices],
         # A member limited to some branches runs payroll branch by branch.
         "all_branches": allowed is None,
-        "branches": branches if allowed is None else branches.filter(pk__in=allowed),
-        "departments": visible_departments().filter(is_active=True),
+        "branches": selectors.branch_choices(allowed),
+        "departments": selectors.active_departments(),
     })
 
 
@@ -90,7 +71,7 @@ def run_new(request):
 def run_detail(request, pk):
     run = _run_or_404(request, pk)
     _with_scope_names([run])
-    slips = list(run.payslips.select_related("employee").order_by("employee__code"))
+    slips = list(selectors.slips_by_code(run))
     actor = request.actor
     can = {code: actor.can(code, branch=run.scope_id if run.scope == ScopeKind.BRANCH
                            else None)
@@ -112,12 +93,10 @@ def run_detail(request, pk):
 @permission_required(permissions.READ)
 def payslip_detail(request, pk, slip_pk):
     run = _run_or_404(request, pk)
-    slip = run.payslips.select_related("employee").filter(pk=slip_pk).first()
+    slip = selectors.find_slip(run, slip_pk)
     if slip is None:
         raise Http404
-    lines = list(slip.lines.all())
-    for line in lines:
-        line.title = line_label(line)
+    lines = selectors.labelled_lines(slip)
     can_calculate = run.is_draft and request.actor.can(
         permissions.CALCULATE, branch=run.scope_id if run.scope == ScopeKind.BRANCH else None)
     return render(request, "payroll/payslip.html", {
@@ -125,8 +104,9 @@ def payslip_detail(request, pk, slip_pk):
         "earnings": [line for line in lines if line.kind == "earning"],
         "deductions": [line for line in lines if line.kind == "deduction"],
         "employer": [line for line in lines if line.kind == "employer"],
-        "issues": [{"severity": i["severity"], "text": issue_text(i)} for i in slip.issues],
-        "manual_lines": run.manual_lines.filter(employee=slip.employee).order_by("pk"),
+        "issues": [{"severity": i["severity"], "text": selectors.issue_text(i)}
+                   for i in slip.issues],
+        "manual_lines": selectors.manual_lines_for(run, slip.employee),
         "can_calculate": can_calculate,
         "snapshot": json.dumps(slip.snapshot, indent=2, ensure_ascii=False,
                                cls=DjangoJSONEncoder),
@@ -146,8 +126,7 @@ def _pdf(request, run, slips, name):
 @permission_required(permissions.READ)
 def payslip_pdf(request, pk, slip_pk):
     run = _run_or_404(request, pk)
-    slip = run.payslips.select_related("employee__branch", "employee__department").filter(
-        pk=slip_pk).first()
+    slip = selectors.find_slip_to_print(run, slip_pk)
     if slip is None:
         raise Http404
     return _pdf(request, run, [slip], printing.filename(run, slip))
@@ -156,10 +135,9 @@ def payslip_pdf(request, pk, slip_pk):
 @permission_required(permissions.READ)
 def run_payslips_pdf(request, pk):
     run = _run_or_404(request, pk)
-    slips = run.payslips.select_related("employee__branch", "employee__department")
-    if not slips.exists():
+    if not selectors.has_slips(run):
         raise Http404
-    return _pdf(request, run, slips, printing.filename(run))
+    return _pdf(request, run, selectors.slips_to_print(run), printing.filename(run))
 
 
 @permission_required(permissions.SETUP)

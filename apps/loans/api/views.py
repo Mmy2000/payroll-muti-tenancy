@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.loans.models import Advance, Loan
 
-from .. import permissions
+from .. import permissions, selectors
 from ..services import advances, loans
 from .serializers import (
     AdvanceSerializer,
@@ -26,11 +26,12 @@ def _valid(serializer_class, data) -> dict:
 
 class AdvanceViewSet(EmployeeRowsViewSet):
     model = Advance
-    view_permission = advances.VIEW
+    view_permission = permissions.ADVANCE_VIEW
     serializer_class = AdvanceSerializer
     filterset_fields = ["status", "employee"]
-    required_permissions = {"list": advances.VIEW, "create": advances.MANAGE,
-                            "cancel": advances.MANAGE}
+    required_permissions = {"list": permissions.ADVANCE_VIEW,
+                            "create": permissions.ADVANCE_MANAGE,
+                            "cancel": permissions.ADVANCE_MANAGE}
 
     def create(self, request):
         data = _valid(AdvanceWriteSerializer, request.data)
@@ -54,8 +55,8 @@ class LoanViewSet(EmployeeRowsViewSet):
     required_permissions = {"list": permissions.VIEW, "retrieve": permissions.VIEW,
                             "create": permissions.MANAGE, "cancel": permissions.MANAGE}
 
-    def get_queryset(self):
-        return super().get_queryset().prefetch_related("installments")
+    def rows(self):
+        return selectors.loans_with_installments()
 
     def retrieve(self, request, pk=None):
         return Response(self.get_serializer(self.get_object()).data)

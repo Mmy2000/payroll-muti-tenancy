@@ -11,12 +11,9 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from apps.platform.tenants.models import PlatformEvent, Tenant
+from apps.platform.tenants.models import Tenant
 
-
-def attr(name: str) -> str:
-    """Form field → Tenant attribute (the plan is stored by its code)."""
-    return "plan_id" if name == "plan" else name
+from ..selectors.tenants import find_client
 
 
 def staff_required(view):
@@ -30,13 +27,8 @@ def staff_required(view):
     return wrapper
 
 
-def record(request, action: str, tenant: Tenant | None = None, **detail) -> None:
-    PlatformEvent.objects.create(actor=request.user, tenant=tenant, action=action,
-                                 detail={k: str(v) for k, v in detail.items()})
-
-
 def show_form_errors(request, form) -> None:
-    for errors in form.errors.values():
+    for _field, errors in form.errors.items():
         for error in errors:
             messages.error(request, error)
 
@@ -49,8 +41,7 @@ def back(request, fallback: str, anchor: str = ""):
 
 
 def get_tenant(pk: int) -> Tenant:
-    tenant = Tenant.objects.select_related("plan").prefetch_related("domains").filter(
-        pk=pk).first()
+    tenant = find_client(pk)
     if tenant is None:
         raise Http404
     return tenant

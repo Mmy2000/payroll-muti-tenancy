@@ -11,9 +11,10 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from apps.platform.tenants.models import Tenant
+from apps.platform.tenants.services import set_traffic_limit
 
 from ..selectors import traffic as traffic_report
-from .common import get_tenant, record, show_form_errors, staff_required
+from .common import get_tenant, show_form_errors, staff_required
 from .forms import TrafficLimitForm
 
 OVERVIEW_PARTS = {"tiles": "console/_traffic_tiles.html", "chart": "console/_traffic_chart.html",
@@ -79,14 +80,8 @@ def tenant_traffic(request, pk):
         if not form.is_valid():
             show_form_errors(request, form)
             return redirect("console-tenant-traffic", pk)
-        before = tenant.requests_per_minute
-        tenant.requests_per_minute = form.cleaned_data["requests_per_minute"]
-        tenant.save(update_fields=["requests_per_minute", "updated_at"])
-        if tenant.requests_per_minute != before:
-            record(request, "traffic.limit", tenant,
-                   before="" if before is None else before,
-                   after="" if tenant.requests_per_minute is None
-                   else tenant.requests_per_minute)
+        set_traffic_limit(tenant, limit=form.cleaned_data["requests_per_minute"],
+                          actor=request.user)
         messages.success(request, _("Saved."))
         window = traffic_report.window(request.GET.get("window", ""))
         return redirect(f"{request.path}?window={window}")

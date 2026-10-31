@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from django.contrib import messages
-from django.db import transaction
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -11,14 +10,11 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.platform.tenants import features as feature_registry
-from apps.platform.tenants.models import Plan, Tenant
+from apps.platform.tenants.services import set_client_feature, set_plan_feature
 
-from .common import back, get_tenant, record, staff_required
-from .tenants import LIVE_STATUSES
-
-
-def _along_with(others) -> dict:
-    return {"also": ", ".join(f.key for f in others)} if others else {}
+from ..selectors.plans import find_plan_by_code, plan_labels
+from ..selectors.tenants import live_clients
+from .common import back, get_tenant, staff_required
 
 
 def _say_along_with(request, others, on: bool) -> None:
@@ -32,13 +28,13 @@ def _say_along_with(request, others, on: bool) -> None:
 def features(request):
     """Every feature, which plans include it by default, and how many clients have it on."""
     defaults = feature_registry.plan_defaults()
-    live = list(Tenant.objects.filter(status__in=LIVE_STATUSES))
+    live = live_clients()
     usage = {f.key: 0 for f in feature_registry.FEATURES}
     for tenant in live:
         for key in feature_registry.enabled_keys(tenant.pk):
             if key in usage:
                 usage[key] += 1
-    plans = [(p.code, p.label) for p in Plan.objects.all()]
+    plans = plan_labels()
     in_effect = {code: feature_registry.effective(defaults.get(code, {})) for code, _l in plans}
     groups: dict[str, list] = {}
     for feature in feature_registry.FEATURES:
@@ -57,14 +53,11 @@ def features(request):
 @require_POST
 def plan_feature(request):
     key, plan = request.POST.get("key", ""), request.POST.get("plan", "")
-    plan_row = Plan.objects.filter(code=plan).first()
+    plan_row = find_plan_by_code(plan)
     if key not in feature_registry.BY_KEY or plan_row is None:
         raise Http404
     enabled = request.POST.get("enabled") == "1"
-    with transaction.atomic():
-        others = feature_registry.set_for_plan(plan_row, key, enabled)
-    record(request, "feature.plan", None, plan=plan, feature=key, enabled=enabled,
-           **_along_with(others))
+    others = set_plan_feature(plan_row, key=key, enabled=enabled, actor=request.user)
     feature = feature_registry.BY_KEY[key]
     messages.success(request, (_("%(feature)s is now included in %(plan)s.") if enabled else
                                _("%(feature)s is no longer included in %(plan)s."))
@@ -80,10 +73,7 @@ def tenant_feature(request, pk):
     key, state = request.POST.get("key", ""), request.POST.get("state", "")
     if key not in feature_registry.BY_KEY or state not in ("on", "off", "default"):
         raise Http404
-    with transaction.atomic():
-        others = feature_registry.set_for_client(tenant, key,
-                                                 None if state == "default" else state == "on")
-    record(request, "feature.client", tenant, feature=key, state=state, **_along_with(others))
+    others = set_client_feature(tenant, key=key, state=state, actor=request.user)
     feature = feature_registry.BY_KEY[key]
     messages.success(request, {
         "on": _("%(feature)s is on for %(name)s."),

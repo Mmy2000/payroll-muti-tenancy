@@ -13,7 +13,7 @@ How code in this repository is written. **Automated** means a check fails, local
   - Continuation lines align with the opening bracket.
   - Short related statements may share a line (`a, b = x, y`).
   - Blank lines separate the steps of a function, and section comments mark parts of a long
-    module (`# --- vouchers ---`).
+    module (`# --- punching ---`).
 - **Imports** are sorted by ruff (`I`): standard library, third party, `apps.`, local.
   - Use `from __future__ import annotations` in modules with type hints.
   - Import cross-app names at module level unless the module is heavy, optional (a feature
@@ -29,35 +29,30 @@ How code in this repository is written. **Automated** means a check fails, local
 
 | Thing | Convention | Example |
 |---|---|---|
-| Modules, functions, variables | `snake_case`, named after the business act | `post_expense`, `void_trade_sale`, `ensure_cash_available` |
-| Classes, models | `PascalCase`, singular | `ExpenseVoucher`, `CashBox` |
-| Input objects | `<Thing>Input`, frozen dataclass | `ExpenseInput`, `TreasuryInput` |
-| Constants | `UPPER_SNAKE` | `DOC_TYPE = "expenses.ExpenseVoucher"` |
+| Modules, functions, variables | `snake_case`, named after the business act | `grant_loan`, `void_trade_sale`, `ensure_cash_available` |
+| Classes, models | `PascalCase`, singular | `PayrollRun`, `LeaveRequest` |
+| Input objects | `<Thing>Input`, frozen dataclass | `LoanInput`, `RunInput` |
+| Constants | `UPPER_SNAKE` | `MAX_INSTALLMENTS = 120` |
 | Private helpers | leading `_`, used only in their module | `_field_error` |
-| Permission codes | lower case, dotted `app.object.action` (automated: `test_catalog_codes_are_well_formed`) | `expenses.voucher.create`, `expenses.void` |
-| Error codes | `APP_UPPER_SNAKE` | `DOC_NOT_POSTED`, `CATALOG_CATEGORY_IN_USE` |
-| URL names | `kebab-case` | `expense-view`, `console-tenant-document` |
-| Document number prefixes | 2–3 capitals, unique (`allocate_number`) | `EX`, `SI`, `PRL` |
-| Database constraints and indexes | `<app>_<model>_<what>_<kind>` | `expenses_voucher_amount_check`, `expense_date_idx` |
-| Tests | `test_` + what happens, in words | `test_cash_expense_posts_and_cancels` |
+| Permission codes | lower case, dotted `app.object.action` (automated: `test_catalog_codes_are_well_formed`) | `loans.loan.manage`, `expenses.void` |
+| Error codes | `APP_UPPER_SNAKE` | `MOBILE_LOGIN_EXISTS`, `MOBILE_QR_LEFT` |
+| URL names | `kebab-case` | `employee-new`, `console-tenant-settings` |
+| Document number prefixes | 2–3 capitals, unique (`allocate_number`) | `PRL` |
+| Database constraints and indexes | `<app>_<model>_<what>_<kind>` | `mobile_device_once_uniq`, `mobile_link_active_idx` |
+| Tests | `test_` + what happens, in words | `test_a_manager_cant_get_into_a_login_above_their_own` |
 
-**Use the domain words** (see the [glossary](../architecture/overview.md#glossary)). For a new
-reversal of a posted document, call it `void_<document>`: that is the name used by 21 functions,
-against 7 `cancel_` and 4 `undo_`.
+**Use the domain words**, the ones the screens and [the PayRole rules](../payrole-rules.md) use.
 
 ## Functions and modules
 
 - **Aim for functions under about 60 lines, with cyclomatic complexity under 15.** If a
-  function grows past that, extract named steps. Today 41 functions exceed complexity 10
-  (`ruff check apps --select C901`; the worst are in TD-10). Don't add to the list.
+  function grows past that, extract named steps (`ruff check apps --select C901` lists them).
 - **More than about four parameters:** make them keyword-only (`*,`) or pass an `XInput`.
 - **Don't nest conditions three or more deep.** Return early, or raise.
-- **One module, one subject.** Split a module past about 600 lines by business act (as
-  `sales/` does with `returns.py`, `trade.py`, `reservations.py`).
+- **One module, one subject.** Split a module past about 300 lines by business act, as
+  `apps/payroll/services/` does with `runs.py`, `lifecycle.py` and `calendars.py`.
 - **No magic numbers.**
-  - Money and weight precision comes from `apps.core.numeric` (`MONEY`, `round_money`,
-    `quantize`).
-  - Fineness comes from `apps.catalog.domain.metal`.
+  - Money precision comes from `apps.core.numeric` (`MONEY`, `round_money`, `quantize`).
   - Anything else gets a named constant with a comment saying where the value comes from.
 
 ## Numbers, text and time
@@ -71,7 +66,7 @@ against 7 `cancel_` and 4 `undo_`.
   `{% translate %}`, and translated to Arabic in `locale/ar/LC_MESSAGES/django.po` (automated:
   `ops/i18n/messages.py check`). Write `%(name)s` placeholders, not f-strings, inside `_()`.
 - **Stored text stays language-neutral.** Store codes and user input, and translate when
-  displaying (e.g. `apps/treasury/holders.py::_box_account_name`).
+  displaying.
 - **Dates:**
   - `timezone.localdate()` is the business date; `timezone.now()` is a moment.
   - A job runs in its client's time zone (the worker sets it).
@@ -79,20 +74,18 @@ against 7 `cancel_` and 4 `undo_`.
 
 ## Comments and docstrings
 
-- **Module docstring:** what this module is for, in the business's terms. Add the ledger lines
-  it posts when it posts (see `apps/expenses/services.py`).
+- **Module docstring:** what this module is for, in the business's terms.
 - **Function docstring** for any public service or helper whose name doesn't say everything:
   - One sentence on what it does.
-  - Then the non-obvious rules: what it refuses, what it locks, what it posts.
+  - Then the non-obvious rules: what it refuses, what it locks.
 - **Comments say why, not what.** Write them for a reason a reader couldn't guess. Good
   examples from the code:
   - `# Not atomic: a failed run's record must outlive the failure`
-  - `# a karat missing on that board: no comparison`
-- **§ numbers** (`§7.12`) refer to `PROJECT_PLAN.md`, and **ADR-nnn** to a decision. Cite them
-  when the code implements a section or decision; they are how a reader finds the reasoning.
-- **No commented-out code and no TODOs without a register entry.** Use git for old code. A
-  known problem goes in the [debt register](../tech-debt.md), with its ID in the comment
-  (`# TD-09`).
+  - `# drf-spectacular sets its own permission_classes, which would skip the project's default`
+- **ADR-nnn** refers to a decision. Cite one when the code implements it: that is how a reader
+  finds the reasoning.
+- **No commented-out code and no TODOs.** Use git for old code, and fix a known problem or
+  open an issue for it.
 
 ## Errors
 

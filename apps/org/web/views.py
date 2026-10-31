@@ -1,4 +1,3 @@
-from django.db.models import Count, Max, Q
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -6,23 +5,21 @@ from django.utils.translation import gettext as _
 
 from apps.core.listing import ListQuery
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
 
 from .. import permissions, selectors
 
 
 @permission_required("org.branch.view")
 def branches(request):
-    return render(request, "org/branches.html", {"branches": Branch.objects.annotate(
-        department_count=Count("departments", filter=Q(departments__is_active=True)))
-        .order_by("code")})
+    return render(request, "org/branches.html",
+                  {"branches": selectors.branches_with_department_counts()})
 
 
 def _branch_form(request, branch=None):
-    next_code = (Branch.objects.aggregate(top=Max("code"))["top"] or 0) + 1
+    next_code = selectors.next_branch_code()
     return render(request, "org/branch_form.html", {
         "branch": branch,
-        "departments": branch.departments.order_by("code") if branch else [],
+        "departments": selectors.branch_departments(branch) if branch else [],
         "next_code": next_code,
         "endpoint": (reverse("branch-detail", args=[branch.pk]) if branch
                      else reverse("branch-list")),
@@ -37,7 +34,7 @@ def branch_new(request):
 
 @permission_required("org.branch.manage")
 def branch_edit(request, pk):
-    branch = Branch.objects.filter(pk=pk).first()
+    branch = selectors.branch_by_id(pk)
     if branch is None:
         raise Http404
     return _branch_form(request, branch)
@@ -53,12 +50,9 @@ def departments(request):
 
 def _department_form(request, department=None):
     allowed = request.actor.branch_ids(permissions.DEPARTMENT_MANAGE)
-    branches = Branch.objects.filter(is_active=True).order_by("code")
-    if allowed is not None:
-        branches = branches.filter(pk__in=allowed)
     return render(request, "org/department_form.html", {
         "department": department,
-        "branches": branches,
+        "branches": selectors.active_branches_by_code(allowed),
         "chosen_branch": department.branch_id if department else request.GET.get("branch", ""),
         "endpoint": (reverse("department-detail", args=[department.pk]) if department
                      else reverse("department-list")),
@@ -73,8 +67,7 @@ def department_new(request):
 
 @permission_required(permissions.DEPARTMENT_MANAGE)
 def department_edit(request, pk):
-    department = selectors.visible_departments(request.actor, permissions.DEPARTMENT_MANAGE).filter(
-        pk=pk).first()
+    department = selectors.visible_department(request.actor, pk, permissions.DEPARTMENT_MANAGE)
     if department is None:
         raise Http404
     return _department_form(request, department)

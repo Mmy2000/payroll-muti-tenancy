@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 
+from .... import selectors
 from ....services import punches as punches_services
 from ....services import tracking
 from .. import serializers as s
@@ -54,18 +54,7 @@ def parse_day(text: str):
 class HistoryView(AppView):
     def get(self, request):
         person = self.employee()
-        punches = person.punches.order_by("-at")
         start, end = parse_day(request.GET.get("from", "")), parse_day(request.GET.get("to", ""))
-        zone = timezone.get_current_timezone()
-        if start:
-            punches = punches.filter(at__date__gte=start)
-        if end:
-            punches = punches.filter(at__date__lte=end)
-        rows = list(punches[:500])
-        by_day: dict = {}
-        for punch in sorted(rows, key=lambda p: p.at):
-            by_day.setdefault(punch.at.astimezone(zone).date(), []).append(punch)
-        directions = {}
-        for day_punches in by_day.values():
-            directions.update(punches_services.directions(day_punches))
+        rows = selectors.punch_history(person, start, end)
+        directions = punches_services.directions_by_day(rows)
         return Response([s.attendance(p, directions[p.pk]) for p in rows])

@@ -141,3 +141,9 @@ def figures(actor) -> dict:
     if actor.can(PAYROLL):
         found["payroll"] = payroll(actor, today)
     return found
+
+
+def employees_by_code(actor, permission: str):
+    from apps.employees.selectors import visible_employees
+
+    return visible_employees(actor, permission).order_by("code")

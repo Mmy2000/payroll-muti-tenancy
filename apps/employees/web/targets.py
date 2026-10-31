@@ -4,20 +4,11 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.employees.selectors import BRANCH, DEPARTMENT, EMPLOYEE, EMPLOYEES
-from apps.org.models import Branch
-from apps.org.selectors import visible_departments
 
-from ..selectors import visible_employees
+from ..selectors import branch_choices, department_choices, employee_choices
 
 KINDS = [(EMPLOYEE, _("One employee")), (DEPARTMENT, _("A department")),
          (BRANCH, _("A branch"))]
-
-
-def employee_choices(actor, permission: str):
-    """Employees still working whom the member may act on with `permission`."""
-    return visible_employees(actor, permission).exclude(
-        left_on__lt=timezone.localdate()).order_by("code")
-
 
 GROUP_KINDS = [(EMPLOYEES, _("Chosen employees")), (DEPARTMENT, _("A department")),
                (BRANCH, _("A branch"))]
@@ -39,11 +30,9 @@ def group_page(request, permission: str, **page) -> dict:
 
 def target_choices(actor, permission: str) -> dict:
     """Employees still working, departments and branches the member may give things to."""
-    allowed = actor.branch_ids(permission)
-    branches = Branch.objects.filter(is_active=True).order_by("code")
     return {
         "target_kinds": KINDS,
         "target_employees": employee_choices(actor, permission),
-        "target_departments": visible_departments(actor, permission).filter(is_active=True),
-        "target_branches": branches if allowed is None else branches.filter(pk__in=allowed),
+        "target_departments": department_choices(actor, permission),
+        "target_branches": branch_choices(actor, permission),
     }

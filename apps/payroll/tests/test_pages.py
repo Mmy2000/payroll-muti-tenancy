@@ -59,6 +59,12 @@ def test_off_cycle_needs_dates_and_a_reason(client_a, make_employee):
     assert refused.status_code == 400 and "reason" in refused.json()["error"]["fields"]
 
 
+def test_the_calendars_are_listed(client_a):
+    response = login(client_a).get("/api/web/payroll/calendars/")
+    assert response.status_code == 200
+    assert len(response.json()) == 3
+
+
 def test_calendars_are_set_up_once(client_a, make_employee):
     make_employee(client_a)
     client = login(client_a)

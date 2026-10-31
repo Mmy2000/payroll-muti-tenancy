@@ -1,6 +1,6 @@
 # Security standards
 
-The platform holds many shops' money, stock and customers' personal data in one database.
+The platform holds many companies' payroll and their employees' personal data in one database.
 Security here mostly means: **one client never sees another's data, and nobody does what their
 role doesn't allow.** These rules are part of normal work and of every code review.
 
@@ -30,10 +30,11 @@ role doesn't allow.** These rules are part of normal work and of every code revi
 - Passwords: Argon2, minimum 10 characters, Django's validators.
 - Sessions are bound to their tenant, cookies are host-only, and production sets `Secure`,
   `HttpOnly` and `SameSite`.
-- Mobile tokens (`apps/mobile/tokens.py`):
-  - Access tokens last 7 minutes and are bound to tenant and device, checked against the
-    database.
-  - Refresh tokens are stored hashed and rotated on every use.
+- Mobile tokens (`apps/mobile/api/v1/auth.py`):
+  - Access tokens last 8 hours and refresh tokens 30 days, rotated on every use. They carry their
+    client and are refused on another client's host.
+  - A sign-in that names its phone can be revoked at once, checked against the database on every
+    request (`apps/mobile/services/devices.py`).
 - **Wrong passwords are throttled** (`apps/iam/throttle.py`) on every way in: 5 for one
   account, or 30 from one address, lock it for up to 15 minutes. With several servers,
   `CACHE_URL` must be a shared cache, or each server counts on its own.
@@ -42,7 +43,7 @@ role doesn't allow.** These rules are part of normal work and of every code revi
   - A workspace can't set its password, email or phone.
   - A new workspace joins an existing login only when staff ask for it, and never a staff
     login.
-- **Open gap:** no second factor for platform staff yet (TD-25). Staff passwords must be long
+- **Open gap:** no second factor for platform staff yet. Staff passwords must be long
   and unique.
 
 ## Authorization
@@ -65,9 +66,7 @@ role doesn't allow.** These rules are part of normal work and of every code revi
 - HTML: Django autoescaping stays on. `mark_safe` / `|safe` only for markup built from escaped
   or validated parts, with a comment saying why. Data for scripts goes through `json_script`,
   and JS sets `textContent`, or escapes before `innerHTML`.
-- Custom document HTML (staff only) is rendered by a sandboxed template engine with no loaders
-  (`apps/printing/render.py`). Clients can't set it.
-- CSV and Excel exports: see TD-30 (formula cells).
+- CSV and Excel exports: a cell that starts with a formula character must not run as one.
 - CSRF: never `csrf_exempt`. The API uses session authentication, which enforces CSRF.
 - State changes only on POST (`@require_POST`) or the API's unsafe methods.
 
@@ -75,7 +74,7 @@ role doesn't allow.** These rules are part of normal work and of every code revi
 
 - Check content by its bytes (magic numbers), not its name or `Content-Type`. Refuse SVG and
   HTML uploads.
-- Store under a random name. TD-30: the extension should come from the detected type.
+- Store under a random name, with the extension of the detected type.
 - Serve with `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`, as
   `media.serve` does.
 - Keep paths away from client input: no `..`, `\` or `:` (`media.serve`).

@@ -21,7 +21,7 @@ class NotificationsView(APIView):
         unread = selectors.unread_count(member)
         if request.GET.get("count") == "1":
             return Response({"unread": unread})
-        rows = selectors.for_member(member).order_by("-id")[:LATEST]
+        rows = selectors.newest_for(member)[:LATEST]
         return Response({"unread": unread, "results": [item(r) for r in rows],
                          "attention": attention.waiting(request.actor)})
 

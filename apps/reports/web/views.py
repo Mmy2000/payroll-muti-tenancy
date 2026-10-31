@@ -8,13 +8,18 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.http import content_disposition_header
 
-from apps.employees.selectors import visible_employees
 from apps.iam.authz import permission_required
-from apps.org.models import Branch, TenantProfile
-from apps.org.selectors import visible_departments
+from apps.iam.selectors import active_member_count
+from apps.org.selectors import (
+    active_branch_count,
+    branches_by_code,
+    tenant_profile_or_none,
+    visible_departments,
+)
 
 from ..exporters import EXPORTERS, shape
 from ..registry import REPORTS, SECTIONS, Report, Scope
+from ..selectors import employees_by_code, figures
 
 EXPORT = "reports.export"
 
@@ -29,19 +34,14 @@ def home(request):
     from django.utils import timezone
     from django.utils.formats import date_format
 
-    from apps.iam.models import Membership, MembershipStatus
-
-    from ..selectors import figures
-
     actor = request.actor
     now = timezone.localtime()
     context = {"today_label": f"{date_format(now, 'l')} · {date_format(now, 'DATE_FORMAT')}",
                **figures(actor)}
     if actor.can("org.branch.view"):
-        context["branch_count"] = Branch.objects.filter(is_active=True).count()
+        context["branch_count"] = active_branch_count()
     if actor.can("admin.users.view"):
-        context["member_count"] = Membership.objects.filter(
-            status=MembershipStatus.ACTIVE).count()
+        context["member_count"] = active_member_count()
     return render(request, "reports/dashboard.html", context)
 
 
@@ -61,12 +61,9 @@ def prepare(report: Report, query, actor):
     """The parsed filters and the reader's scope for `report`: the branches of its
     permission, and the branches, departments and employees the filters may choose from."""
     allowed = actor.branch_ids(report.permission) if actor is not None else None
-    branches = Branch.objects.order_by("code")
-    if allowed is not None:
-        branches = branches.filter(pk__in=allowed)
-    employees = visible_employees(actor, report.permission).order_by("code")
-    options = {"branches": branches, "departments": visible_departments(actor, report.permission),
-               "employees": employees}
+    options = {"branches": branches_by_code(allowed),
+               "departments": visible_departments(actor, report.permission),
+               "employees": employees_by_code(actor, report.permission)}
     params = report.parse(query, **options)
     return params, Scope(allowed, params, actor), options
 
@@ -105,7 +102,7 @@ def run_report(request, code):
         query.pop("format", None)
         return render(request, "reports/report.html", {
             "report": report, "tables": [shape(table) for table in tables],
-            "params": params.values, "profile": TenantProfile.objects.first(),
+            "params": params.chosen, "profile": tenant_profile_or_none(),
             "query": query.urlencode(), "can_export": request.actor.can(EXPORT), **options,
         })
 

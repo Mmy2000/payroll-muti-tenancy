@@ -16,4 +16,4 @@ register_feature(Feature(
     PAY, "hand-coins", ("compensation.",)))
 
 
-GIVE = "compensation.entry.manage"
+ENTRY_VIEW, GIVE = "compensation.entry.view", "compensation.entry.manage"

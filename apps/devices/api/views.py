@@ -4,8 +4,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.devices.models import DeviceUser
-
 from .. import permissions, selectors
 from ..services import devices, links
 from .serializers import AskSerializer, DeviceWriteSerializer, LinkSerializer
@@ -51,8 +49,7 @@ class DeviceViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["post"], url_path="link-by-code")
     def link_by_code(self, request, pk=None):
-        device = selectors.visible_devices(request.actor, permissions.MANAGE).filter(
-            pk=pk).first()
+        device = selectors.find_device(request.actor, pk, permissions.MANAGE)
         if device is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return Response({"linked": links.link_by_code(device.branch_id,
@@ -63,7 +60,7 @@ class DeviceUserViewSet(viewsets.GenericViewSet):
     """POST …/link/ {employee_id}: link a PIN (null unlinks)."""
 
     required_permissions = {"link": permissions.MANAGE}
-    queryset = DeviceUser.objects.none()
+    queryset = selectors.no_device_users()
 
     @action(detail=True, methods=["post"])
     def link(self, request, pk=None):

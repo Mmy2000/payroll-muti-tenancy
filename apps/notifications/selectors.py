@@ -108,5 +108,15 @@ def for_member(member) -> QuerySet:
     return Notification.objects.filter(member=member)
 
 
+def newest_for(member, *, unread_only: bool = False, before: int | None = None) -> QuerySet:
+    """Newest first; `before`: those older than that id."""
+    rows = for_member(member)
+    if unread_only:
+        rows = rows.filter(read_at__isnull=True)
+    if before is not None:
+        rows = rows.filter(pk__lt=before)
+    return rows.order_by("-id")
+
+
 def unread_count(member) -> int:
     return for_member(member).filter(read_at__isnull=True).count()

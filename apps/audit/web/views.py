@@ -9,18 +9,17 @@ from datetime import date, datetime, time
 
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import Q
 from django.shortcuts import render
 from django.utils import formats, timezone
 from django.utils.translation import gettext as _
 
 from apps.core.templatetags.ui import num
 from apps.iam.authz import permission_required
-from apps.iam.models import Membership
+from apps.iam.selectors import members_by_name
 
-from .. import catalog
+from .. import catalog, selectors
 from ..labels import COLUMNS
-from ..models import AuditAction, AuditEvent
+from ..models import AuditAction
 
 HIDDEN = "***"
 
@@ -72,7 +71,7 @@ class _Labels:
 
     def load(self):
         for model, ids in self.wanted.items():
-            for obj in model._default_manager.filter(pk__in=ids):
+            for obj in selectors.records(model, ids):
                 self.names[(model, obj.pk)] = _name(obj)
 
     def get(self, model, pk):
@@ -140,43 +139,22 @@ def _describe(events) -> list[dict]:
     return rows
 
 
-def _record_events(model, row_id: int) -> Q:
-    """The record's own events and those of its parts, deleted parts included: every part was
-    inserted with the trail on, and its insert event names the record."""
-    match = Q(table_name=model._meta.db_table, row_id=row_id)
-    for part, column in catalog.parts(model):
-        table = part._meta.db_table
-        ids = AuditEvent.objects.filter(table_name=table, action=AuditAction.INSERT,
-                                        **{f"changes__{column}": row_id}).values("row_id")
-        match |= Q(table_name=table, row_id__in=ids)
-    return match
-
-
 @permission_required("admin.audit.history")
 def activity(request):
-    events = AuditEvent.objects.select_related("user")
     table = request.GET.get("table", "")
     row = request.GET.get("row", "")
     who = request.GET.get("user", "")
     date_from, date_to = _date(request.GET.get("from", "")), _date(request.GET.get("to", ""))
     model = catalog.model_for(table) if table else None
-    if table and model is None:
-        events = events.none()  # not an audited table: nothing, rather than everything
-    elif model is not None and row.isdigit():
-        events = events.filter(_record_events(model, int(row)))
-    elif model is not None:
-        events = events.filter(table_name=table)
-    if who.isdigit():
-        events = events.filter(user_id=int(who))
-    if date_from:
-        events = events.filter(at__date__gte=date_from)
-    if date_to:
-        events = events.filter(at__date__lte=date_to)
-    page = Paginator(events.order_by("-at", "-id"), 40).get_page(request.GET.get("page"))
+    row_id = int(row) if model is not None and row.isdigit() else None
+    events = selectors.activity_events(table, model, row_id=row_id,
+                                       user_id=int(who) if who.isdigit() else None,
+                                       date_from=date_from, date_to=date_to)
+    page = Paginator(events, 40).get_page(request.GET.get("page"))
     rows = _describe(list(page.object_list))
     record = None
-    if model is not None and row.isdigit():
-        obj = model._default_manager.filter(pk=int(row)).first()
+    if row_id is not None:
+        obj = selectors.record(model, row_id)
         own = next((r for r in rows if r["event"].table_name == table), None)
         record = {"what": catalog.label(model), "name": _name(obj) if obj else
                   own["name"] if own else f"#{row}"}
@@ -184,7 +162,7 @@ def activity(request):
     query.pop("page", None)
     return render(request, "audit/activity.html", {
         "page": page, "rows": rows, "record": record, "tables": catalog.choices(),
-        "members": Membership.objects.select_related("user").order_by("username"),
+        "members": members_by_name(),
         "filters": {"table": table, "row": row, "user": who, "from": date_from, "to": date_to},
         "query": query.urlencode(),
     })

@@ -10,18 +10,11 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
-from apps.policies.models import (
-    InsuranceRate,
-    LatenessPolicy,
-    OvertimePolicy,
-    PublicHoliday,
-    TaxTable,
-)
+from apps.policies import selectors
+from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 
-def _get(queryset, pk):
-    obj = queryset.filter(pk=pk).first()
+def _found(obj):
     if obj is None:
         raise Http404
     return obj
@@ -66,12 +59,12 @@ OVERTIME = BandedKind(
 
 
 def _banded_list(request, kind: BandedKind):
-    policies = kind.model.objects.prefetch_related("bands").order_by("-is_active", "name")
+    policies = selectors.listed_banded_policies(kind.model)
     return render(request, "policies/banded_list.html", {"kind": kind, "policies": policies})
 
 
 def _banded_form(request, kind: BandedKind, pk=None):
-    policy = _get(kind.model.objects.prefetch_related("bands"), pk) if pk else None
+    policy = _found(selectors.find_banded_policy(kind.model, pk)) if pk else None
     bands = ([{"from": b.from_minutes, "to": b.to_minutes, "hours": getattr(b, kind.hours_field)}
               for b in policy.bands.all()] if policy else [])
     return render(request, "policies/banded_form.html", {
@@ -119,12 +112,12 @@ def overtime_policy_edit(request, pk):
 
 @permission_required("policies.tax.view")
 def tax_tables(request):
-    tables = TaxTable.objects.prefetch_related("brackets").order_by("-effective_from")
-    return render(request, "policies/tax_tables.html", {"tables": tables})
+    return render(request, "policies/tax_tables.html",
+                  {"tables": selectors.listed_tax_tables()})
 
 
 def _tax_form(request, pk=None):
-    table = _get(TaxTable.objects.prefetch_related("brackets"), pk) if pk else None
+    table = _found(selectors.find_tax_table(pk)) if pk else None
     return render(request, "policies/tax_table_form.html", {
         "table": table,
         "brackets": list(table.brackets.all()) if table else [],
@@ -150,11 +143,11 @@ def tax_table_edit(request, pk):
 @permission_required("policies.insurance.view")
 def insurance_rates(request):
     return render(request, "policies/insurance_rates.html",
-                  {"rates": InsuranceRate.objects.order_by("-effective_from")})
+                  {"rates": selectors.listed_insurance_rates()})
 
 
 def _insurance_form(request, pk=None):
-    rate = _get(InsuranceRate.objects.all(), pk) if pk else None
+    rate = _found(selectors.find_insurance_rate(pk)) if pk else None
     return render(request, "policies/insurance_rate_form.html", {
         "rate": rate,
         "endpoint": (reverse("insurance-rate-detail", args=[rate.pk]) if rate
@@ -179,11 +172,8 @@ def insurance_rate_edit(request, pk):
 @permission_required("policies.holiday.view")
 def holidays(request):
     allowed = request.actor.branch_ids("policies.holiday.manage")
-    branches = Branch.objects.filter(is_active=True).order_by("code")
-    if allowed is not None:
-        branches = branches.filter(pk__in=allowed)
     return render(request, "policies/holidays.html", {
-        "holidays": PublicHoliday.objects.select_related("branch").order_by("-date"),
-        "branches": branches,
+        "holidays": selectors.listed_holidays(),
+        "branches": selectors.branch_choices(allowed),
         "all_branches": allowed is None,
     })

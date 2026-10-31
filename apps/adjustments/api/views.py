@@ -13,13 +13,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.adjustments.domain.amounts import CHOICES
-from apps.adjustments.models import Adjustment, AdjustmentKind, AdjustmentType
-from apps.adjustments.selectors import visible_batches
+from apps.adjustments.models import Adjustment, AdjustmentKind
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import TargetFields
 
-from .. import permissions
+from .. import permissions, selectors
 from ..services import batches as batches_services
 from ..services import types
 from .serializers import (
@@ -46,7 +45,7 @@ class _TypeViewSet(ActivateMixin, ServiceViewSet):
     write_serializer_class = TypeWriteSerializer
 
     def get_queryset(self):
-        return AdjustmentType.objects.filter(kind=self.kind)
+        return selectors.types_of(self.kind)
 
     def to_input(self, data):
         return types.TypeInput(kind=self.kind, **data)
@@ -89,7 +88,7 @@ class _RowViewSet(EmployeeRowsViewSet):
     filterset_fields = ["batch", "employee", "adjustment_type"]
 
     def rows(self):
-        return Adjustment.objects.filter(kind=self.kind)
+        return selectors.rows_of(self.kind)
 
     def partial_update(self, request, pk=None):
         self.get_object()
@@ -137,10 +136,8 @@ class _BatchViewSet(viewsets.GenericViewSet):
     serializer_class = BatchSerializer
 
     def get_queryset(self):
-        batches = visible_batches(self.request.actor, self.kind).select_related(
-            "adjustment_type")
         state = self.request.query_params.get("status")
-        return batches.filter(status=state) if state else batches
+        return selectors.batches_in_status(self.request.actor, self.kind, state)
 
     def _show(self, batch, code=status.HTTP_200_OK):
         return Response(self.get_serializer(batch).data, status=code)
@@ -150,7 +147,7 @@ class _BatchViewSet(viewsets.GenericViewSet):
         return int(pk)
 
     def list(self, request):
-        page = self.paginate_queryset(self.get_queryset().order_by("-date", "-id"))
+        page = self.paginate_queryset(self.get_queryset())
         return self.get_paginated_response(self.get_serializer(page, many=True).data)
 
     def retrieve(self, request, pk=None):
@@ -159,7 +156,7 @@ class _BatchViewSet(viewsets.GenericViewSet):
     def create(self, request):
         data = _valid(GiveSerializer, request.data)
         target, approve = TargetFields.target(data), data.pop("approve")
-        if not AdjustmentType.objects.filter(pk=data["type_id"], kind=self.kind).exists():
+        if not selectors.is_type_of(data["type_id"], self.kind):
             data["type_id"] = 0  # another kind's type: refused as unknown
         batch = batches_services.give(batches_services.AdjustmentInput(target=target, **data),
                                       approve=approve,

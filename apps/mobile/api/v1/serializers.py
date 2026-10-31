@@ -12,12 +12,13 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from apps.employees.models import Weekday
+from apps.iam.selectors import active_membership
 
 from ... import contract
 from ...contract import day, decimal, moment
 from ...services import devices
 from ...services import punches as punches_services
-from .auth import DEVICE_CLAIM, TENANT_CLAIM, active_membership
+from .auth import DEVICE_CLAIM, TENANT_CLAIM
 
 DAY_CODES = {Weekday.MONDAY: "mo", Weekday.TUESDAY: "tu", Weekday.WEDNESDAY: "we",
              Weekday.THURSDAY: "th", Weekday.FRIDAY: "fr", Weekday.SATURDAY: "sa",

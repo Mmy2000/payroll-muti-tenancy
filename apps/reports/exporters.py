@@ -26,7 +26,7 @@ WIDE = 7  # more columns than this: the PDF page goes sideways
 
 
 def file_stamp(params: Params) -> str:
-    return "_".join(v.isoformat() for v in params.values.values() if isinstance(v, date))
+    return "_".join(v.isoformat() for v in params.chosen.values() if isinstance(v, date))
 
 
 def landscape(tables: list[Table]) -> bool:
@@ -112,7 +112,7 @@ class PdfExporter(Exporter):
         from apps.printing.pdf import sheet_pdf
 
         return sheet_pdf("reports/print.html", {
-            "report": self.report, "tables": self.shaped, "params": self.params.values,
+            "report": self.report, "tables": self.shaped, "params": self.params.chosen,
         }, title=self.report.title, landscape=self.wide)
 
 
@@ -150,7 +150,7 @@ class XlsxExporter(Exporter):
         self.sheet.sheet_view.rightToLeft = get_language_bidi()
         self.widths: dict[int, int] = {}
         self._write([str(report.title)], bold=True)
-        self._write([" → ".join(v.isoformat() for v in params.values.values()
+        self._write([" → ".join(v.isoformat() for v in params.chosen.values()
                                 if isinstance(v, date))])
 
     def _write(self, values, *, bold=False, fill=None, kinds=None) -> None:

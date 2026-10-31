@@ -13,13 +13,14 @@ from django.utils import timezone
 from apps.core.history import Timeline, in_effect
 from apps.core.tenancy.context import require_current_tenant_id
 from apps.employees.models import WorkSchedule
+from apps.employees.selectors import employed_on, employee_rows, listed_employees
 from apps.platform.tenants import features
 from apps.policies.models import PublicHoliday
 
 from .domain.days import DayFacts, DayResult, ManualEntry, Shift, evaluate_day
 from .domain.leave import Balance, days_between, spans_overlap
 from .domain.workday import work_date_of
-from .models import AttendanceDay, HourlyLeave, LeaveRequest, Punch, RequestStatus
+from .models import AttendanceDay, HourlyLeave, LeaveRequest, LeaveType, Punch, RequestStatus
 from .services.approvals import ACTIVE
 
 # An employee's schedule rows, to find the one in effect on a day.
@@ -107,6 +108,34 @@ def evaluate(employees, start: date, end: date, *, today: date | None = None
             days.append(evaluate_day(facts))
         results[employee.pk] = days
     return results
+
+
+def employees_of_day(actor, code: str, day: date, *, branch=None, department=None):
+    """Who the daily sheet lists: employed on `day`, in `branch` and `department` if given."""
+    people = listed_employees(actor, code).filter(employed_on(day))
+    if branch:
+        people = people.filter(branch=branch)
+    if department:
+        people = people.filter(department=department)
+    return people
+
+
+def visible_requests(model, actor, code: str, *, date_field: str, related=()):
+    """Leave or hourly leave of the employees `actor` sees under `code`, the latest first."""
+    return (employee_rows(model.objects.all(), actor, code, ("employee", *related))
+            .order_by(f"-{date_field}", "-id"))
+
+
+def by_status(requests, value: str):
+    return requests if value == "all" else requests.filter(status=value)
+
+
+def leave_types():
+    return LeaveType.objects.order_by("code")
+
+
+def active_leave_types():
+    return LeaveType.objects.filter(is_active=True)
 
 
 def working_day_test(employee):

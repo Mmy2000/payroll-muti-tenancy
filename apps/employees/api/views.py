@@ -39,8 +39,7 @@ class EmployeeViewSet(viewsets.GenericViewSet):
                             "reinstate": MANAGE}
 
     def get_queryset(self):
-        return selectors.visible_employees(self.request.actor).select_related(
-            "branch", "department")
+        return selectors.listed_employees(self.request.actor)
 
     def _show(self, employee, code=status.HTTP_200_OK):
         from django.utils import timezone

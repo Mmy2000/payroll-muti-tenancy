@@ -10,31 +10,27 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
 
-from .. import gateways, permissions, services
-from ..models import Message, MessageStatus, WhatsAppLink
+from .. import gateways, permissions, selectors, services
+from ..models import MessageStatus
 
 STATUS_TABS = [("all", _lazy("All")), (MessageStatus.QUEUED, _lazy("Waiting")),
                (MessageStatus.SENT, _lazy("Sent")), (MessageStatus.FAILED, _lazy("Failed"))]
 
 
-def _by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
 @permission_required(permissions.LINK)
 def whatsapp(request):
-    link = WhatsAppLink.objects.first() or WhatsAppLink()
     return render(request, "messaging/whatsapp.html", {
-        "link": link, "placeholders": services.PLACEHOLDERS, "ready": gateways.ready()})
+        "link": selectors.whatsapp_link(), "placeholders": services.PLACEHOLDERS,
+        "ready": gateways.ready()})
 
 
 @permission_required(permissions.VIEW)
 def messages(request):
     found = ListQuery(request, permission=permissions.VIEW, search=("phone", "employee__name"),
                       date_field="created_at__date", branch_field="",
-                      choices=[Choice("status", _("Status"), STATUS_TABS, apply=_by_status,
-                                      value="all", tabs=True)])
-    rows = found.apply(Message.objects.select_related("employee", "payslip__run"))
+                      choices=[Choice("status", _("Status"), STATUS_TABS,
+                                      apply=selectors.by_status, value="all", tabs=True)])
+    rows = found.apply(selectors.sent_messages())
     return render(request, "messaging/messages.html", {
-        "filters": found, "page": found.page(rows.order_by("-id")),
+        "filters": found, "page": found.page(rows),
         "can_send": request.actor.can(permissions.SEND)})

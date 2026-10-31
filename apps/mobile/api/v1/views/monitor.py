@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 from django.core.paginator import Paginator
-from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from rest_framework.response import Response
 
 from .... import contract, selectors
 from ....contract import AppError
-from ....models import TrackSession
 from ....services import tracking
 from .. import serializers as s
 from .attendance import parse_day
@@ -19,19 +17,14 @@ from .base import MONITOR, AppView, CanMonitor
 class MonitorView(AppView):
     permission_classes = [CanMonitor]
 
-    def sessions(self):
-        rows = TrackSession.objects.select_related("employee", "branch")
-        allowed = self.request._request.actor.branch_ids(MONITOR)
-        return rows if allowed is None else rows.filter(branch_id__in=allowed)
-
 
 class MonitorLiveView(MonitorView):
     def get(self, request):
         tracking.close_stale()
         rows = []
         now = timezone.now()
-        for session in self.sessions().filter(is_active=True).order_by("-started_at"):
-            last = session.points.order_by("-recorded_at").first()
+        for session in selectors.live_sessions(request._request.actor, MONITOR):
+            last = selectors.last_point(session)
             if last is not None:
                 position = {"lat": float(last.latitude), "lng": float(last.longitude),
                             "at": timezone.localtime(last.recorded_at).strftime("%H:%M"),
@@ -52,21 +45,12 @@ class MonitorLiveView(MonitorView):
 
 class MonitorSessionsView(MonitorView):
     def get(self, request):
-        rows = self.sessions()
-        key = request.GET.get("key", "").strip()
-        if key:
-            rows = rows.filter(employee__name__icontains=key)
         start, end = parse_day(request.GET.get("from", "")), parse_day(request.GET.get("to", ""))
-        if start:
-            rows = rows.filter(started_at__date__gte=start)
-        if end:
-            rows = rows.filter(started_at__date__lte=end)
-        if request.GET.get("active") == "1":
-            rows = rows.filter(is_active=True)
-        rows = rows.order_by("-started_at")
+        rows = selectors.search_sessions(request._request.actor, MONITOR,
+                                         key=request.GET.get("key", "").strip(), start=start,
+                                         end=end, active_only=request.GET.get("active") == "1")
         page = Paginator(rows, 20).get_page(request.GET.get("page"))
-        totals = rows.aggregate(count=Count("pk"), active=Count("pk", filter=Q(is_active=True)),
-                                distance=Sum("total_distance_m"), points=Sum("points_count"))
+        totals = selectors.session_totals(rows)
         return Response({
             "page": page.number, "pages": page.paginator.num_pages,
             "has_next": page.has_next(),
@@ -78,14 +62,14 @@ class MonitorSessionsView(MonitorView):
 
 class MonitorSessionView(MonitorView):
     def get(self, request, session_id):
-        session = self.sessions().filter(pk=session_id).first()
+        session = selectors.visible_session(request._request.actor, MONITOR, session_id)
         if session is None:
             raise AppError("not_found", detail=contract.MESSAGES["session_not_found"])
         route = [{"lat": float(p.latitude), "lng": float(p.longitude),
                   "at": timezone.localtime(p.recorded_at).strftime("%Y-%m-%d %H:%M:%S"),
                   "accuracy": float(p.accuracy_m) if p.accuracy_m is not None else None,
                   "battery": p.battery, "is_mock": p.is_mock}
-                 for p in session.points.order_by("recorded_at")]
+                 for p in selectors.route_points(session)]
 
         def end(punch):
             if punch is None or punch.latitude is None:

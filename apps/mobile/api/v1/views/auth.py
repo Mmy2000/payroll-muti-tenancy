@@ -3,9 +3,6 @@
 from __future__ import annotations
 
 from django.contrib.auth import authenticate
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.utils import timezone
 from rest_framework import exceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,14 +11,15 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from apps.iam import throttle
 from apps.iam.authz import build_actor
 from apps.iam.catalog import WILDCARD
+from apps.iam.selectors import active_membership
 from apps.iam.signals import client_ip
 
 from .... import contract, selectors
 from ....contract import AppError
 from ....models import DeviceMethod
-from ....services import devices, qr
+from ....services import account, devices, qr
 from .. import serializers as s
-from ..auth import DEVICE_CLAIM, active_membership, tokens_for
+from ..auth import DEVICE_CLAIM, tokens_for
 from .base import MONITOR, SIGNIN, AppView, EnglishMixin, valid
 
 
@@ -43,9 +41,8 @@ def employee_or_none(member):
 
 def _signed_in(member, device, request) -> dict:
     """The answer to a sign-in, by password or by QR."""
-    user, actor = member.user, build_actor(member)
-    user.last_login = timezone.now()
-    user.save(update_fields=["last_login"])
+    actor = build_actor(member)
+    account.mark_signed_in(member.user)
     return {**tokens_for(member, device.pk if device else None), "username": member.username,
             "role": _role(actor), "is_superuser": actor.can(MONITOR),
             "employee": s.employee(employee_or_none(member), request)}
@@ -103,19 +100,6 @@ class VerifyView(EnglishMixin, TokenVerifyView):
 class ChangePasswordView(AppView):
     def post(self, request):
         data = valid(s.ChangePasswordSerializer, request.data)
-        user = request.user
-        if not user.check_password(data["current_password"]):
-            raise AppError("wrong_password")
-        if data["current_password"] == data["new_password"]:
-            raise AppError("same_password")
-        try:
-            validate_password(data["new_password"], user)
-        except DjangoValidationError as exc:
-            found = [arabic for english, arabic in contract.WEAK.items()
-                     if any(english in str(m) for m in exc.messages)]
-            raise AppError("weak_password", detail=" · ".join(found) or
-                           contract.MESSAGES["weak_password"]) from None
-        user.set_password(data["new_password"])
-        user.save(update_fields=["password"])
+        account.change_password(request.user, data["current_password"], data["new_password"])
         return Response({"detail": contract.PASSWORD_CHANGED,
                          **tokens_for(self.member, request.auth.get(DEVICE_CLAIM))})

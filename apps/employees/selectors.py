@@ -10,9 +10,14 @@ from dataclasses import dataclass
 from datetime import date
 
 from django.db.models import Max, Q
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, ValidationError
+from apps.core.history import in_effect
+from apps.org.selectors import active_branches, visible_departments
+from apps.platform.tenants.limits import is_app_login
+from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .models import Employee
 from .permissions import VIEW
@@ -30,6 +35,77 @@ def visible_employees(actor, code: str = VIEW):
         return employees
     branches = actor.branch_ids(code)
     return employees if branches is None else employees.filter(branch_id__in=branches)
+
+
+def listed_employees(actor, code: str = VIEW):
+    """The employees of a list: with their branch and department, by code."""
+    return visible_employees(actor, code).select_related("branch", "department").order_by("code")
+
+
+def by_status(employees, value: str):
+    today = timezone.localdate()
+    if value == "active":
+        return employees.exclude(left_on__lt=today)
+    if value == "left":
+        return employees.filter(left_on__lt=today)
+    return employees
+
+
+def employee_choices(actor, permission: str):
+    """Employees still working whom the member may act on with `permission`."""
+    return visible_employees(actor, permission).exclude(
+        left_on__lt=timezone.localdate()).order_by("code")
+
+
+def branch_choices(actor, permission: str):
+    """Active branches where the member holds `permission`."""
+    allowed = actor.branch_ids(permission)
+    branches = active_branches().order_by("code")
+    return branches if allowed is None else branches.filter(pk__in=allowed)
+
+
+def department_choices(actor, permission: str):
+    """Active departments in the branches where the member holds `permission`."""
+    return visible_departments(actor, permission).filter(is_active=True)
+
+
+def active_lateness_policies():
+    return LatenessPolicy.objects.filter(is_active=True)
+
+
+def active_overtime_policies():
+    return OvertimePolicy.objects.filter(is_active=True)
+
+
+def all_rows(model):
+    return model.objects.all()
+
+
+def employee_rows(rows, actor, code: str, related=("employee",)):
+    """Those of `rows` that belong to employees the member may see under `code`."""
+    return rows.filter(employee__in=visible_employees(actor, code)).select_related(*related)
+
+
+def schedule_history(employee: Employee):
+    return (employee.schedules.select_related("lateness_policy", "overtime_policy")
+            .order_by("-effective_from", "-id"))
+
+
+def schedule_on(employee: Employee, day: date):
+    return in_effect(employee.schedules.all(), day)
+
+
+def pay_history(employee: Employee):
+    return employee.pay_history.order_by("-effective_from", "-id")
+
+
+def office_member(employee: Employee):
+    """The user linked to `employee` if they also work in the office, not a login made for the
+    app only."""
+    if not employee.member_id or is_app_login(
+            employee.member.roles.values_list("role__code", flat=True)):
+        return None
+    return employee.member
 
 
 def get_employee(employee_id: int, actor=None, code: str = VIEW, *, lock=False) -> Employee:

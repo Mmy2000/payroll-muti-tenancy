@@ -12,21 +12,20 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 
-from apps.platform.tenants.models import (
-    PlatformEvent,
-    PlatformLink,
-    PlatformSettings,
-    TenantStatus,
-)
+from apps.platform.tenants.models import TenantStatus
+from apps.platform.tenants.services import save_platform_settings
 
 from ..selectors import metrics
-from .common import record, staff_required
+from ..selectors.events import platform_events
+from ..selectors.settings import platform_links, settings_row
+from ..selectors.tenants import LIVE_STATUSES
+from .common import staff_required
 from .forms import (
     PlatformLinkFormSet,
     PlatformSettingsForm,
     StaffLoginForm,
+    link_changes,
 )
-from .tenants import LIVE_STATUSES
 
 
 class LoginView(auth_views.LoginView):
@@ -41,7 +40,7 @@ class LoginView(auth_views.LoginView):
 @staff_required
 def home(request):
     data = metrics.overview()
-    recent = PlatformEvent.objects.select_related("actor", "tenant")[:8]
+    recent = platform_events()[:8]
     attention = sorted((u for u in data.tenants if u.health in ("idle", "new")
                         or u.tenant.status == TenantStatus.SUSPENDED),
                        key=lambda u: u.tenant.name)[:6]
@@ -66,10 +65,8 @@ def tls_allowed(request):
 
 @staff_required
 def events(request):
-    queryset = PlatformEvent.objects.select_related("actor", "tenant")
     tenant_id = request.GET.get("tenant", "")
-    if tenant_id.isdigit():
-        queryset = queryset.filter(tenant_id=int(tenant_id))
+    queryset = platform_events(int(tenant_id) if tenant_id.isdigit() else None)
     page = Paginator(queryset, 50).get_page(request.GET.get("page"))
     return render(request, "console/events.html", {"page": page, "section": "events"})
 
@@ -84,25 +81,21 @@ def events(request):
 @staff_required
 def platform_settings(request):
     """The platform's name, logos and the links in every workspace's sidebar footer."""
-    from django.core.files.storage import default_storage
-
-    row = PlatformSettings.objects.filter(pk=1).first() or PlatformSettings(pk=1)
+    row = settings_row()
     before = {name: getattr(row, name).name for name in ("logo", "logo_dark")}
     form = PlatformSettingsForm(request.POST or None, request.FILES or None, instance=row)
     links = PlatformLinkFormSet(request.POST or None, prefix="links",
-                                queryset=PlatformLink.objects.all())
+                                queryset=platform_links())
     if request.method == "POST":
         if form.is_valid() and links.is_valid():
-            form.save()
-            links.save()
-            PlatformSettings.objects.get(pk=1).save()  # drops the cached copy everywhere
-            for name, old in before.items():
-                if old and old != getattr(row, name).name:
-                    default_storage.delete(old)
+            deleted_links, saved_links = link_changes(links)
             logos = [name for name in form.changed_data if name.startswith("logo")]
-            record(request, "platform.settings", None, **{
-                name: form.cleaned_data[name] for name in form.changed_data
-                if name not in logos}, **({"logos": ", ".join(logos)} if logos else {}))
+            changes = {name: form.cleaned_data[name] for name in form.changed_data
+                       if name not in logos}
+            if logos:
+                changes["logos"] = ", ".join(logos)
+            save_platform_settings(form.instance, old_logos=before, deleted_links=deleted_links,
+                                   saved_links=saved_links, changes=changes, actor=request.user)
             messages.success(request, _("Saved."))
             return redirect("console-settings")
         messages.error(request, _("Please correct the highlighted fields."))

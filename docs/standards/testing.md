@@ -8,7 +8,7 @@ nothing posted twice. Every change ships with tests that would fail without it.
 ```powershell
 .\venv\Scripts\python.exe ops\check.py                  # everything CI runs: lint, translations, migrations, tests
 .\venv\Scripts\python.exe ops\check.py --quick          # without the tests
-.\venv\Scripts\python.exe -m pytest apps/expenses       # one app
+.\venv\Scripts\python.exe -m pytest apps/loans          # one app
 .\venv\Scripts\python.exe -m pytest -k void -x          # by name, stop at the first failure
 .\venv\Scripts\python.exe -m pytest --e2e tests/e2e     # browser tests (python -m playwright install chromium)
 ```
@@ -27,10 +27,10 @@ nothing posted twice. Every change ships with tests that would fail without it.
 
 | Kind | Where | Database | Use for |
 |---|---|---|---|
-| Unit | `apps/<app>/tests/` | no (plain functions) or yes | pure rules: `apps/core/tests/test_numeric.py` (with Hypothesis), `apps/catalog/tests/test_metal.py` |
-| Service | `apps/<app>/tests/test_<area>.py` | yes | business acts through the service functions: post, cancel, refuse; ledger effects (`trial_balance()` balances); stock effects |
+| Unit | `apps/<app>/tests/` | no (plain functions) or yes | pure rules: `apps/core/tests/test_numeric.py` (with Hypothesis), `apps/payroll/tests/test_domain.py` |
+| Service | `apps/<app>/tests/test_<area>.py` | yes | business acts through the service functions: do, cancel, refuse, and what they change |
 | API | `apps/<app>/tests/test_api.py` | yes | the contract: status codes, the error envelope and `code`, `required_permissions`, idempotent replay |
-| Pages | the app's tests, `tests/test_i18n_and_pages.py` | yes | every page renders in Arabic and English; permission-gated pages answer 403 |
+| Pages | the app's tests | yes | every page renders in Arabic and English; permission-gated pages answer 403 |
 | Isolation | `tests/isolation/` | yes | nothing crosses between clients: RLS, ORM scoping, HTTP by host, model coverage |
 | Platform | `tests/test_console.py`, `test_plans.py`, `test_monitor.py`, `apps/platform/*/tests/` | yes | console, jobs, monitoring, backups |
 | Repository rules | `tests/test_repo_hygiene.py`, `apps/iam/tests/test_authz.py` | partly | conventions that must never regress (BOMs, template comments, every API action declares and enforces a permission) |
@@ -39,8 +39,7 @@ nothing posted twice. Every change ships with tests that would fail without it.
 ## What every change must test
 
 - **A new business act:**
-  - The success path, with its ledger and stock effects asserted. At least assert that the
-    trial balance still balances.
+  - The success path, with what it changed asserted.
   - Each refusal: invalid input (`ValidationError` with the field), business rule
     (`DomainError` with its code), permission (`PermissionDenied`), and **branch scope** (a
     member limited to branch A acting on branch B).
@@ -51,8 +50,7 @@ nothing posted twice. Every change ships with tests that would fail without it.
   to see it fail. The audit's fixes show the pattern (`test_the_holder_is_locked_before_its_balance_is_checked`).
 - **A new tenant model:** nothing extra. The isolation suite already checks the RLS, the guard
   and the tenant index. Run it.
-- **A new page:** add it to the page list in `tests/test_i18n_and_pages.py`, so it renders in
-  both languages.
+- **A new page:** open it in a test, in both languages.
 
 ## Conventions
 
@@ -61,9 +59,8 @@ nothing posted twice. Every change ships with tests that would fail without it.
   - `make_tenant` / `tenant_a` / `tenant_b` (root `conftest.py`) provision a full client.
   - `make_member(tenant, "sara", "viewer", branches=[...])` creates a member with a role.
   - `login(tenant, "sara")` returns a signed-in client.
-  - The `Shop` builder (`apps/sales/tests/test_sales.py`) gives a shop with stock, a price
-    board, a bank and a terminal.
-  - Post documents through services, not by inserting rows.
+  - `make_employee(tenant, code)` creates an employee with pay and hours.
+  - Build records through services, not by inserting rows.
 - **Tenant code runs inside `with tenant_context(tenant.id):`.** Most app tests do this in a
   `shop` fixture.
 - **Assert on data and codes, not on English text.** Check `exc.code == "DOC_NOT_POSTED"`, or
@@ -80,44 +77,41 @@ nothing posted twice. Every change ships with tests that would fail without it.
   module-level lists must be cleared by a fixture. The cache is cleared around every test
   (autouse in `conftest.py`).
 - **Mock only the edges:** HTTP to gateways and market sources, `subprocess` for `pg_dump`, and
-  the clock where unavoidable. Never mock the ORM, services or the ledger: test them for real
+  the clock where unavoidable. Never mock the ORM or services: test them for real
   against PostgreSQL.
 
 ## Concurrency
 
-Locks are the riskiest code and the least tested (TD-20). Two levels:
+Locks are the riskiest code and the least tested. Two levels:
 
 1. **Cheap and always:** assert the lock is taken before the check, from the SQL. This is
    deterministic and needs no threads:
 
    ```python
    with CaptureQueriesContext(connection) as queries:
-       move(kind="transfer", source_box_id=box.pk, dest_bank_id=bank.pk, amount="100")
+       approve_run(run.pk)
    sql = [q["sql"] for q in queries.captured_queries]
-   lock = next(i for i, q in enumerate(sql) if "FOR UPDATE" in q and "treasury_cashbox" in q)
-   check = next(i for i, q in enumerate(sql) if "ledger_balanceprojection" in q)
+   lock = next(i for i, q in enumerate(sql) if "FOR UPDATE" in q and "payroll_payrollrun" in q)
+   check = next(i for i, q in enumerate(sql) if "payroll_payslip" in q)
    assert lock < check
    ```
 
-2. **For the money paths in TD-20:** a `@pytest.mark.django_db(transaction=True)` test runs two
+2. **For the money paths:** a `@pytest.mark.django_db(transaction=True)` test runs two
    calls in threads, each in its own `tenant_context`. An `Event` holds the first transaction
    open while the second starts. The test must fail when the lock is removed.
 
 ## Refactoring safely: characterization snapshots
 
 Before restructuring code that carries business rules, record what it does today, then prove
-the new version does exactly the same. This is how `quote_sale` and `plan_receipt` were split
-(`apps/sales/tests/test_quote_characterization.py`,
-`apps/manufacturing/tests/test_receipt_characterization.py`).
+the new version does exactly the same.
 
 1. **Write scenarios that reach every branch** of the function: each kind of input, each limit,
-   and each error. Return the result or the raised `AppError`. The helper `tests/snapshot.py`
-   turns them into plain JSON and leaves out database ids and dated numbers.
+   and each error. Return the result or the raised `AppError`, as plain JSON without database
+   ids or dated numbers.
 2. **Pin the language** with `translation.override("en")`. An earlier test can leave another
-   language active (TD-21), and messages are part of the snapshot.
-3. **Record from the unchanged code:** `RECORD_SNAPSHOTS=1 python -m pytest <the test>`. Run it
-   once more without the variable: it must pass, so the scenarios are stable. Read the JSON:
-   every scenario should reach the path it's named for, not fail early.
+   language active, and messages are part of the snapshot.
+3. **Record from the unchanged code.** Run it again: it must pass, so the scenarios are stable.
+   Read the JSON: every scenario should reach the path it's named for, not fail early.
 4. **Refactor**, and run the test: every scenario must match.
 5. **Plant one bug** in the new code (drop a rule) and check that the snapshot fails, naming a
    scenario. If it doesn't, a scenario is missing: add it, and record again from the *original*
@@ -127,7 +121,5 @@ the new version does exactly the same. This is how `quote_sale` and `plan_receip
 
 ## Coverage
 
-There is no coverage tool in the toolchain. The baseline is the set of tests and the gaps listed
-in the audit (T2–T5, TD-20, TD-21). Don't chase a percentage. Use the "what every change must
-test" list above, and close the listed gaps first: permission refusals in treasury, HR,
-settlements, expenses, manufacturing and repairs, and branch-scope refusals everywhere.
+There is no coverage tool in the toolchain. Don't chase a percentage. Use the "what every change
+must test" list above.

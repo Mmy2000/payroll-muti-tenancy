@@ -1,15 +1,9 @@
 
 from apps.core.api.viewsets import ActivateMixin, DestroyMixin, ServiceViewSet
-from apps.policies import services
+from apps.policies import selectors, services
 from apps.policies.domain.bands import Band
 from apps.policies.domain.tax import Bracket
-from apps.policies.models import (
-    InsuranceRate,
-    LatenessPolicy,
-    OvertimePolicy,
-    PublicHoliday,
-    TaxTable,
-)
+from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .serializers import (
     BandedPolicyWriteSerializer,
@@ -36,7 +30,7 @@ def _policy_permissions(area: str) -> dict:
 
 
 class LatenessPolicyViewSet(ActivateMixin, ServiceViewSet):
-    queryset = LatenessPolicy.objects.prefetch_related("bands")
+    queryset = selectors.banded_policies(LatenessPolicy)
     serializer_class = LatenessPolicySerializer
     write_serializer_class = BandedPolicyWriteSerializer
     required_permissions = _policy_permissions("lateness")
@@ -52,7 +46,7 @@ class LatenessPolicyViewSet(ActivateMixin, ServiceViewSet):
 
 
 class OvertimePolicyViewSet(ActivateMixin, ServiceViewSet):
-    queryset = OvertimePolicy.objects.prefetch_related("bands")
+    queryset = selectors.banded_policies(OvertimePolicy)
     serializer_class = OvertimePolicySerializer
     write_serializer_class = BandedPolicyWriteSerializer
     required_permissions = _policy_permissions("overtime")
@@ -71,7 +65,7 @@ class OvertimePolicyViewSet(ActivateMixin, ServiceViewSet):
 
 
 class TaxTableViewSet(DestroyMixin, ServiceViewSet):
-    queryset = TaxTable.objects.prefetch_related("brackets")
+    queryset = selectors.tax_tables()
     serializer_class = TaxTableSerializer
     write_serializer_class = TaxTableWriteSerializer
     required_permissions = {"list": "policies.tax.view", "retrieve": "policies.tax.view",
@@ -94,7 +88,7 @@ class TaxTableViewSet(DestroyMixin, ServiceViewSet):
 
 
 class InsuranceRateViewSet(DestroyMixin, ServiceViewSet):
-    queryset = InsuranceRate.objects.all()
+    queryset = selectors.insurance_rates()
     serializer_class = InsuranceRateSerializer
     write_serializer_class = InsuranceRateWriteSerializer
     required_permissions = {
@@ -116,7 +110,7 @@ class InsuranceRateViewSet(DestroyMixin, ServiceViewSet):
 
 
 class HolidayViewSet(DestroyMixin, ServiceViewSet):
-    queryset = PublicHoliday.objects.select_related("branch")
+    queryset = selectors.holidays()
     serializer_class = HolidaySerializer
     write_serializer_class = HolidayWriteSerializer
     required_permissions = {

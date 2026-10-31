@@ -8,9 +8,10 @@ from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.appearance import ACCENT_CHOICES
-from apps.core.media import ImageUploadInput, replace_file, validate_image
+from apps.core.media import ImageUploadInput, validate_image
 from apps.iam.authz import permission_required
-from apps.org.models import TenantProfile
+
+from .. import selectors, services
 
 QR_MOST_MINUTES = 7 * 24 * 60
 
@@ -36,7 +37,7 @@ class CompanyForm(forms.Form):
 
 @permission_required("org.settings.manage")
 def company(request):
-    profile = TenantProfile.objects.get()
+    profile = selectors.tenant_profile()
     form = CompanyForm(request.POST or None, request.FILES or None, initial={
         "display_name": profile.display_name, "accent": profile.accent,
         "logo": profile.logo or None, "app_qr_minutes": profile.app_qr_minutes})
@@ -44,12 +45,10 @@ def company(request):
     if not uses_the_app:
         del form.fields["app_qr_minutes"]
     if request.method == "POST" and form.is_valid():
-        profile.display_name = form.cleaned_data["display_name"]
-        profile.accent = form.cleaned_data["accent"]
-        if uses_the_app:
-            profile.app_qr_minutes = form.cleaned_data["app_qr_minutes"]
-        replace_file(profile, "logo", form.cleaned_data["logo"])
-        profile.save()
+        services.save_company(
+            profile, display_name=form.cleaned_data["display_name"],
+            accent=form.cleaned_data["accent"], logo=form.cleaned_data["logo"],
+            app_qr_minutes=form.cleaned_data["app_qr_minutes"] if uses_the_app else None)
         messages.success(request, _("Saved."))
         return redirect("company")
     return render(request, "org/company.html", {

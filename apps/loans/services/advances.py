@@ -20,9 +20,8 @@ from apps.employees.selectors import get_employee
 
 from ..events import AdvanceGiven
 from ..models import Advance, AdvanceStatus
+from ..permissions import ADVANCE_MANAGE
 from ..selectors import month_advances
-
-VIEW, MANAGE = "loans.advance.view", "loans.advance.manage"
 
 
 @dataclass(frozen=True)
@@ -35,9 +34,9 @@ class AdvanceInput:
 
 def give_advance(data: AdvanceInput, *, actor=None) -> Advance:
     with transaction.atomic():
-        employee = get_employee(data.employee_id, actor, MANAGE, lock=True)
+        employee = get_employee(data.employee_id, actor, ADVANCE_MANAGE, lock=True)
         if actor is not None:
-            actor.require(MANAGE, branch=employee.branch_id)
+            actor.require(ADVANCE_MANAGE, branch=employee.branch_id)
         if data.amount <= 0:
             raise ValidationError(_("Please correct the highlighted fields."),
                                   fields={"amount": [_("Must be greater than zero.")]})
@@ -73,9 +72,9 @@ def cancel_advance(advance_id: int, *, actor=None) -> Advance:
         advance = Advance.objects.select_for_update().filter(pk=advance_id).first()
         if advance is None:
             raise NotFound(_("Not found."))
-        employee = get_employee(advance.employee_id, actor, MANAGE)
+        employee = get_employee(advance.employee_id, actor, ADVANCE_MANAGE)
         if actor is not None:
-            actor.require(MANAGE, branch=employee.branch_id)
+            actor.require(ADVANCE_MANAGE, branch=employee.branch_id)
         if advance.status != AdvanceStatus.OPEN:
             raise Conflict(_("Only an advance still to be recovered can be cancelled."),
                            code="LOANS_ADVANCE_STATE")

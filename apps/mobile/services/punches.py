@@ -39,6 +39,18 @@ def directions(punches: list[Punch]) -> dict[int, int]:
             for index, p in enumerate(punches)}
 
 
+def directions_by_day(punches: list[Punch]) -> dict[int, int]:
+    """`directions` of punches from several days, each day on its own."""
+    zone = timezone.get_current_timezone()
+    by_day: dict = {}
+    for punch in sorted(punches, key=lambda p: p.at):
+        by_day.setdefault(punch.at.astimezone(zone).date(), []).append(punch)
+    found = {}
+    for day in by_day.values():
+        found.update(directions(day))
+    return found
+
+
 # --- the fingerprint proof -------------------------------------------------------------------
 
 

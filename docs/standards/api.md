@@ -1,49 +1,45 @@
 # API standards
 
-The JSON API under `/api/v1/` on tenant hosts serves the web pages' forms and scripts, and is the
-contract for any other client. This page describes the contract as implemented (in
-`apps/core/api/`) and the rules new endpoints follow.
+The JSON API under `/api/web/` on tenant hosts serves the web pages' forms and scripts. This page
+describes the contract as implemented (in `apps/core/api/`) and the rules new endpoints follow.
+The mobile app has its own API at `/api/v1/`, with PayRole's contract: see
+[the mobile API](../mobile-api.md) and ADR-104.
 
 ## Versioning and routes
 
-- **Version 1 is in the path:** `config/urls.py` mounts `api/v1/` → `config/api_urls.py`. Each
-  app has a DRF router (`apps/<app>/api.py` or `api/urls.py`).
+- **Routes:** `config/urls.py` mounts `api/web/` → `config/api_urls.py`, which includes each
+  app's `api/urls.py`.
 - **Route names:** plural nouns, with actions as sub-paths, e.g.
-  `POST /api/v1/expenses/vouchers/{id}/void/`.
-- **The mobile app has legacy, unversioned routes** (`/api/auth/`, `/Sup/api/`, `/Sup1/api/`)
-  whose response shapes are fixed for the installed app (`apps/mobile/legacy.py`). They are the
-  only exception to this page.
-- **Breaking a v1 response** means removing or renaming a field, or changing a type or status
-  code. That needs either a new field alongside the old one, or `/api/v2/` for that resource,
-  plus an ADR. Adding fields is not breaking.
+  `POST /api/web/loans/loans/{id}/cancel/`.
+- **Breaking `/api/v1/`** means removing or renaming a field, or changing a type or status code.
+  The installed app depends on it, so that needs a new field alongside the old one, and an ADR.
+  Adding fields is not breaking.
 
 ## Authentication and permissions
 
 - **Session authentication** (the signed-in browser). Unsafe methods need the CSRF token in
   `X-CSRFToken`; `static/core/js/api.js` sends it. The mobile app uses its own Bearer tokens
-  (`apps/mobile/tokens.py`).
+  (`apps/mobile/api/v1/auth.py`).
 - **Every view keeps the default permission class `HasTenantPermission`, and declares
   `required_permissions` for every action:**
 
   ```python
   required_permissions = {
-      "list": "expenses.view", "retrieve": "expenses.view",
-      "create": "expenses.voucher.create", "void": "expenses.void",
+      "list": "loans.loan.view", "retrieve": "loans.loan.view",
+      "create": "loans.loan.manage", "cancel": "loans.loan.manage",
   }
   ```
 
   - An undeclared action is denied.
   - `AUTHENTICATED` (from `apps.iam.catalog`) means any signed-in member.
   - Two tests enforce this (automated, `apps/iam/tests/test_authz.py`): every action declares a
-    permission, and no `/api/v1/` view replaces `HasTenantPermission` (a library view did, and
+    permission, and no `/api/web/` view replaces `HasTenantPermission` (a library view did, and
     published the schema).
-- **Filter querysets by branch:**
+- **Scope by branch in a selector:**
 
   ```python
   def get_queryset(self):
-      branches = self.request.actor.branch_ids("expenses.view")
-      qs = super().get_queryset()
-      return qs if branches is None else qs.filter(branch_id__in=branches)
+      return selectors.visible_loans(self.request.actor)
   ```
 
   The service checks the write again with `actor.require(code, branch=...)`.
@@ -56,12 +52,12 @@ contract for any other client. This page describes the contract as implemented (
   ```python
   @idempotent
   def create(self, request):
-      payload = VoucherWriteSerializer(data=request.data)
+      payload = LoanWriteSerializer(data=request.data)
       payload.is_valid(raise_exception=True)
       d = payload.validated_data
-      voucher = services.post_expense(services.ExpenseInput(branch_id=d["branch"], ...),
-                                      actor=request.actor)
-      return Response(VoucherSerializer(voucher).data, status=201)
+      loan = services.grant_loan(services.LoanInput(employee_id=d["employee"], ...),
+                                 actor=request.actor)
+      return Response(LoanSerializer(loan).data, status=201)
   ```
 
 - **Serializers live in `serializers.py`,** next to the views (`api/serializers.py`, or the app's
@@ -74,7 +70,7 @@ contract for any other client. This page describes the contract as implemented (
 
 ## Idempotency
 
-Every action that moves money, gold or stock is decorated with `@idempotent`
+Every action that moves money is decorated with `@idempotent`
 (`apps/core/api/idempotency.py`):
 
 | Situation | Result |
@@ -88,9 +84,8 @@ Every action that moves money, gold or stock is decorated with `@idempotent`
 
 Keys are per tenant and user.
 - **Clients:** `api()` creates a UUID per call unless given `idempotencyKey`. Screens that
-  retry the same document keep one key for it (`static/sales/js/pos.js`).
-- **Known gaps (TD-15):** keys don't compare the request body and never expire, and manual
-  journal entries and purchase drafts aren't covered.
+  retry the same act keep one key for it.
+- **Known gap:** keys don't compare the request body and never expire.
 
 ## Responses
 
@@ -105,7 +100,7 @@ Keys are per tenant and user.
 maximum 100).
 
 ```json
-{"count": 132, "next": "https://shop.example.com/api/v1/expenses/vouchers/?page=2",
+{"count": 132, "next": "https://acme.example.com/api/web/loans/loans/?page=2",
  "previous": null, "results": [ ... ]}
 ```
 
@@ -127,14 +122,14 @@ Every error from an API view has one shape (`apps/core/api/exceptions.py`):
 | Raised in the service | HTTP | `code` |
 |---|---|---|
 | `ValidationError(msg, fields={...})` | 400 | `VALIDATION_ERROR` (or the code given) |
-| DRF serializer validation | 400 | `VALIDATION_ERROR`; nested `fields` keep their shape (`{"lines": [{}, {"karat": ["…"]}]}`) |
+| DRF serializer validation | 400 | `VALIDATION_ERROR`; nested `fields` keep their shape (`{"lines": [{}, {"amount": ["…"]}]}`) |
 | not signed in | 401/403 | `NOT_AUTHENTICATED` |
 | `PermissionDenied` / missing permission | 403 | `PERMISSION_DENIED` |
 | `NotFound` | 404 | `NOT_FOUND` |
 | `Conflict` (stale state, idempotency) | 409 | `CONFLICT` or specific |
 | `DomainError(msg, code="SALES_DISCOUNT_LIMIT")` | 422 | the specific code |
 | over the client's request limit | 429 | `THROTTLED`, with `Retry-After` |
-| anything unexpected | 500 | **HTML page today** (TD-18) |
+| anything unexpected | 500 | **HTML page today** |
 
 Rules:
 - **`message` is safe for the user, translated, and never contains a stack trace, SQL or
@@ -147,7 +142,7 @@ Rules:
 
 ## The schema
 
-`GET /api/v1/schema/` returns the OpenAPI schema (drf-spectacular) to signed-in members. Hand-
+`GET /api/web/schema/` returns the OpenAPI schema (drf-spectacular) to signed-in members. Hand-
 written `APIView`s and `@action`s may be incomplete there. Add `@extend_schema` when an
 endpoint is meant for other clients.
 
@@ -156,7 +151,7 @@ endpoint is meant for other clients.
 - [ ] Route in the app's router, plural noun, action as a sub-path.
 - [ ] `required_permissions` for every action; branch-filtered `get_queryset`.
 - [ ] Write serializer → one service call → read serializer.
-- [ ] `@idempotent` if it moves money, gold or stock.
+- [ ] `@idempotent` if it moves money.
 - [ ] Errors raised as `apps.core.errors`, with a specific code for business rules.
 - [ ] Tests: success, validation error, permission refused (and branch refused), replay with
   the same key.

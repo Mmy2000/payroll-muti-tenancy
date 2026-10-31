@@ -5,21 +5,14 @@ from __future__ import annotations
 from django.http import Http404
 from django.shortcuts import render
 
-from apps.employees.selectors import visible_employees
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
 
 from .. import permissions, selectors
-from ..models import DeviceUser
 from ..services import sync
-
-RECENT = 50
 
 
 def _branches(actor):
-    allowed = actor.branch_ids(permissions.MANAGE)
-    branches = Branch.objects.filter(is_active=True).order_by("code")
-    return branches if allowed is None else branches.filter(pk__in=allowed)
+    return selectors.branch_choices(actor.branch_ids(permissions.MANAGE))
 
 
 @permission_required(permissions.VIEW)
@@ -35,19 +28,17 @@ def devices(request):
 
 @permission_required(permissions.VIEW)
 def device(request, pk):
-    found = selectors.visible_devices(request.actor).filter(pk=pk).first()
+    found = selectors.find_device(request.actor, pk)
     if found is None:
         raise Http404
     sync.expire_commands(found)
     found.online = selectors.is_online(found)
-    users = list(DeviceUser.objects.filter(branch=found.branch).select_related("employee")
-                 .order_by("removed", "pin"))
+    users = list(selectors.users_of_branch(found.branch))
     return render(request, "devices/device.html", {
         "device": found, "users": users,
-        "commands": found.commands.select_related("requested_by")[:10],
-        "punches": found.punches.select_related("device_user__employee")[:RECENT],
-        "employees": visible_employees(request.actor, permissions.MANAGE).filter(
-            branch=found.branch, left_on__isnull=True).order_by("code"),
+        "commands": selectors.recent_commands(found),
+        "punches": selectors.recent_punches(found),
+        "employees": selectors.linkable_employees(request.actor, found.branch),
         "branches": _branches(request.actor),
         "can_manage": request.actor.can(permissions.MANAGE, branch=found.branch_id),
         "server": request.get_host()})

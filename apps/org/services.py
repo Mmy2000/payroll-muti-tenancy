@@ -10,8 +10,9 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, ValidationError
+from apps.core.media import replace_file
 
-from .models import Branch, Department
+from .models import Branch, Department, TenantProfile
 from .permissions import DEPARTMENT_MANAGE
 from .selectors import next_department_code
 from .validators import check_department
@@ -136,3 +137,15 @@ def set_department_active(department_id: int, active: bool, *, actor=None) -> De
     department.is_active = active
     department.save(update_fields=["is_active", "updated_at"])
     return department
+
+
+def save_company(profile: TenantProfile, *, display_name: str, accent: str, logo,
+                 app_qr_minutes: int | None = None) -> TenantProfile:
+    """The client's name on screens, colour and logo; `app_qr_minutes` when it was on the form."""
+    profile.display_name = display_name
+    profile.accent = accent
+    if app_qr_minutes is not None:
+        profile.app_qr_minutes = app_qr_minutes
+    replace_file(profile, "logo", logo)
+    profile.save()
+    return profile

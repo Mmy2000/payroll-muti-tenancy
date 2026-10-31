@@ -16,16 +16,14 @@ from apps.core import months
 from apps.core.errors import AppError
 from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
-from apps.employees.selectors import employed_on, get_employee, visible_employees
+from apps.employees.selectors import branch_choices, department_choices, get_employee
 from apps.employees.web.targets import employee_choices, group_page
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
-from apps.org.selectors import visible_departments
 
 from .. import selectors
 from ..domain.summary import summarize
 from ..imports import PunchImport
-from ..models import DayKind, HourlyLeave, LeaveRequest, LeaveType, RequestStatus
+from ..models import DayKind, HourlyLeave, LeaveRequest, RequestStatus
 from ..selectors import evaluate
 from ..services import entries, hourly, leave
 
@@ -39,12 +37,6 @@ def _date(text: str, default: date) -> date:
         return default
 
 
-def _branches(actor, code: str):
-    allowed = actor.branch_ids(code)
-    branches = Branch.objects.filter(is_active=True).order_by("code")
-    return branches if allowed is None else branches.filter(pk__in=allowed)
-
-
 # --- the daily sheet -----------------------------------------------------------------------
 
 
@@ -53,19 +45,14 @@ def daily(request):
     """Everyone's day: what the clock or a manager says, and a way to correct it."""
     actor, today = request.actor, timezone.localdate()
     day = _date(request.GET.get("date", ""), today)
-    branches = list(_branches(actor, VIEW))
+    branches = list(branch_choices(actor, VIEW))
     branch = next((b for b in branches if str(b.pk) == request.GET.get("branch")), None)
-    departments = list(visible_departments(actor, VIEW).filter(is_active=True))
+    departments = list(department_choices(actor, VIEW))
     department = next((d for d in departments if str(d.pk) == request.GET.get("department")),
                       None)
 
-    people = visible_employees(actor, VIEW).filter(employed_on(day)).select_related(
-        "branch", "department").order_by("code")
-    if branch:
-        people = people.filter(branch=branch)
-    if department:
-        people = people.filter(department=department)
-    people = list(people)
+    people = list(selectors.employees_of_day(actor, VIEW, day, branch=branch,
+                                             department=department))
     results = evaluate(people, day, day, today=today)
     rows = [{"employee": e, "day": results[e.pk][0],
              "can_manage": actor.can(entries.MANAGE, branch=e.branch_id)} for e in people]
@@ -112,23 +99,19 @@ REQUEST_TABS = [(RequestStatus.PENDING, _lazy("Waiting")),
                 (RequestStatus.CANCELLED, _lazy("Cancelled")), ("all", _lazy("All"))]
 
 
-def _by_status(queryset, value):
-    return queryset if value == "all" else queryset.filter(status=value)
-
-
 def _requests_page(request, *, model, view_permission, approve_permission, template, date_field,
                    extra=None):
     found = ListQuery(request, permission=view_permission,
                       search=("employee__name", "reason"), date_field=date_field,
                       branch_field="employee__branch_id",
                       party="employee_id", party_model="employees.Employee",
-                      choices=[Choice("status", _("Status"), REQUEST_TABS, apply=_by_status,
-                                      value=RequestStatus.PENDING, tabs=True)])
-    employees = visible_employees(request.actor, view_permission)
-    rows = found.apply(model.objects.filter(employee__in=employees)
-                       .select_related("employee", *(extra or ())))
+                      choices=[Choice("status", _("Status"), REQUEST_TABS,
+                                      apply=selectors.by_status, value=RequestStatus.PENDING,
+                                      tabs=True)])
+    rows = found.apply(selectors.visible_requests(model, request.actor, view_permission,
+                                                  date_field=date_field, related=extra or ()))
     return render(request, template, {
-        "filters": found, "page": found.page(rows.order_by(f"-{date_field}", "-id")),
+        "filters": found, "page": found.page(rows),
         "can_approve": request.actor.can(approve_permission),
     })
 
@@ -150,7 +133,7 @@ def leave_requests(request):
 def leave_request_new(request):
     return render(request, "attendance/leave_form.html", {
         **_request_form_context(request, leave.REQUEST),
-        "leave_types": LeaveType.objects.filter(is_active=True),
+        "leave_types": selectors.active_leave_types(),
         "can_approve": request.actor.can(leave.APPROVE)})
 
 
@@ -196,7 +179,7 @@ def times_group(request):
 @permission_required("attendance.leave.view")
 def leave_types(request):
     return render(request, "attendance/leave_types.html", {
-        "leave_types": LeaveType.objects.order_by("code"),
+        "leave_types": selectors.leave_types(),
         "can_manage": request.actor.can(leave.MANAGE_TYPES)})
 
 

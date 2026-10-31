@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
+from django.db.models import Count, Q, QuerySet, Sum
 from django.utils import timezone
 
 from apps.attendance.domain.workday import work_date_of
@@ -14,7 +15,7 @@ from apps.employees.models import Employee
 from apps.platform.tenants import features
 
 from .contract import AppError
-from .models import BiometricEnrollment
+from .models import BiometricEnrollment, TrackPoint, TrackSession
 
 
 def day_punches(employee: Employee, day: date) -> list[Punch]:
@@ -24,6 +25,16 @@ def day_punches(employee: Employee, day: date) -> list[Punch]:
               datetime.combine(day + timedelta(days=2), datetime.min.time(), tzinfo=zone))
     return [p for p in Punch.objects.filter(employee=employee, at__range=window).order_by("at")
             if work_day(employee, p.at) == day]
+
+
+def punch_history(employee: Employee, start: date | None, end: date | None) -> list[Punch]:
+    """The latest 500, newest first."""
+    punches = employee.punches.order_by("-at")
+    if start:
+        punches = punches.filter(at__date__gte=start)
+    if end:
+        punches = punches.filter(at__date__lte=end)
+    return list(punches[:500])
 
 
 def active_enrollment(employee: Employee) -> BiometricEnrollment | None:
@@ -83,6 +94,10 @@ def employee_of(member, *, status: int = 404) -> Employee:
     return employee
 
 
+def linked_employee(member_id: int) -> Employee | None:
+    return Employee.objects.filter(member_id=member_id).first()
+
+
 def switched_on(key: str) -> bool:
     from apps.core.tenancy.context import require_current_tenant_id
 
@@ -98,3 +113,44 @@ def config() -> dict:
             "enforce_geofence": switched_on("geofence"),
             "tracking_required": switched_on("gps_tracking"),
             "biometric_required": switched_on("biometric")}
+
+
+def visible_sessions(actor, permission: str) -> QuerySet[TrackSession]:
+    rows = TrackSession.objects.select_related("employee", "branch")
+    allowed = actor.branch_ids(permission)
+    return rows if allowed is None else rows.filter(branch_id__in=allowed)
+
+
+def live_sessions(actor, permission: str) -> QuerySet[TrackSession]:
+    return visible_sessions(actor, permission).filter(is_active=True).order_by("-started_at")
+
+
+def search_sessions(actor, permission: str, *, key: str = "", start: date | None = None,
+                    end: date | None = None, active_only: bool = False) -> QuerySet[TrackSession]:
+    rows = visible_sessions(actor, permission)
+    if key:
+        rows = rows.filter(employee__name__icontains=key)
+    if start:
+        rows = rows.filter(started_at__date__gte=start)
+    if end:
+        rows = rows.filter(started_at__date__lte=end)
+    if active_only:
+        rows = rows.filter(is_active=True)
+    return rows.order_by("-started_at")
+
+
+def session_totals(rows: QuerySet[TrackSession]) -> dict:
+    return rows.aggregate(count=Count("pk"), active=Count("pk", filter=Q(is_active=True)),
+                          distance=Sum("total_distance_m"), points=Sum("points_count"))
+
+
+def visible_session(actor, permission: str, session_id: int) -> TrackSession | None:
+    return visible_sessions(actor, permission).filter(pk=session_id).first()
+
+
+def last_point(session: TrackSession) -> TrackPoint | None:
+    return session.points.order_by("-recorded_at").first()
+
+
+def route_points(session: TrackSession) -> QuerySet[TrackPoint]:
+    return session.points.order_by("recorded_at")

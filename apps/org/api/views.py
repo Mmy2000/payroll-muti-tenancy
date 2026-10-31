@@ -4,7 +4,6 @@ from rest_framework.response import Response
 
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.org import services
-from apps.org.models import Branch, Department
 
 from .. import selectors
 from .serializers import (
@@ -18,7 +17,7 @@ from .serializers import (
 class BranchViewSet(viewsets.GenericViewSet):
     # Built at import time with no tenant context; bound to the request's tenant when DRF
     # clones it in get_queryset().
-    queryset = Branch.objects.all()
+    queryset = selectors.all_branches()
     serializer_class = BranchSerializer
     filterset_fields = ["is_active", "is_head_office"]
     required_permissions = {
@@ -62,7 +61,7 @@ class BranchViewSet(viewsets.GenericViewSet):
 
 
 class DepartmentViewSet(ActivateMixin, ServiceViewSet):
-    queryset = Department.objects.all()
+    queryset = selectors.visible_departments()
     serializer_class = DepartmentSerializer
     write_serializer_class = DepartmentWriteSerializer
     filterset_fields = ["is_active", "branch"]

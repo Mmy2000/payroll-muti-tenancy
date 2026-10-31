@@ -21,9 +21,9 @@ def evaluations(request):
                       date_field="evaluated_on", branch_field="employee__branch_id",
                       party="employee_id", party_param="employee",
                       party_model="employees.Employee")
-    rows = found.apply(selectors.visible(request.actor))
+    rows = found.apply(selectors.newest_first(request.actor))
     return render(request, "evaluations/evaluations.html", {
-        "filters": found, "page": found.page(rows.order_by("-year", "-number")),
+        "filters": found, "page": found.page(rows),
         "can_manage": request.actor.can(permissions.MANAGE)})
 
 
@@ -44,7 +44,7 @@ def evaluation_new(request):
 
 @permission_required(permissions.VIEW)
 def evaluation(request, pk):
-    row = selectors.visible(request.actor).filter(pk=pk).first()
+    row = selectors.find(request.actor, pk)
     if row is None:
         raise Http404
     if request.actor.can(permissions.MANAGE, branch=row.employee.branch_id):
@@ -57,7 +57,7 @@ def evaluation(request, pk):
 def evaluation_pdf(request, pk):
     from apps.printing.pdf import PdfUnavailable, pdf_response, sheet_pdf
 
-    row = selectors.visible(request.actor).filter(pk=pk).first()
+    row = selectors.find(request.actor, pk)
     if row is None:
         raise Http404
     try:

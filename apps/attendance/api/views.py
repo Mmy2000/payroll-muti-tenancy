@@ -2,12 +2,13 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from apps.attendance.models import HourlyLeave, LeaveRequest, LeaveType
+from apps.attendance.models import HourlyLeave, LeaveRequest
 from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import GroupFields
 from apps.employees.api.targets import outcome_response
 
+from .. import selectors
 from ..services import approvals, entries, hourly, leave
 from .serializers import (
     ClearDaySerializer,
@@ -89,12 +90,14 @@ class DayEntryViewSet(viewsets.GenericViewSet):
 
 
 class LeaveTypeViewSet(ActivateMixin, ServiceViewSet):
-    queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
     write_serializer_class = LeaveTypeWriteSerializer
     required_permissions = {"list": "attendance.leave.view", "retrieve": "attendance.leave.view",
                             "create": leave.MANAGE_TYPES, "update": leave.MANAGE_TYPES,
                             "activate": leave.MANAGE_TYPES, "deactivate": leave.MANAGE_TYPES}
+
+    def get_queryset(self):
+        return selectors.leave_types()
 
     def to_input(self, data):
         return leave.LeaveTypeInput(**data)

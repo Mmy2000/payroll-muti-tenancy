@@ -10,7 +10,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from apps.core.errors import AppError
-from apps.core.history import in_effect
 from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
 from apps.employees import imports
@@ -25,10 +24,7 @@ from apps.employees.models import (
 )
 from apps.employees.web.targets import group_page
 from apps.iam.authz import permission_required
-from apps.org.models import Branch
 from apps.org.selectors import visible_departments
-from apps.platform.tenants.limits import is_app_login
-from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .. import selectors
 from ..permissions import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
@@ -37,15 +33,6 @@ from ..permissions import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
 WEEK = [Weekday.SATURDAY, Weekday.SUNDAY, Weekday.MONDAY, Weekday.TUESDAY, Weekday.WEDNESDAY,
         Weekday.THURSDAY, Weekday.FRIDAY]
 STATUSES = [("active", _lazy("Working")), ("left", _lazy("Left")), ("all", _lazy("All"))]
-
-
-def _by_status(queryset, value):
-    today = timezone.localdate()
-    if value == "active":
-        return queryset.exclude(left_on__lt=today)
-    if value == "left":
-        return queryset.filter(left_on__lt=today)
-    return queryset
 
 
 @permission_required(VIEW)
@@ -57,27 +44,23 @@ def employees(request):
         choices=[Choice("department", _("Department"), [("", _("All departments"))]
                         + [(d.pk, d.label) for d in departments], "department_id",
                         depends_on="branch", parents={d.pk: d.branch_id for d in departments}),
-                 Choice("status", _("Status"), STATUSES, apply=_by_status, value="active")])
-    rows = found.apply(selectors.visible_employees(request.actor).select_related(
-        "branch", "department"))
+                 Choice("status", _("Status"), STATUSES, apply=selectors.by_status,
+                        value="active")])
+    rows = found.apply(selectors.listed_employees(request.actor))
     return render(request, "employees/employees.html", {
-        "filters": found, "page": found.page(rows.order_by("code")),
+        "filters": found, "page": found.page(rows),
         "can_import": request.actor.can("employees.employee.import"),
     })
 
 
 def _choices(request) -> dict:
     actor = request.actor
-    allowed = actor.branch_ids(MANAGE)
-    branches = Branch.objects.filter(is_active=True).order_by("code")
-    if allowed is not None:
-        branches = branches.filter(pk__in=allowed)
     return {
-        "branches": branches,
-        "departments": visible_departments(actor, MANAGE).filter(is_active=True),
-        "lateness_policies": (LatenessPolicy.objects.filter(is_active=True)
+        "branches": selectors.branch_choices(actor, MANAGE),
+        "departments": selectors.department_choices(actor, MANAGE),
+        "lateness_policies": (selectors.active_lateness_policies()
                               if actor.can("policies.lateness.view") else []),
-        "overtime_policies": (OvertimePolicy.objects.filter(is_active=True)
+        "overtime_policies": (selectors.active_overtime_policies()
                               if actor.can("policies.overtime.view") else []),
         "genders": Gender.choices, "marital_statuses": MaritalStatus.choices,
         "military_statuses": MilitaryStatus.choices, "wage_types": WageType.choices,
@@ -116,25 +99,22 @@ def employee(request, pk):
     except AppError:
         raise Http404 from None
     actor, today = request.actor, timezone.localdate()
-    schedules = list(person.schedules.select_related("lateness_policy", "overtime_policy")
-                     .order_by("-effective_from", "-id"))
+    schedules = list(selectors.schedule_history(person))
     context = {
         **_choices(request), "employee": person, "today": today,
         "can_manage": actor.can(MANAGE, branch=person.branch_id),
         "can_app_login": actor.can("mobile.signin") and actor.can("admin.users.manage")
         and actor.can(MANAGE, branch=person.branch_id),
-        # Linked to a user who also works in the office (not a login made for the app only).
-        "linked_user": person.member if person.member_id and not is_app_login(
-            person.member.roles.values_list("role__code", flat=True)) else None,
+        "linked_user": selectors.office_member(person),
         "can_see_pay": actor.can(SALARY_READ, branch=person.branch_id),
         "can_change_pay": actor.can(SALARY_MANAGE, branch=person.branch_id),
         "can_see_attendance": actor.can("attendance.day.view", branch=person.branch_id),
         "schedules": schedules,
-        "schedule": in_effect(person.schedules.all(), today),
+        "schedule": selectors.schedule_on(person, today),
         "endpoint": reverse("employee-detail", args=[person.pk]),
     }
     if context["can_see_pay"]:
-        history = list(person.pay_history.order_by("-effective_from", "-id"))
+        history = list(selectors.pay_history(person))
         for row in history:
             row.daily, row.hourly = row.terms.daily, row.terms.hourly
         current = next((row for row in history if row.effective_from <= today), None)

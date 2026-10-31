@@ -3,8 +3,8 @@
 Multi-tenant payroll, attendance and HR: the rebuild of PayRole as a SaaS, on the foundation of
 Gweb (`Saas_ERP`). The plan, decisions and phases are in [docs/PLAN.md](docs/PLAN.md); the rules
 new code follows are in [docs/standards/](docs/standards/) and
-[docs/decisions/](docs/decisions/README.md). The standards are Gweb's, copied as they are: their
-rules apply, but their examples name Gweb's apps (sales, ledger…), which this project doesn't have.
+[docs/decisions/](docs/decisions/README.md). Start with
+[the architecture standards](docs/standards/architecture.md): every app has the same structure.
 
 ## What exists so far
 

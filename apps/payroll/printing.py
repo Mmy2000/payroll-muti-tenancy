@@ -11,14 +11,12 @@ from __future__ import annotations
 from django.utils.translation import gettext as _
 
 from .models import PayrollRun
-from .selectors import line_label
+from .selectors import labelled_lines
 
 
 def document(slip) -> dict:
     """What a printed payslip shows."""
-    lines = list(slip.lines.all())
-    for line in lines:
-        line.title = line_label(line)
+    lines = labelled_lines(slip)
     return {"slip": slip, "employee": slip.employee,
             "earnings": [line for line in lines if line.kind == "earning"],
             "deductions": [line for line in lines if line.kind == "deduction"]}

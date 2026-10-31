@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from django.core.files.base import ContentFile
-from django.db import transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from rest_framework.response import Response
@@ -12,7 +11,7 @@ from apps.notifications import selectors as notifications_selectors
 
 from .... import selectors
 from ....contract import AppError
-from ....services import tracking
+from ....services import account, tracking
 from .. import serializers as s
 from .auth import employee_or_none
 from .base import MONITOR, AppView, valid
@@ -59,23 +58,12 @@ class ProfileView(AppView):
         upload = request.FILES.get("image")
         if upload is not None and upload.size > s.MAX_IMAGE:
             raise AppError("image_too_large")
-        fields = []
-        if "tel" in data:
-            person.phone, fields = data["tel"] or "", [*fields, "phone"]
-        if "add" in data:
-            person.address, fields = data["add"] or "", [*fields, "address"]
         if "image_base64" in data:
             extension, content = data["image_base64"]
             upload = ContentFile(content, name=f"photo-{get_random_string(12).lower()}"
                                                f".{extension}")
-        if upload is not None:
-            old = person.photo.name if person.photo else ""
-            person.photo.save(upload.name, upload, save=False)
-            fields.append("photo")
-        if not fields:
-            raise AppError("nothing_to_update")
-        person.updated_by = request.user
-        person.save(update_fields=[*fields, "updated_by", "updated_at"])
-        if upload is not None and old:
-            transaction.on_commit(lambda: person.photo.storage.delete(old))
+        account.update_profile(person, account.ProfileInput(
+            phone=(data["tel"] or "") if "tel" in data else None,
+            address=(data["add"] or "") if "add" in data else None, photo=upload),
+            by=request.user)
         return Response(s.profile(person, request))

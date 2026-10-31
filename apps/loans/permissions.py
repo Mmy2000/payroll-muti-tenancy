@@ -21,3 +21,4 @@ register_feature(Feature(
 
 
 VIEW, MANAGE = "loans.loan.view", "loans.loan.manage"
+ADVANCE_VIEW, ADVANCE_MANAGE = "loans.advance.view", "loans.advance.manage"

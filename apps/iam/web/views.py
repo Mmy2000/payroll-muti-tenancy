@@ -1,27 +1,18 @@
-from collections import defaultdict
-
 from django.core.paginator import Paginator
-from django.db.models import Count, OuterRef, Subquery
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
 
-from apps.iam import signins
+from apps.iam import selectors, signins
 from apps.iam.authz import permission_required
-from apps.iam.catalog import WILDCARD, permissions
-from apps.iam.models import Membership, Role, SignInEvent, SignInOutcome
-from apps.org.models import Branch
+from apps.iam.catalog import WILDCARD
+from apps.iam.models import SignInOutcome
+from apps.org.selectors import active_branches_by_code
 
 
 @permission_required("admin.users.view")
 def users(request):
-    signed_in = SignInEvent.objects.filter(membership=OuterRef("pk"),
-                                           outcome=SignInOutcome.SIGNED_IN).order_by("-at")
-    members = (Membership.objects.select_related("user", "default_branch")
-               .prefetch_related("roles__role", "roles__branches__branch")
-               .annotate(last_signed_in=Subquery(signed_in.values("at")[:1]))
-               .order_by("username"))
-    return render(request, "iam/users.html", {"members": members})
+    return render(request, "iam/users.html", {"members": selectors.members_with_last_sign_in()})
 
 
 @permission_required("admin.signins.history")
@@ -35,20 +26,20 @@ def sign_ins(request):
     return render(request, "iam/sign_ins.html", {
         "page": page, "filters": filters, "query": query.urlencode(),
         "outcomes": SignInOutcome.choices, "failed_today": signins.failed_recently(),
-        "members": Membership.objects.select_related("user").order_by("username"),
+        "members": selectors.members_by_name(),
     })
 
 
 def _user_form(request, membership=None):
     assigned = {}
     if membership is not None:
-        for assignment in membership.roles.prefetch_related("branches"):
+        for assignment in selectors.role_assignments(membership):
             assigned[assignment.role_id] = {
                 "all": assignment.all_branches,
                 "branches": {b.branch_id for b in assignment.branches.all()},
             }
     roles = []
-    for role in Role.objects.prefetch_related("grants").order_by("name"):
+    for role in selectors.roles_with_grants():
         codes = {g.permission for g in role.grants.all()}
         roles.append({"role": role, "is_owner": WILDCARD in codes,
                       "assignment": assigned.get(role.pk)})
@@ -57,7 +48,7 @@ def _user_form(request, membership=None):
     return render(request, "iam/user_form.html", {
         "member": membership,
         "roles": roles,
-        "branches": Branch.objects.filter(is_active=True).order_by("code"),
+        "branches": active_branches_by_code(),
         "endpoint": endpoint,
         "method": "PUT" if membership else "POST",
         **_employee_link(request.actor, membership),
@@ -66,13 +57,13 @@ def _user_form(request, membership=None):
 
 def _employee_link(actor, membership) -> dict:
     """The employee this user is, when the mobile app is on (apps.mobile.services.access)."""
+    from apps.mobile import selectors as mobile_selectors
     from apps.mobile.services import access
 
     if not access.can_link(actor):
         return {}
     member_id = membership.pk if membership else None
-    linked = (access.Employee.objects.filter(member_id=member_id).first()
-              if member_id else None)
+    linked = mobile_selectors.linked_employee(member_id) if member_id else None
     return {"link_employees": access.link_choices(actor, member_id), "linked_employee": linked}
 
 
@@ -83,7 +74,7 @@ def user_new(request):
 
 @permission_required("admin.users.manage")
 def user_edit(request, pk):
-    membership = Membership.objects.select_related("user").filter(pk=pk).first()
+    membership = selectors.member_with_user(pk)
     if membership is None:
         raise Http404
     return _user_form(request, membership)
@@ -91,29 +82,21 @@ def user_edit(request, pk):
 
 @permission_required("admin.users.view")
 def roles(request):
-    items = (Role.objects.prefetch_related("grants")
-             .annotate(member_count=Count("assignments", distinct=True)).order_by("name"))
+    items = selectors.roles_with_member_counts()
     return render(request, "iam/roles.html", {
         "roles": [{"role": r, "is_owner": any(g.permission == WILDCARD for g in r.grants.all()),
                    "count": len(r.grants.all())} for r in items],
     })
 
 
-def _permission_groups():
-    groups = defaultdict(list)
-    for definition in permissions().values():
-        groups[str(definition.group)].append(definition)
-    return sorted(groups.items())
-
-
 def _role_form(request, role=None):
-    granted = set(role.grants.values_list("permission", flat=True)) if role else set()
+    granted = selectors.granted_codes(role) if role else set()
     endpoint = reverse("role-detail", args=[role.pk]) if role else reverse("role-list")
     return render(request, "iam/role_form.html", {
         "role": role,
         "is_owner": WILDCARD in granted,
         "granted": granted,
-        "groups": _permission_groups(),
+        "groups": selectors.permission_groups(),
         "endpoint": endpoint,
         "method": "PUT" if role else "POST",
     })
@@ -126,7 +109,7 @@ def role_new(request):
 
 @permission_required("admin.roles.manage")
 def role_edit(request, pk):
-    role = Role.objects.filter(pk=pk).first()
+    role = selectors.role_by_id(pk)
     if role is None:
         raise Http404
     return _role_form(request, role)

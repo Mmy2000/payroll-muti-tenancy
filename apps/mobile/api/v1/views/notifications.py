@@ -14,13 +14,11 @@ from .base import AppView, valid
 
 class NotificationsView(AppView):
     def get(self, request):
-        rows = notifications_selectors.for_member(self.member)
-        if request.GET.get("unread") == "1":
-            rows = rows.filter(read_at__isnull=True)
         before = request.GET.get("before", "")
-        if before.isdigit():
-            rows = rows.filter(pk__lt=int(before))
-        items = list(rows.order_by("-pk")[:notifications.PAGE])
+        rows = notifications_selectors.newest_for(
+            self.member, unread_only=request.GET.get("unread") == "1",
+            before=int(before) if before.isdigit() else None)
+        items = list(rows[:notifications.PAGE])
         return Response({
             "unread": notifications_selectors.unread_count(self.member),
             "items": [{"id": n.pk, "kind": n.kind, "title": n.title, "body": n.body,

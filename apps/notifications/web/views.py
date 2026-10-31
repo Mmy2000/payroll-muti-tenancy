@@ -17,10 +17,8 @@ from ..stream import events
 @permission_required("authenticated")
 def notifications(request):
     member = request.actor.membership
-    rows = selectors.for_member(member)
-    if request.GET.get("unread") == "1":
-        rows = rows.filter(read_at__isnull=True)
-    page = Paginator(rows.order_by("-id"), 30).get_page(request.GET.get("page"))
+    rows = selectors.newest_for(member, unread_only=request.GET.get("unread") == "1")
+    page = Paginator(rows, 30).get_page(request.GET.get("page"))
     return render(request, "notifications/notifications.html", {
         "page": page, "items": [item(r) for r in page.object_list],
         "attention": attention.waiting(request.actor),

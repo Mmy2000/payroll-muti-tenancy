@@ -3,7 +3,7 @@ only the rows of employees the member may see, in the branches of `view_permissi
 
 from rest_framework import viewsets
 
-from ..selectors import visible_employees
+from ..selectors import all_rows, employee_rows
 
 
 class EmployeeRowsViewSet(viewsets.GenericViewSet):
@@ -13,11 +13,10 @@ class EmployeeRowsViewSet(viewsets.GenericViewSet):
 
     def rows(self):
         """The model's rows to start from (a subclass may narrow them, e.g. by kind)."""
-        return self.model.objects.all()
+        return all_rows(self.model)
 
     def get_queryset(self):
-        employees = visible_employees(self.request.actor, self.view_permission)
-        return self.rows().filter(employee__in=employees).select_related(*self.related)
+        return employee_rows(self.rows(), self.request.actor, self.view_permission, self.related)
 
     def list(self, request):
         page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))

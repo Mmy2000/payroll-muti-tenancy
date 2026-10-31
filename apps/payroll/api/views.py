@@ -1,18 +1,12 @@
-from django.db.models import Count
 from django.utils.translation import gettext as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core.errors import NotFound
-from apps.payroll.models import (
-    Frequency,
-    ManualLine,
-    Payslip,
-)
-from apps.payroll.selectors import visible_runs
+from apps.payroll.models import Frequency
 
-from .. import permissions
+from .. import permissions, selectors
 from ..services import calendars, lifecycle, manual_lines, runs
 from .serializers import (
     CalendarSerializer,
@@ -44,13 +38,13 @@ class CalendarViewSet(viewsets.GenericViewSet):
     required_permissions = {"list": permissions.READ, "update": permissions.SETUP}
 
     def list(self, request):
-        calendars = [calendars.calendar_for(f) for f in Frequency.values]
-        return Response(self.get_serializer(calendars, many=True).data)
+        rows = [calendars.calendar_for(f) for f in Frequency.values]
+        return Response(self.get_serializer(rows, many=True).data)
 
     def update(self, request, frequency=None):
         data = _valid(CalendarWriteSerializer, request.data)
         calendar = calendars.save_calendar(calendars.CalendarInput(frequency=frequency, **data),
-                                          actor=request.actor)
+                                           actor=request.actor)
         return Response(self.get_serializer(calendar).data)
 
 
@@ -68,8 +62,7 @@ class RunViewSet(viewsets.GenericViewSet):
     }
 
     def get_queryset(self):
-        return (visible_runs(self.request.actor).annotate(payslip_count=Count("payslips"))
-                .order_by("-period__start", "-id"))
+        return selectors.runs_with_counts(self.request.actor)
 
     def _show(self, run, code=status.HTTP_200_OK):
         return Response(self.get_serializer(run).data, status=code)
@@ -133,8 +126,7 @@ class PayslipViewSet(viewsets.GenericViewSet):
     required_permissions = {"list": permissions.READ, "retrieve": permissions.READ}
 
     def get_queryset(self):
-        return (Payslip.objects.filter(run__in=visible_runs(self.request.actor))
-                .select_related("employee").prefetch_related("lines"))
+        return selectors.visible_payslips(self.request.actor)
 
     def list(self, request):
         page = self.paginate_queryset(self.filter_queryset(self.get_queryset()))
@@ -150,7 +142,7 @@ class ManualLineViewSet(viewsets.GenericViewSet):
     required_permissions = {"destroy": permissions.CALCULATE}
 
     def destroy(self, request, pk=None):
-        if not ManualLine.objects.filter(pk=pk, run__in=visible_runs(request.actor)).exists():
+        if not selectors.manual_line_visible(request.actor, pk):
             raise NotFound(_("Not found."))
         slip = manual_lines.remove_manual_line(int(pk), actor=request.actor)
         return Response(PayslipSerializer(slip).data)

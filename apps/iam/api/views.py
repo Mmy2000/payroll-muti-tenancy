@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.db.models import Count
 from django.utils.translation import gettext as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -7,9 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.errors import ValidationError
-from apps.iam import services
+from apps.iam import selectors, services
 from apps.iam.catalog import AUTHENTICATED, WILDCARD, permissions
-from apps.iam.models import Membership, MembershipStatus, Role
+from apps.iam.models import MembershipStatus
 
 from .serializers import (
     MemberReadSerializer,
@@ -65,8 +64,7 @@ def _member_input(data) -> services.MemberInput:
 
 
 class MemberViewSet(viewsets.GenericViewSet):
-    queryset = (Membership.objects.select_related("user")
-                .prefetch_related("roles__role", "roles__branches").order_by("username"))
+    queryset = selectors.members_with_roles()
     serializer_class = MemberReadSerializer
     required_permissions = {
         "list": "admin.users.view",
@@ -79,7 +77,7 @@ class MemberViewSet(viewsets.GenericViewSet):
     }
 
     def _respond(self, membership, code=status.HTTP_200_OK):
-        return Response(self.get_serializer(self.get_queryset().get(pk=membership.pk)).data,
+        return Response(self.get_serializer(selectors.member_with_roles(membership.pk)).data,
                         status=code)
 
     def list(self, request):
@@ -133,8 +131,7 @@ class MemberViewSet(viewsets.GenericViewSet):
 
 
 class RoleViewSet(viewsets.GenericViewSet):
-    queryset = (Role.objects.prefetch_related("grants")
-                .annotate(member_count=Count("assignments", distinct=True)).order_by("name"))
+    queryset = selectors.roles_with_member_counts()
     serializer_class = RoleReadSerializer
     required_permissions = {
         "list": "admin.users.view",
@@ -157,7 +154,7 @@ class RoleViewSet(viewsets.GenericViewSet):
         data = payload.validated_data
         role = services.create_role(data["name"], data["description"], data["permissions"],
                                     actor=request.actor)
-        return Response(self.get_serializer(self.get_queryset().get(pk=role.pk)).data,
+        return Response(self.get_serializer(selectors.role_with_member_count(role.pk)).data,
                         status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
@@ -166,7 +163,7 @@ class RoleViewSet(viewsets.GenericViewSet):
         data = payload.validated_data
         role = services.update_role(int(pk), data["name"], data["description"],
                                     data["permissions"], actor=request.actor)
-        return Response(self.get_serializer(self.get_queryset().get(pk=role.pk)).data)
+        return Response(self.get_serializer(selectors.role_with_member_count(role.pk)).data)
 
     def destroy(self, request, pk=None):
         services.delete_role(int(pk), actor=request.actor)

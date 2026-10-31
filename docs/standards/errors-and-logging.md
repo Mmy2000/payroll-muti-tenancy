@@ -26,7 +26,7 @@ to show, a stable `code` and optional `fields`:
 - **Web views** that call a service directly catch `ValidationError` / `DomainError` and show a
   form error or a `messages.error`, as about 24 views already do.
 - **Unexpected exceptions** become a 500 (`templates/500.html`). The request transaction is
-  rolled back. API clients get the HTML page today (TD-18).
+  rolled back. API clients get the HTML page today.
 
 ## Catching errors
 
@@ -60,14 +60,9 @@ to show, a stable `code` and optional `fields`:
 How it is wired (`config/settings/base.py` `LOGGING`):
 - The root logger writes to stderr at `LOG_LEVEL` (default INFO). Under systemd that goes to the
   journal.
-- `django.request` and `apps.platform.jobs` also go to `ErrorLogHandler` at ERROR. It groups
-  errors by type and place into `ErrorEvent` rows, written on their own database connection so a
-  rollback doesn't erase them (`apps/platform/monitor/errors.py`).
-- To make another area's errors reach Console → Errors, add its logger to `LOGGING["loggers"]`
-  with the `errorlog` handler.
 
 **Known gaps:**
-- Log lines have no time, level or logger name, and no request id (TD-17).
+- Log lines have no time, level or logger name, and no request id.
 - The request id (`X-Request-ID`, `apps/core/middleware.py`) appears only in the error
   envelope and the response header so far. It isn't stored with errors or written to log lines.
 
