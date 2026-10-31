@@ -6,6 +6,7 @@ from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.loans import advances, services
 from apps.loans.models import Advance, Loan
 
+from .. import permissions
 from .serializers import (
     AdvanceSerializer,
     AdvanceWriteSerializer,
@@ -47,11 +48,11 @@ class AdvanceViewSet(EmployeeRowsViewSet):
 
 class LoanViewSet(EmployeeRowsViewSet):
     model = Loan
-    view_permission = services.VIEW
+    view_permission = permissions.VIEW
     serializer_class = LoanSerializer
     filterset_fields = ["status", "employee"]
-    required_permissions = {"list": services.VIEW, "retrieve": services.VIEW,
-                            "create": services.MANAGE, "cancel": services.MANAGE}
+    required_permissions = {"list": permissions.VIEW, "retrieve": permissions.VIEW,
+                            "create": permissions.MANAGE, "cancel": permissions.MANAGE}
 
     def get_queryset(self):
         return super().get_queryset().prefetch_related("installments")
@@ -74,7 +75,7 @@ class LoanViewSet(EmployeeRowsViewSet):
 class InstallmentViewSet(viewsets.GenericViewSet):
     """POST …/<id>/postpone/: this installment and every later due one a month on."""
 
-    required_permissions = {"postpone": services.MANAGE}
+    required_permissions = {"postpone": permissions.MANAGE}
 
     @action(detail=True, methods=["post"])
     def postpone(self, request, pk=None):

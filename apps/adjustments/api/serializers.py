@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.adjustments import services
 from apps.adjustments.domain.amounts import CHOICES
 from apps.adjustments.models import Adjustment, AdjustmentType
 from apps.employees.api.serializers import TargetFields
+
+from .. import selectors
 
 
 class TypeSerializer(serializers.ModelSerializer):
@@ -61,8 +62,8 @@ class BatchSerializer(serializers.Serializer):
     rows = serializers.SerializerMethodField()
 
     def get_rows(self, batch):
-        paid = services.paid_rows(batch)
-        now = services.effective_amounts(batch)
+        paid = selectors.paid_rows(batch)
+        now = selectors.effective_amounts(batch)
         return [{**AdjustmentSerializer(row).data, "paid": row.pk in paid,
                  "effective_amount": str(now[row.pk])}
                 for row in batch.rows.select_related("employee", "adjustment_type", "batch")]

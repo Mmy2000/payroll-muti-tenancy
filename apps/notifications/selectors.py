@@ -9,15 +9,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+from .models import Notification
 
 
 def _pending(model, permission):
     def count(actor):
         from apps.attendance.models import RequestStatus
-        from apps.employees.services import visible_employees
+        from apps.employees.selectors import visible_employees
 
         return model.objects.filter(status=RequestStatus.PENDING,
                                     employee__in=visible_employees(actor, permission)).count()
@@ -53,7 +56,7 @@ def _runs(actor):
 
 
 def _quiet_devices(actor):
-    from apps.devices.services import visible_devices
+    from apps.devices.selectors import visible_devices
 
     since = timezone.now() - timedelta(days=1)
     return visible_devices(actor).filter(is_active=True).exclude(last_seen_at__gte=since).count()
@@ -99,3 +102,11 @@ def waiting(actor) -> list[dict]:
 
 
 ICONS = sorted({"bell", *(q.icon for q in QUEUES)})
+
+
+def for_member(member) -> QuerySet:
+    return Notification.objects.filter(member=member)
+
+
+def unread_count(member) -> int:
+    return for_member(member).filter(read_at__isnull=True).count()

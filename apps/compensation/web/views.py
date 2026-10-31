@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
-from apps.compensation import services
 from apps.compensation.models import (
     AssignmentStatus,
     ItemFrequency,
@@ -17,9 +16,11 @@ from apps.compensation.models import (
 )
 from apps.core import months
 from apps.core.listing import Choice, ListQuery
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
+
+from .. import permissions
 
 ENTRY_VIEW = "compensation.entry.view"
 STATUS_TABS = [(AssignmentStatus.ACTIVE, _lazy("In effect")),
@@ -84,13 +85,13 @@ def assignments(request):
     return render(request, "compensation/assignments.html", {
         "filters": found, "page": found.page(rows.order_by("employee__code", "item__code")),
         "month": month, "previous": months.add_months(month, -1),
-        "next": months.add_months(month, 1), "can_manage": request.actor.can(services.GIVE),
+        "next": months.add_months(month, 1), "can_manage": request.actor.can(permissions.GIVE),
         "today": timezone.localdate()})
 
 
-@permission_required(services.GIVE)
+@permission_required(permissions.GIVE)
 def assignment_new(request):
     return render(request, "compensation/assignment_form.html", {
         "items": PayItem.objects.filter(is_active=True), "today": timezone.localdate(),
         "frequencies": ItemFrequency.choices, "selected": request.GET.get("employee", ""),
-        **target_choices(request.actor, services.GIVE)})
+        **target_choices(request.actor, permissions.GIVE)})

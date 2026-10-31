@@ -20,29 +20,13 @@ from django.utils.translation import gettext as _
 
 from apps.attendance.models import Punch, PunchSource
 from apps.core import locks
-from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
+from apps.core.errors import Conflict, DomainError, NotFound, invalid_fields
 from apps.employees.models import Employee
 
 from . import protocol
 from .models import CommandStatus, Device, DeviceCommand, DevicePunch, DeviceUser
-
-VIEW, MANAGE = "devices.device.view", "devices.device.manage"
-
-
-def _invalid(fields: dict) -> ValidationError:
-    return ValidationError(_("Please correct the highlighted fields."), fields=fields)
-
-
-def visible_devices(actor, code: str = VIEW):
-    devices = Device.objects.select_related("branch")
-    branches = actor.branch_ids(code) if actor is not None else None
-    return devices if branches is None else devices.filter(branch_id__in=branches)
-
-
-def is_online(device: Device) -> bool:
-    return bool(device.last_seen_at and timezone.now() - device.last_seen_at
-                < timedelta(seconds=protocol.ONLINE_SECONDS))
-
+from .permissions import MANAGE
+from .selectors import visible_devices
 
 # --- devices -------------------------------------------------------------------------------
 
@@ -74,7 +58,7 @@ def save_device(data: DeviceInput, *, device_id: int | None = None, actor=None) 
         if device.pk and device.branch_id != data.branch_id and device.punches.exists():
             errors["branch_id"] = [_("The device has punches: it stays in its branch.")]
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         device.serial, device.name, device.branch_id = serial, name, data.branch_id
         device.is_active = data.is_active
         device.updated_by = getattr(actor, "user", None)
@@ -84,7 +68,7 @@ def save_device(data: DeviceInput, *, device_id: int | None = None, actor=None) 
             with transaction.atomic():
                 device.save()
         except IntegrityError:
-            raise _invalid({"serial": [_("This serial number is already registered, here or "
+            raise invalid_fields({"serial": [_("This serial number is already registered, here or "
                                          "with another company.")]}) from None
     return device
 
@@ -101,12 +85,6 @@ def resend_all(device_id: int, *, actor=None) -> Device:
 
 
 # --- the device's calls ---------------------------------------------------------------------
-
-
-def device_for(serial: str) -> Device | None:
-    """An active device of the host's client, by its serial."""
-    return Device.objects.select_for_update().filter(serial=serial.strip().upper(),
-                                                     is_active=True).first()
 
 
 def seen(device: Device, *, ip: str | None = None, info: str = "") -> None:
@@ -262,12 +240,12 @@ class CommandInput:
 def ask(device_id: int, data: CommandInput, *, actor=None) -> DeviceCommand:
     if data.kind == PULL_PUNCHES:
         if data.start is None or data.end is None or data.end < data.start:
-            raise _invalid({"start": [_("Enter the days to pull, first day first.")]})
+            raise invalid_fields({"start": [_("Enter the days to pull, first day first.")]})
         text = protocol.pull_punches(data.start, data.end)
     elif data.kind in (TEST, PULL_USERS):
         text = protocol.INFO if data.kind == TEST else protocol.PULL_USERS
     else:
-        raise _invalid({"kind": [_("Choose what to ask.")]})
+        raise invalid_fields({"kind": [_("Choose what to ask.")]})
     with transaction.atomic():
         device = visible_devices(actor, MANAGE).filter(pk=device_id).first()
         if device is None:
@@ -302,11 +280,11 @@ def link(device_user_id: int, employee_id: int | None, *, actor=None) -> DeviceU
         if employee_id is not None:
             employee = Employee.objects.filter(pk=employee_id, branch_id=user.branch_id).first()
             if employee is None:
-                raise _invalid({"employee_id": [_("Choose an employee of the device's "
+                raise invalid_fields({"employee_id": [_("Choose an employee of the device's "
                                                   "branch.")]})
             if DeviceUser.objects.filter(branch_id=user.branch_id, employee=employee).exclude(
                     pk=user.pk).exists():
-                raise _invalid({"employee_id": [_("This employee already has a PIN on this "
+                raise invalid_fields({"employee_id": [_("This employee already has a PIN on this "
                                                   "branch's devices.")]})
         user.employee = employee
         user.updated_by = getattr(actor, "user", None)

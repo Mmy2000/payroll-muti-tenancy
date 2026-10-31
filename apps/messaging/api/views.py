@@ -5,7 +5,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .. import services
+from .. import permissions, services
 from .serializers import PayslipsSerializer, TestSerializer, WordingSerializer
 
 
@@ -19,9 +19,9 @@ class WhatsAppViewSet(viewsets.GenericViewSet):
     """/whatsapp/link/ GET (look) POST (start) DELETE (unlink); /whatsapp/wording/ PUT;
     /whatsapp/test/ POST; /whatsapp/payslips/ POST; /whatsapp/<id>/again/ POST."""
 
-    required_permissions = {"link": services.LINK, "wording": services.LINK,
-                            "test": services.LINK, "payslips": services.SEND,
-                            "again": services.SEND}
+    required_permissions = {"link": permissions.LINK, "wording": permissions.LINK,
+                            "test": permissions.LINK, "payslips": permissions.SEND,
+                            "again": permissions.SEND}
 
     @action(detail=False, methods=["get", "post", "delete"])
     def link(self, request):

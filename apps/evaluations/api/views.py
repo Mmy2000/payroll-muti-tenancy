@@ -3,13 +3,13 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
-from .. import services
+from .. import permissions, services
 from .serializers import EvaluationWriteSerializer
 
 
 class EvaluationViewSet(viewsets.GenericViewSet):
-    required_permissions = {"create": services.MANAGE, "update": services.MANAGE,
-                            "destroy": services.MANAGE}
+    required_permissions = {"create": permissions.MANAGE, "update": permissions.MANAGE,
+                            "destroy": permissions.MANAGE}
 
     def _input(self):
         payload = EvaluationWriteSerializer(data=self.request.data)

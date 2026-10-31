@@ -12,3 +12,6 @@ register_feature(Feature(
     "zk_devices", _("Fingerprint devices"),
     _("ZKTeco devices sending punches to the system (ADMS), linked to employees."),
     ATTENDANCE, "fingerprint", ("devices.",), default=False, requires=("attendance",)))
+
+
+VIEW, MANAGE = "devices.device.view", "devices.device.manage"

@@ -14,6 +14,8 @@ from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 from conftest import login
 
+from .. import selectors
+
 # --- charts (pure) -------------------------------------------------------------------------------
 
 
@@ -54,7 +56,7 @@ def test_an_evaluation_and_its_card(tenant_a, make_employee):
         row = services.save(services.EvaluationInput(person.pk, 2026, date(2026, 12, 20),
                                                      note_1="Reliable", note_3="Leads the team"))
         assert row.number == 1 and row.notes == ["Reliable", "Leads the team"]
-        facts = services.card(row)
+        facts = selectors.card(row)
         assert facts["pay"]["starting_salary"] == D(6000)
         assert facts["pay"]["yearly_base"] == D(84000)  # the pay at the year's end × 12
         assert facts["pay"]["insured_salary"] == D(5500)

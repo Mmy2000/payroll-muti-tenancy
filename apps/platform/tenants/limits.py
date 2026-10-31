@@ -38,15 +38,15 @@ def check_branch_limit() -> None:
 
 def is_app_login(role_codes: Iterable[str]) -> bool:
     """Roles that make an app login: the Employee (app) role and nothing else."""
-    from apps.iam.services import EMPLOYEE
+    from apps.iam.catalog import EMPLOYEE
 
     codes = set(role_codes)
     return bool(codes) and codes <= {EMPLOYEE}
 
 
 def _app_only_members():
+    from apps.iam.catalog import EMPLOYEE
     from apps.iam.models import Membership, Role
-    from apps.iam.services import EMPLOYEE
 
     return (Membership.objects.filter(roles__role__code=EMPLOYEE)
             .exclude(roles__role__in=Role.objects.exclude(code=EMPLOYEE)))

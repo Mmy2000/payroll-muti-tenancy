@@ -13,22 +13,21 @@ from datetime import date, time
 from functools import partial
 
 from django.db import transaction
-from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from apps.core import bulk, locks
-from apps.core.errors import DomainError, NotFound, ValidationError
+from apps.core.errors import NotFound, ValidationError
 from apps.core.events import publish
-from apps.core.history import in_effect
-from apps.employees.services import get_employee
+from apps.employees.selectors import get_employee
 from apps.employees.targets import Group, resolve_group
 
 from . import approvals
 from .domain.days import Status
-from .domain.leave import span_minutes, spans_overlap
+from .domain.leave import span_minutes
 from .events import HourlyLeaveCancelled, HourlyLeaveEntered
-from .models import HourlyLeave, RequestStatus
-from .selectors import active_requests, evaluate
+from .models import HourlyLeave
+from .selectors import allowance, clashes, evaluate, minutes_used
+from .validators import check_allowance, check_spans
 
 REQUEST, APPROVE = "attendance.hourly.request", "attendance.hourly.approve"
 MAX_MINUTES = 12 * 60
@@ -41,34 +40,6 @@ class HourlyLeaveInput:
     starts_at: time
     ends_at: time
     reason: str = ""
-
-
-def _minutes_used(request: HourlyLeave) -> int:
-    month = HourlyLeave.objects.filter(
-        employee=request.employee, status=RequestStatus.APPROVED,
-        work_date__year=request.work_date.year, work_date__month=request.work_date.month)
-    return month.aggregate(total=Sum("minutes"))["total"] or 0
-
-
-def _allowance(employee, day: date) -> int:
-    pay = in_effect(employee.pay_history.all(), day)
-    return int((pay.permission_hours if pay else 0) * 60)
-
-
-def _check_allowance(request: HourlyLeave) -> None:
-    allowed = _allowance(request.employee, request.work_date)
-    used = _minutes_used(request)
-    if used + request.minutes > allowed:
-        raise DomainError(
-            _("This month's allowance is %(allowed)s minutes and %(used)s are used; this "
-              "request needs %(minutes)s.")
-            % {"allowed": allowed, "used": used, "minutes": request.minutes},
-            code="ATTENDANCE_HOURLY_ALLOWANCE")
-
-
-def _clashes(employee_id: int, work_date: date, starts_at: time, ends_at: time) -> bool:
-    return any(spans_overlap((starts_at, ends_at), (row.starts_at, row.ends_at))
-               for row in active_requests(HourlyLeave, employee_id).filter(work_date=work_date))
 
 
 def record_hourly_leave(data: HourlyLeaveInput, *, approve: bool = False,
@@ -87,7 +58,7 @@ def record_hourly_leave(data: HourlyLeaveInput, *, approve: bool = False,
         if not (employee.hired_on <= data.work_date
                 and (employee.left_on is None or data.work_date <= employee.left_on)):
             errors["work_date"] = [_("The employee isn't employed on that day.")]
-        elif _clashes(employee.pk, data.work_date, data.starts_at, data.ends_at):
+        elif clashes(employee.pk, data.work_date, data.starts_at, data.ends_at):
             errors["starts_at"] = [_("This overlaps other hourly leave on that day.")]
         if errors:
             raise ValidationError(_("Please correct the highlighted fields."), fields=errors)
@@ -97,7 +68,7 @@ def record_hourly_leave(data: HourlyLeaveInput, *, approve: bool = False,
             created_by=getattr(actor, "user", None))
         if approve:
             approvals.decide(request, approvals.APPROVE, actor=actor,
-                             before_approve=_check_allowance)
+                             before_approve=check_allowance)
         publish(HourlyLeaveEntered(request=request, by=actor))
     return request
 
@@ -117,7 +88,7 @@ def decide_hourly_leave(request_id: int, move: str, *, note: str = "",
                    .select_related("employee").get(pk=request_id))
         locks.ensure_open(employee.pk, request.work_date)
         approvals.decide(request, move, actor=actor, note=note,
-                         before_approve=_check_allowance)
+                         before_approve=check_allowance)
         if move == approvals.CANCEL:
             publish(HourlyLeaveCancelled(request=request, by=actor))
         return request
@@ -134,19 +105,6 @@ class GroupHourlyLeaveInput:
     reason: str = ""
 
 
-def _check_spans(spans) -> None:
-    errors = {}
-    if not spans:
-        errors["spans"] = [_("Enter at least one time span.")]
-    for index, (start, end) in enumerate(spans):
-        if start == end:
-            errors[f"spans.{index}"] = [_("The end must be another time than the start.")]
-        elif any(spans_overlap((start, end), other) for other in spans[:index]):
-            errors[f"spans.{index}"] = [_("This overlaps an earlier span.")]
-    if errors:
-        raise ValidationError(_("Please correct the highlighted fields."), fields=errors)
-
-
 def _warnings(employee, work_date: date, minutes: int, approve: bool):
     """What the preview should say about one employee's span, though it can be saved."""
 
@@ -158,8 +116,8 @@ def _warnings(employee, work_date: date, minutes: int, approve: bool):
         elif day.status == Status.LEAVE:
             yield _("On leave that day (%(what)s).") % {"what": day.label}
         if not approve:
-            allowed = _allowance(employee, work_date)
-            used = _minutes_used(HourlyLeave(employee=employee, work_date=work_date))
+            allowed = allowance(employee, work_date)
+            used = minutes_used(HourlyLeave(employee=employee, work_date=work_date))
             if used + minutes > allowed:
                 yield _("Over this month's allowance (%(allowed)s minutes, %(used)s used): "
                         "approval will be refused.") % {"allowed": allowed, "used": used}
@@ -175,7 +133,7 @@ def record_hourly_leave_for_group(data: GroupHourlyLeaveInput, *, approve: bool 
         actor.require(REQUEST)
         if approve:
             actor.require(APPROVE)
-    _check_spans(data.spans)
+    check_spans(data.spans)
     with transaction.atomic():
         people = resolve_group(data.group, on=data.work_date, actor=actor, permission=REQUEST)
         items = [

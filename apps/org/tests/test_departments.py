@@ -11,6 +11,8 @@ from apps.org import services
 from apps.org.models import Branch
 from conftest import login
 
+from .. import selectors
+
 pytestmark = pytest.mark.django_db
 
 
@@ -91,7 +93,7 @@ def test_a_branch_manager_only_has_their_branchs_departments(tenant_a, branches,
 
     with tenant_context(tenant_a.id):
         actor = build_actor(boss)
-        assert list(services.visible_departments(actor)) == [here]
+        assert list(selectors.visible_departments(actor)) == [here]
         with pytest.raises(PermissionDenied):
             _save(alexandria, "Stores", actor=actor)
         with pytest.raises(PermissionDenied):

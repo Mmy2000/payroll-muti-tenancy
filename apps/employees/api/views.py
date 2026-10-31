@@ -7,8 +7,9 @@ from apps.employees import group_hours, services
 from apps.employees.api.serializers import GroupFields
 from apps.employees.api.targets import outcome_response
 from apps.employees.models import Weekday
-from apps.employees.services import MANAGE, SALARY_MANAGE, VIEW
 
+from .. import selectors
+from ..permissions import MANAGE, SALARY_MANAGE, VIEW
 from .serializers import (
     CardWriteSerializer,
     EmployeeSerializer,
@@ -38,7 +39,7 @@ class EmployeeViewSet(viewsets.GenericViewSet):
                             "reinstate": MANAGE}
 
     def get_queryset(self):
-        return services.visible_employees(self.request.actor).select_related(
+        return selectors.visible_employees(self.request.actor).select_related(
             "branch", "department")
 
     def _show(self, employee, code=status.HTTP_200_OK):

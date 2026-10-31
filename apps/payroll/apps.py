@@ -9,6 +9,6 @@ class PayrollConfig(AppConfig):
     def ready(self):
         from apps.core import locks
 
-        from .services import period_locked, source_locked
+        from .selectors import period_locked, source_locked
 
         locks.register(period=period_locked, source=source_locked)

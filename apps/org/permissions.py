@@ -9,3 +9,6 @@ register_permissions(_("Organisation"), [
     ("org.department.view", _("View departments")),
     ("org.department.manage", _("Manage departments")),
 ])
+
+
+DEPARTMENT_VIEW, DEPARTMENT_MANAGE = "org.department.view", "org.department.manage"

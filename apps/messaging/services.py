@@ -24,8 +24,7 @@ from apps.platform.jobs.registry import enqueue
 
 from . import gateways
 from .models import LinkStatus, Message, MessageKind, MessageStatus, WhatsAppLink
-
-LINK, SEND, VIEW = "messaging.whatsapp.link", "messaging.send", "messaging.view"
+from .permissions import LINK, SEND
 
 
 def link_for() -> WhatsAppLink:

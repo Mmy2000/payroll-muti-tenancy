@@ -14,3 +14,6 @@ register_feature(Feature(
     "pay_items", _("Allowances and pay items"),
     _("Allowances and other additions and deductions, fixed or per day worked."),
     PAY, "hand-coins", ("compensation.",)))
+
+
+GIVE = "compensation.entry.manage"

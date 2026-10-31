@@ -3,10 +3,11 @@
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.employees.services import visible_employees
 from apps.employees.targets import BRANCH, DEPARTMENT, EMPLOYEE, EMPLOYEES
 from apps.org.models import Branch
-from apps.org.services import visible_departments
+from apps.org.selectors import visible_departments
+
+from ..selectors import visible_employees
 
 KINDS = [(EMPLOYEE, _("One employee")), (DEPARTMENT, _("A department")),
          (BRANCH, _("A branch"))]

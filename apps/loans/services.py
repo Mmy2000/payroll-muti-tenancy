@@ -15,17 +15,16 @@ from decimal import Decimal
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
+from apps.core.errors import Conflict, DomainError, NotFound
 from apps.core.events import publish
 from apps.core.months import add_months, months
-from apps.employees.services import get_employee
+from apps.employees.selectors import get_employee
 
-from .domain.installments import CENT, split
+from .domain.installments import split
 from .events import LoanGranted
 from .models import InstallmentStatus, Loan, LoanInstallment, LoanStatus
-
-VIEW, MANAGE = "loans.loan.view", "loans.loan.manage"
-MAX_INSTALLMENTS = 120
+from .permissions import MANAGE
+from .validators import check_loan
 
 
 @dataclass(frozen=True)
@@ -38,35 +37,12 @@ class LoanInput:
     reason: str = ""
 
 
-def _invalid(fields: dict) -> ValidationError:
-    return ValidationError(_("Please correct the highlighted fields."), fields=fields)
-
-
-def _check(data: LoanInput, employee) -> None:
-    errors = {}
-    if data.amount <= 0:
-        errors["amount"] = [_("Must be greater than zero.")]
-    if not 1 <= data.installments <= MAX_INSTALLMENTS:
-        errors["installments"] = [_("From 1 to %(count)s installments.")
-                                  % {"count": MAX_INSTALLMENTS}]
-    elif data.amount > 0 and data.amount < CENT * data.installments:
-        # PayRole (Loans/views.py GHC12a): every installment is at least a piastre.
-        errors["amount"] = [_("Too small for this many installments.")]
-    if data.first_month.replace(day=1) < data.granted_on.replace(day=1):
-        errors["first_month"] = [_("Must not be before the month the loan is given.")]
-    if data.granted_on < employee.hired_on or (employee.left_on
-                                               and data.granted_on > employee.left_on):
-        errors["granted_on"] = [_("The employee isn't employed on that day.")]
-    if errors:
-        raise _invalid(errors)
-
-
 def grant_loan(data: LoanInput, *, actor=None) -> Loan:
     with transaction.atomic():
         employee = get_employee(data.employee_id, actor, MANAGE, lock=True)
         if actor is not None:
             actor.require(MANAGE, branch=employee.branch_id)
-        _check(data, employee)
+        check_loan(data, employee)
         if Loan.objects.filter(employee=employee, status=LoanStatus.ACTIVE).exists():
             raise DomainError(_("This employee is still repaying a loan."),
                               code="LOANS_ONE_AT_A_TIME")

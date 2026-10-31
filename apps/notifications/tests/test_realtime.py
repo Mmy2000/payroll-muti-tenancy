@@ -42,7 +42,7 @@ def test_a_service_does_not_know_about_notifications():
         if part in ("notifications", "core", "mobile") or "tests" in path.parts:
             continue  # core's context processor and the app's API read notifications
         source = path.read_text(encoding="utf-8")
-        assert "apps.notifications" not in source or "attention" in source, path
+        assert "apps.notifications" not in source or "notifications.selectors" in source, path
 
 
 def test_publishing_reaches_every_subscriber_and_only_for_its_event():

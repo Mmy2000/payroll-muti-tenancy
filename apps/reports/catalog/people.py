@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.history import in_effect
-from apps.employees.services import SALARY_READ, VIEW
+from apps.employees.permissions import SALARY_READ, VIEW
 
 from ..registry import WHO_FILTERS, Column, Filter, Report, Table, register
 

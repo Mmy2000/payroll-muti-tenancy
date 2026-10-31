@@ -23,32 +23,21 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Sum
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core import locks
-from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
+from apps.core.errors import Conflict, DomainError, NotFound, ValidationError, invalid_fields
 from apps.core.events import publish
 from apps.core.history import in_effect
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 from apps.employees.targets import Target, resolve
 
 from .domain.amounts import METHODS
 from .events import BatchApproved
 from .models import Adjustment, AdjustmentBatch, AdjustmentKind, AdjustmentType, BatchStatus
-
-SOURCE = "adjustments.Adjustment"  # what payroll records as paid (apps/core/locks.py)
-ZERO = Decimal(0)
-
-
-def permission(kind: str, action: str) -> str:
-    return f"adjustments.{kind}.{action}"
-
-
-def _invalid(fields: dict) -> ValidationError:
-    return ValidationError(_("Please correct the highlighted fields."), fields=fields)
-
+from .permissions import permission
+from .selectors import ZERO, effective_amounts, paid_rows
 
 # --- types ---------------------------------------------------------------------------------
 
@@ -62,7 +51,7 @@ class TypeInput:
 
 def save_type(data: TypeInput, *, type_id: int | None = None, actor=None) -> AdjustmentType:
     if data.kind not in AdjustmentKind.values:
-        raise _invalid({"kind": [_("Choose incentive or penalty.")]})
+        raise invalid_fields({"kind": [_("Choose incentive or penalty.")]})
     if actor is not None:
         actor.require(permission(data.kind, "manage"))
     name = data.name.strip()
@@ -72,7 +61,7 @@ def save_type(data: TypeInput, *, type_id: int | None = None, actor=None) -> Adj
         if found is None:
             raise NotFound(_("Not found."))
         if found.pk and found.kind != data.kind:
-            raise _invalid({"kind": [_("A type can't change kind.")]})
+            raise invalid_fields({"kind": [_("A type can't change kind.")]})
         others = AdjustmentType.objects.filter(kind=data.kind).exclude(pk=found.pk)
         errors = {}
         if not name:
@@ -82,7 +71,7 @@ def save_type(data: TypeInput, *, type_id: int | None = None, actor=None) -> Adj
         if others.filter(code=data.code).exists():
             errors["code"] = [_("Another type has this code.")]
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         found.kind, found.code, found.name = data.kind, data.code, name
         found.updated_by = getattr(actor, "user", None)
         found.save()
@@ -114,20 +103,6 @@ def seed_types(**_values) -> None:
 
 
 # --- reading -------------------------------------------------------------------------------
-
-
-def paid_rows(batch: AdjustmentBatch) -> set[int]:
-    """The rows of `batch` an approved payroll has paid."""
-    return {pk for pk in batch.rows.values_list("pk", flat=True)
-            if locks.source_locked(SOURCE, pk)}
-
-
-def effective_amounts(batch: AdjustmentBatch) -> dict[int, Decimal]:
-    """{row id: what it pays once its approved corrections are counted}."""
-    corrected = dict(Adjustment.objects.filter(
-        corrects__batch=batch, batch__status=BatchStatus.APPROVED)
-        .values("corrects_id").annotate(total=Sum("amount")).values_list("corrects_id", "total"))
-    return {row.pk: row.amount + corrected.get(row.pk, ZERO) for row in batch.rows.all()}
 
 
 # --- the details of a batch ------------------------------------------------------------------
@@ -165,14 +140,15 @@ def _checked(type_id: int, method_key: str, quantity: Decimal, *, kind: str | No
     if quantity <= 0:
         errors["quantity"] = [_("Must be greater than zero.")]
     if errors:
-        raise _invalid(errors)
+        raise invalid_fields(errors)
     return found, method
 
 
 def _amount(employee, method, quantity: Decimal, day: date) -> Decimal:
     pay = in_effect(employee.pay_history.all(), day)
     if pay is None:
-        raise _invalid({"date": [_("%(name)s has no pay on that day.") % {"name": employee.name}]})
+        raise invalid_fields({"date": [_("%(name)s has no pay on that day.")
+                                       % {"name": employee.name}]})
     return method.amount(quantity, pay.terms)
 
 
@@ -223,7 +199,7 @@ def _touch(batch: AdjustmentBatch, reason: str, actor, *fields: str) -> None:
 
 def _need_reason(reason: str) -> None:
     if not reason.strip():
-        raise _invalid({"reason": [_("Say why.")]})
+        raise invalid_fields({"reason": [_("Say why.")]})
 
 
 def _ensure_unpaid(batch: AdjustmentBatch) -> None:
@@ -312,7 +288,7 @@ def set_row_quantity(row_id: int, quantity: Decimal, *, reason: str = "",
                      actor=None) -> Adjustment:
     """One employee's quantity in a draft (the others keep the batch's)."""
     if quantity <= 0:
-        raise _invalid({"quantity": [_("Must be greater than zero.")]})
+        raise invalid_fields({"quantity": [_("Must be greater than zero.")]})
     with transaction.atomic():
         batch, row = _locked_row(row_id, actor)
         row.quantity = quantity
@@ -420,7 +396,7 @@ def correct(batch_id: int, data: CorrectionInput, *, approve: bool = False,
         errors.update({f"quantities.{pk}": [_("Must not be negative.")]
                        for pk, quantity in data.quantities.items() if quantity < 0})
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         method, now = METHODS[batch.method], effective_amounts(batch)
         changes = []
         for pk, quantity in data.quantities.items():
@@ -429,7 +405,7 @@ def correct(batch_id: int, data: CorrectionInput, *, approve: bool = False,
             if should != now[pk]:
                 changes.append((row, quantity, should - now[pk]))
         if not changes:
-            raise _invalid({"quantities": [_("Nothing changes.")]})
+            raise invalid_fields({"quantities": [_("Nothing changes.")]})
         fix = AdjustmentBatch.objects.create(
             kind=batch.kind, adjustment_type=batch.adjustment_type, date=data.date,
             method=batch.method, quantity=ZERO, reason=data.reason.strip(), corrects=batch,

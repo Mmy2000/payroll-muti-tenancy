@@ -12,24 +12,7 @@ from apps.core.errors import ValidationError
 from apps.core.tenancy import tenant_context
 
 from .models import RESERVED_SLUGS, Tenant, TenantDomain, TenantStatus, ensure_plans
-
-
-def _check_link(user, cmd: ProvisionTenantCommand) -> None:
-    """An existing login becomes this workspace's owner only when asked, never a staff login,
-    and never with a password typed for it (it would be ignored)."""
-    if user.is_platform_staff:
-        raise ValidationError(_("Platform staff logins can't own a workspace. Use another email."),
-                              fields={"owner_email": [_("A platform staff login.")]},
-                              code="TENANT_OWNER_IS_STAFF")
-    if not cmd.link_existing_owner:
-        raise ValidationError(
-            _("This email already has a login. Add this workspace to that login, or use "
-              "another email."), fields={"owner_email": [_("Already has a login.")]},
-            code="TENANT_OWNER_EXISTS")
-    if cmd.owner_password:
-        raise ValidationError(
-            _("That login keeps its own password: leave the password empty."),
-            fields={"owner_password": [_("Leave empty.")]}, code="TENANT_OWNER_PASSWORD")
+from .validators import check_link
 
 
 @dataclass(frozen=True)
@@ -62,8 +45,9 @@ def provision_tenant(cmd: ProvisionTenantCommand) -> Tenant:
     Seeded names (roles, head office…) are written in the tenant's language.
     """
     from apps.core.seeding import run_seeds
+    from apps.iam.catalog import OWNER
     from apps.iam.models import Membership, User
-    from apps.iam.services import OWNER, assign_role, seed_system_roles
+    from apps.iam.services import assign_role, seed_system_roles
     from apps.org.models import Branch, TenantProfile
 
     slug = cmd.slug.strip().lower()
@@ -73,7 +57,7 @@ def provision_tenant(cmd: ProvisionTenantCommand) -> Tenant:
     existing = (User.objects.filter(email__iexact=cmd.owner_email).first()
                 if cmd.owner_email else None)
     if existing is not None:
-        _check_link(existing, cmd)
+        check_link(existing, cmd)
 
     with transaction.atomic(), translation.override(cmd.locale):
         ensure_plans()

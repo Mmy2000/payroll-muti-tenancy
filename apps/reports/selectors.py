@@ -7,7 +7,7 @@ it counts, in their branches:
 * payroll: the last approved period's net pay by department, net pay and overtime hours per
   month (12 months), from the frozen payslips of approved and paid runs (PayRole took the
   current month's, empty until it was paid);
-* what is waiting (apps/notifications/attention.py).
+* what is waiting (apps/notifications/selectors.py).
 """
 
 from __future__ import annotations
@@ -40,8 +40,8 @@ def _month(day: date) -> str:
 
 
 def people(actor, today: date) -> dict:
-    from apps.employees.services import visible_employees
-    from apps.org.services import visible_departments
+    from apps.employees.selectors import visible_employees
+    from apps.org.selectors import visible_departments
 
     staff = visible_employees(actor, PEOPLE)
     working = staff.exclude(left_on__lt=today)
@@ -59,7 +59,7 @@ def people(actor, today: date) -> dict:
 def attendance(actor, today: date) -> dict:
     from apps.attendance.domain.days import Status
     from apps.attendance.selectors import evaluate
-    from apps.employees.services import visible_employees
+    from apps.employees.selectors import visible_employees
 
     start = today - timedelta(days=13)
     staff = list(visible_employees(actor, DAYS).filter(hired_on__lte=today).filter(
@@ -130,7 +130,7 @@ def payroll(actor, today: date) -> dict | None:
 
 
 def figures(actor) -> dict:
-    from apps.notifications.attention import waiting
+    from apps.notifications.selectors import waiting
 
     today = timezone.localdate()
     found = {"waiting": waiting(actor)}

@@ -19,7 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from apps.iam.signals import client_ip
 from apps.platform.tenants import features
 
-from . import protocol, services
+from . import protocol, selectors, services
 
 logger = logging.getLogger(__name__)
 FEATURE = "zk_devices"
@@ -41,7 +41,7 @@ def device_call(view):
         tenant = getattr(request, "tenant", None)
         device = None
         if tenant is not None and features.is_enabled(tenant.id, FEATURE):
-            device = services.device_for(request.GET.get("SN", ""))
+            device = selectors.device_for(request.GET.get("SN", ""))
         if device is None:
             logger.warning("refused device call %s SN=%r", request.path,
                            request.GET.get("SN", "")[:40])

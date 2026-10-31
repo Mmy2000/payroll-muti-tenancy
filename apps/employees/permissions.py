@@ -12,3 +12,9 @@ register_permissions(_("Employees"), [
     ("employees.salary.read", _("See employees' pay")),
     ("employees.salary.manage", _("Set and change employees' pay")),
 ])
+
+
+VIEW, MANAGE = "employees.employee.view", "employees.employee.manage"
+
+
+SALARY_READ, SALARY_MANAGE = "employees.salary.read", "employees.salary.manage"

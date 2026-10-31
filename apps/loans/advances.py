@@ -11,16 +11,16 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Sum
 from django.utils.translation import gettext as _
 
 from apps.core.errors import Conflict, DomainError, NotFound, ValidationError
 from apps.core.events import publish
 from apps.core.history import in_effect
-from apps.employees.services import get_employee
+from apps.employees.selectors import get_employee
 
 from .events import AdvanceGiven
 from .models import Advance, AdvanceStatus
+from .selectors import month_advances
 
 VIEW, MANAGE = "loans.advance.view", "loans.advance.manage"
 
@@ -31,13 +31,6 @@ class AdvanceInput:
     date: date
     amount: Decimal
     reason: str = ""
-
-
-def month_advances(employee, day: date) -> Decimal:
-    open_ones = Advance.objects.filter(employee=employee, date__year=day.year,
-                                       date__month=day.month).exclude(
-        status=AdvanceStatus.CANCELLED)
-    return open_ones.aggregate(total=Sum("amount"))["total"] or Decimal(0)
 
 
 def give_advance(data: AdvanceInput, *, actor=None) -> Advance:

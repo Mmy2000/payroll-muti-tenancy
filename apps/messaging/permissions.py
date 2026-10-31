@@ -13,3 +13,6 @@ register_feature(Feature(
     "whatsapp", _("WhatsApp"),
     _("Payslips sent on WhatsApp from the company's own number."),
     TOOLS, "send", ("messaging.",), default=False))
+
+
+LINK, SEND, VIEW = "messaging.whatsapp.link", "messaging.send", "messaging.view"

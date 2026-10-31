@@ -16,6 +16,8 @@ from apps.org.models import Branch
 from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 
+from .. import selectors
+
 SERIAL = "CEXF201960123"
 
 
@@ -100,7 +102,7 @@ def test_a_device_sends_punches_that_become_attendance(device, tenant_a, make_em
         stranger = DeviceUser.objects.get(pin="99")
         assert stranger.employee is None and stranger.punches.count() == 1
         device.refresh_from_db()
-        assert device.last_seen_at is not None and services.is_online(device)
+        assert device.last_seen_at is not None and selectors.is_online(device)
 
 
 @pytest.mark.django_db

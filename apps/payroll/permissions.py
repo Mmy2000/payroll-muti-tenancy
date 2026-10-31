@@ -12,3 +12,12 @@ register_permissions(_("Payroll"), [
     ("payroll.run.reverse", _("Reverse an approved payroll run")),
     ("payroll.calendar.manage", _("Set up pay calendars")),
 ])
+
+
+READ, CALCULATE = "payroll.run.read", "payroll.run.calculate"
+
+
+APPROVE, PAY, REVERSE = "payroll.run.approve", "payroll.run.pay", "payroll.run.reverse"
+
+
+SETUP = "payroll.calendar.manage"

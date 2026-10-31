@@ -18,3 +18,6 @@ register_feature(Feature(
     "loans", _("Loans"),
     _("Loans recovered in monthly installments, with postponing."),
     PAY, "piggy-bank", ("loans.loan.",)))
+
+
+VIEW, MANAGE = "loans.loan.view", "loans.loan.manage"

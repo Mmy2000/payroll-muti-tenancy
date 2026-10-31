@@ -5,11 +5,11 @@ is). Whoever caused the event is not told about it (PayRole: the acting user).""
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
 from django.utils import timezone, translation
 
 from . import realtime
 from .models import Notification
+from .selectors import for_member
 
 PAGE = 30  # the mobile app's page
 
@@ -36,14 +36,6 @@ def notify(members, kind: str, title, body="", *, url: str = "", by=None) -> int
         for member in members.values()])
     realtime.announce(next(iter(members.values())).tenant_id, members)
     return len(targets)
-
-
-def for_member(member) -> QuerySet:
-    return Notification.objects.filter(member=member)
-
-
-def unread_count(member) -> int:
-    return for_member(member).filter(read_at__isnull=True).count()
 
 
 def mark_read(member, ids=None) -> int:

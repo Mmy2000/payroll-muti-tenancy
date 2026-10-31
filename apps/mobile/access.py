@@ -15,8 +15,9 @@ from django.utils.translation import gettext as _
 
 from apps.core.errors import DomainError, NotFound, ValidationError
 from apps.employees.models import Employee
-from apps.employees.services import MANAGE as EMPLOYEES_MANAGE
-from apps.employees.services import get_employee
+from apps.employees.permissions import MANAGE as EMPLOYEES_MANAGE
+from apps.employees.selectors import get_employee
+from apps.iam import catalog as iam_catalog
 from apps.iam import services as iam
 from apps.iam.models import MembershipStatus, Role
 from apps.platform.tenants.limits import is_app_login
@@ -25,10 +26,11 @@ USERS = "admin.users.manage"
 
 
 def _role() -> Role:
-    role = Role.objects.filter(code=iam.EMPLOYEE).first()
+    role = Role.objects.filter(code=iam_catalog.EMPLOYEE).first()
     if role is None:  # a client set up before the role existed and not migrated: make it
-        role = Role.objects.create(code=iam.EMPLOYEE, name=_("Employee (app)"), is_system=True)
-        iam.set_role_permissions(role, [iam.APP_SIGNIN])
+        role = Role.objects.create(code=iam_catalog.EMPLOYEE, name=_("Employee (app)"),
+                                   is_system=True)
+        iam.set_role_permissions(role, [iam_catalog.APP_SIGNIN])
     return role
 
 
@@ -104,13 +106,13 @@ def link_member(member_id: int, employee_id: int | None, *, actor=None) -> None:
 def can_link(actor) -> bool:
     """Whether to offer the employee link on the user form: the mobile app is on for the client
     and the actor may manage users and employees."""
-    return actor.can(iam.APP_SIGNIN) and actor.can(USERS) and actor.can(EMPLOYEES_MANAGE)
+    return actor.can(iam_catalog.APP_SIGNIN) and actor.can(USERS) and actor.can(EMPLOYEES_MANAGE)
 
 
 def link_choices(actor, member_id: int | None) -> list[Employee]:
     """Employees the actor may link (working, theirs to manage, not linked to anyone), plus the
     one this user is already linked to, whatever it is: saving the form unchanged must keep it."""
-    from apps.employees.services import visible_employees
+    from apps.employees.selectors import visible_employees
 
     free = (visible_employees(actor, EMPLOYEES_MANAGE).filter(member__isnull=True)
             .exclude(left_on__lt=timezone.localdate()))

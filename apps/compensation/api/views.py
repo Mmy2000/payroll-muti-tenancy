@@ -12,6 +12,7 @@ from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import TargetFields
 
+from .. import permissions
 from .serializers import (
     AssignmentSerializer,
     CancelSerializer,
@@ -60,8 +61,8 @@ class AssignmentViewSet(EmployeeRowsViewSet):
     related = ("employee", "item")
     serializer_class = AssignmentSerializer
     filterset_fields = ["status", "employee", "item", "frequency"]
-    required_permissions = {"list": "compensation.entry.view", "create": services.GIVE,
-                            "cancel": services.GIVE, "end": services.GIVE}
+    required_permissions = {"list": "compensation.entry.view", "create": permissions.GIVE,
+                            "cancel": permissions.GIVE, "end": permissions.GIVE}
 
     def create(self, request):
         payload = AssignmentWriteSerializer(data=request.data)

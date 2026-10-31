@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from apps.core import locks
 from apps.core.imports import CellError, Cells, Column, SheetImport
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 
 from .domain.workday import times_on
 from .models import Punch, PunchSource

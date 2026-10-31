@@ -9,11 +9,11 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from apps.core.listing import Choice, ListQuery
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 from apps.employees.web.targets import employee_choices
 from apps.iam.authz import permission_required
 
-from .. import advances, services
+from .. import advances, permissions, validators
 from ..models import Advance, AdvanceStatus, Loan, LoanStatus
 
 ADVANCE_TABS = [(AdvanceStatus.OPEN, _lazy("To be recovered")),
@@ -48,29 +48,29 @@ def advance_list(request):
     })
 
 
-@permission_required(services.VIEW)
+@permission_required(permissions.VIEW)
 def loan_list(request):
-    found = _list_query(request, services.VIEW, "granted_on", LOAN_TABS, LoanStatus.ACTIVE)
+    found = _list_query(request, permissions.VIEW, "granted_on", LOAN_TABS, LoanStatus.ACTIVE)
     rows = found.apply(Loan.objects.filter(
-        employee__in=visible_employees(request.actor, services.VIEW))
+        employee__in=visible_employees(request.actor, permissions.VIEW))
         .select_related("employee").prefetch_related("installments"))
     return render(request, "loans/loans.html", {
         "filters": found, "page": found.page(rows.order_by("-granted_on", "-id")),
-        "can_manage": request.actor.can(services.MANAGE)})
+        "can_manage": request.actor.can(permissions.MANAGE)})
 
 
-@permission_required(services.MANAGE)
+@permission_required(permissions.MANAGE)
 def loan_new(request):
     today = timezone.localdate()
     return render(request, "loans/loan_form.html", {
-        "employees": employee_choices(request.actor, services.MANAGE), "today": today,
-        "max_installments": services.MAX_INSTALLMENTS,
+        "employees": employee_choices(request.actor, permissions.MANAGE), "today": today,
+        "max_installments": validators.MAX_INSTALLMENTS,
         "selected": request.GET.get("employee", "")})
 
 
-@permission_required(services.VIEW)
+@permission_required(permissions.VIEW)
 def loan_detail(request, pk):
-    loan = (Loan.objects.filter(employee__in=visible_employees(request.actor, services.VIEW))
+    loan = (Loan.objects.filter(employee__in=visible_employees(request.actor, permissions.VIEW))
             .select_related("employee").filter(pk=pk).first())
     if loan is None:
         raise Http404
@@ -78,4 +78,4 @@ def loan_detail(request, pk):
     return render(request, "loans/loan.html", {
         "loan": loan, "installments": installments,
         "repaid": sum(i.amount for i in installments if i.status == "paid"),
-        "can_manage": request.actor.can(services.MANAGE, branch=loan.employee.branch_id)})
+        "can_manage": request.actor.can(permissions.MANAGE, branch=loan.employee.branch_id)})

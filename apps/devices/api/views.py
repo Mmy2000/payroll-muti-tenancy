@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from apps.devices import services
 from apps.devices.models import DeviceUser
 
+from .. import permissions, selectors
 from .serializers import AskSerializer, DeviceWriteSerializer, LinkSerializer
 
 
@@ -20,9 +21,9 @@ class DeviceViewSet(viewsets.GenericViewSet):
     """POST a device, PUT its settings; …/ask/ a command, …/resend/ every punch it holds,
     …/link-by-code/ the PINs that are employee codes."""
 
-    required_permissions = {"create": services.MANAGE, "update": services.MANAGE,
-                            "ask": services.MANAGE, "resend": services.MANAGE,
-                            "link_by_code": services.MANAGE}
+    required_permissions = {"create": permissions.MANAGE, "update": permissions.MANAGE,
+                            "ask": permissions.MANAGE, "resend": permissions.MANAGE,
+                            "link_by_code": permissions.MANAGE}
 
     def create(self, request):
         data = _valid(DeviceWriteSerializer, request.data)
@@ -50,7 +51,7 @@ class DeviceViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["post"], url_path="link-by-code")
     def link_by_code(self, request, pk=None):
-        device = services.visible_devices(request.actor, services.MANAGE).filter(
+        device = selectors.visible_devices(request.actor, permissions.MANAGE).filter(
             pk=pk).first()
         if device is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -61,7 +62,7 @@ class DeviceViewSet(viewsets.GenericViewSet):
 class DeviceUserViewSet(viewsets.GenericViewSet):
     """POST …/link/ {employee_id}: link a PIN (null unlinks)."""
 
-    required_permissions = {"link": services.MANAGE}
+    required_permissions = {"link": permissions.MANAGE}
     queryset = DeviceUser.objects.none()
 
     @action(detail=True, methods=["post"])

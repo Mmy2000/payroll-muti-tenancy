@@ -23,8 +23,9 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.errors import DomainError, NotFound
-from apps.employees.services import get_employee
+from apps.employees.selectors import get_employee
 from apps.iam import services as iam
+from apps.iam import validators as iam_validators
 from apps.iam.authz import build_actor
 from apps.org.models import TenantProfile
 
@@ -76,7 +77,7 @@ def _ready_member(employee, actor):
     member = employee.member
     if member is None:
         return _new_login(employee)
-    iam.ensure_can_act_on(member, actor)
+    iam_validators.ensure_can_act_on(member, actor)
     if member.status != iam.MembershipStatus.ACTIVE:
         raise DomainError(_("This employee's login is suspended."), code="MOBILE_QR_SUSPENDED")
     if not build_actor(member).can(SIGNIN):

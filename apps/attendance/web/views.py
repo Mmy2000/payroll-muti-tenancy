@@ -16,14 +16,14 @@ from apps.core import months
 from apps.core.errors import AppError
 from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
-from apps.employees.services import get_employee, visible_employees
+from apps.employees.selectors import get_employee, visible_employees
 from apps.employees.targets import employed_on
 from apps.employees.web.targets import employee_choices, group_page
 from apps.iam.authz import permission_required
 from apps.org.models import Branch
-from apps.org.services import visible_departments
+from apps.org.selectors import visible_departments
 
-from .. import entries, hourly, leave
+from .. import entries, hourly, leave, selectors
 from ..domain.summary import summarize
 from ..imports import PunchImport
 from ..models import DayKind, HourlyLeave, LeaveRequest, LeaveType, RequestStatus
@@ -100,7 +100,7 @@ def employee_month(request, pk):
         "kinds": DayKind.choices,
     }
     if actor.can("attendance.leave.view", branch=employee.branch_id):
-        context["balance"] = leave.balance(employee, first.year)
+        context["balance"] = selectors.balance(employee, first.year)
     return render(request, "attendance/employee_month.html", context)
 
 

@@ -17,7 +17,7 @@ from django.utils.translation import gettext as _
 from apps.core.errors import ValidationError
 
 from .models import Employee
-from .services import visible_employees
+from .selectors import visible_employees
 
 EMPLOYEE, DEPARTMENT, BRANCH = "employee", "department", "branch"
 KINDS = (EMPLOYEE, DEPARTMENT, BRANCH)

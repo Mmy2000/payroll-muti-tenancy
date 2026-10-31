@@ -18,7 +18,7 @@ from django.db import connections
 
 from apps.core.tenancy import tenant_context
 
-from . import services
+from . import selectors
 from .present import item
 from .realtime import hub
 
@@ -44,8 +44,8 @@ def snapshot(tenant_id: int, member_id: int, after: int | None) -> Snapshot:
         member = Membership.objects.filter(pk=member_id).first()
         if member is None:
             return Snapshot(unread=0, last_id=after or 0)
-        rows = services.for_member(member)
-        unread = services.unread_count(member)
+        rows = selectors.for_member(member)
+        unread = selectors.unread_count(member)
         if after is None:
             newest = rows.order_by("-id").values_list("id", flat=True).first()
             return Snapshot(unread=unread, last_id=newest or 0)

@@ -13,8 +13,9 @@ from django.utils import timezone
 
 from apps.core import timezones
 from apps.core.tenancy import tenant_context
+from apps.iam.catalog import MANAGER, VIEWER
 from apps.iam.models import Membership, Role, User
-from apps.iam.services import MANAGER, VIEWER, assign_role
+from apps.iam.services import assign_role
 from apps.org.models import Branch
 from apps.platform.tenants import demo
 from apps.platform.tenants.models import Tenant

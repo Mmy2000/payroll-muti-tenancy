@@ -23,6 +23,8 @@ from apps.platform.tenants import features
 from apps.platform.tenants.models import TenantFeature
 from conftest import login
 
+from .. import selectors
+
 MONTHLY = PayTerms("fixed", "monthly", D(6000), D(8))
 OCTOBER = date(2026, 10, 5)
 
@@ -231,7 +233,7 @@ def test_payroll_pays_approved_batches_and_corrections_settle_the_difference(pay
                 type_id=fix.adjustment_type_id, date=fix.date, method="days",
                 quantity=D(1)))
         services.approve(fix.pk)
-        assert services.effective_amounts(penalty) == {row.pk: D(200)}
+        assert selectors.effective_amounts(penalty) == {row.pk: D(200)}
         penalty.refresh_from_db()
         assert penalty.rows.get().amount == D(400)  # the original never changes
 

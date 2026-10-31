@@ -14,9 +14,9 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
 from apps.org.models import Branch
-from apps.org.services import visible_departments
+from apps.org.selectors import visible_departments
 
-from .. import printing, services
+from .. import permissions, printing, services
 from ..models import Frequency, MonthlyRule, PeriodKind, RunStatus, ScopeKind
 from ..selectors import issue_text, line_label, visible_runs
 
@@ -55,9 +55,9 @@ def _run_or_404(request, pk):
     return run
 
 
-@permission_required(services.READ)
+@permission_required(permissions.READ)
 def runs(request):
-    found = ListQuery(request, permission=services.READ, search=("number", "note"),
+    found = ListQuery(request, permission=permissions.READ, search=("number", "note"),
                       date_field="period__end", branch_field="",
                       choices=[Choice("status", _("Status"), RUN_TABS, apply=_by_status,
                                       value=RunStatus.DRAFT, tabs=True),
@@ -66,12 +66,12 @@ def runs(request):
     page = found.page(found.apply(visible_runs(request.actor)).order_by("-period__start", "-id"))
     _with_scope_names(page.object_list)
     return render(request, "payroll/runs.html", {
-        "filters": found, "page": page, "can_calculate": request.actor.can(services.CALCULATE)})
+        "filters": found, "page": page, "can_calculate": request.actor.can(permissions.CALCULATE)})
 
 
-@permission_required(services.CALCULATE)
+@permission_required(permissions.CALCULATE)
 def run_new(request):
-    allowed = request.actor.branch_ids(services.CALCULATE)
+    allowed = request.actor.branch_ids(permissions.CALCULATE)
     branches = Branch.objects.filter(is_active=True).order_by("code")
     today = timezone.localdate()
     return render(request, "payroll/run_form.html", {
@@ -84,7 +84,7 @@ def run_new(request):
     })
 
 
-@permission_required(services.READ)
+@permission_required(permissions.READ)
 def run_detail(request, pk):
     run = _run_or_404(request, pk)
     _with_scope_names([run])
@@ -92,21 +92,22 @@ def run_detail(request, pk):
     actor = request.actor
     can = {code: actor.can(code, branch=run.scope_id if run.scope == ScopeKind.BRANCH
                            else None)
-           for code in (services.CALCULATE, services.APPROVE, services.PAY, services.REVERSE)}
+           for code in (permissions.CALCULATE, permissions.APPROVE, permissions.PAY,
+                        permissions.REVERSE)}
     return render(request, "payroll/run.html", {
         "run": run, "slips": slips, "today": timezone.localdate(),
         "blocked": sum(1 for s in slips if s.blocking),
         "warned": sum(1 for s in slips if s.warnings and not s.blocking),
-        "can_calculate": run.is_draft and can[services.CALCULATE],
-        "can_approve": run.is_draft and can[services.APPROVE],
-        "can_pay": run.status == RunStatus.APPROVED and can[services.PAY],
-        "can_reverse": run.status == RunStatus.APPROVED and can[services.REVERSE],
+        "can_calculate": run.is_draft and can[permissions.CALCULATE],
+        "can_approve": run.is_draft and can[permissions.APPROVE],
+        "can_pay": run.status == RunStatus.APPROVED and can[permissions.PAY],
+        "can_reverse": run.status == RunStatus.APPROVED and can[permissions.REVERSE],
         "can_whatsapp": run.status in (RunStatus.APPROVED, RunStatus.PAID)
         and request.actor.can("messaging.send"),
     })
 
 
-@permission_required(services.READ)
+@permission_required(permissions.READ)
 def payslip_detail(request, pk, slip_pk):
     run = _run_or_404(request, pk)
     slip = run.payslips.select_related("employee").filter(pk=slip_pk).first()
@@ -116,7 +117,7 @@ def payslip_detail(request, pk, slip_pk):
     for line in lines:
         line.title = line_label(line)
     can_calculate = run.is_draft and request.actor.can(
-        services.CALCULATE, branch=run.scope_id if run.scope == ScopeKind.BRANCH else None)
+        permissions.CALCULATE, branch=run.scope_id if run.scope == ScopeKind.BRANCH else None)
     return render(request, "payroll/payslip.html", {
         "run": run, "slip": slip,
         "earnings": [line for line in lines if line.kind == "earning"],
@@ -140,7 +141,7 @@ def _pdf(request, run, slips, name):
         return render(request, "printing/pdf_unavailable.html", status=503)
 
 
-@permission_required(services.READ)
+@permission_required(permissions.READ)
 def payslip_pdf(request, pk, slip_pk):
     run = _run_or_404(request, pk)
     slip = run.payslips.select_related("employee__branch", "employee__department").filter(
@@ -150,7 +151,7 @@ def payslip_pdf(request, pk, slip_pk):
     return _pdf(request, run, [slip], printing.filename(run, slip))
 
 
-@permission_required(services.READ)
+@permission_required(permissions.READ)
 def run_payslips_pdf(request, pk):
     run = _run_or_404(request, pk)
     slips = run.payslips.select_related("employee__branch", "employee__department")
@@ -159,7 +160,7 @@ def run_payslips_pdf(request, pk):
     return _pdf(request, run, slips, printing.filename(run))
 
 
-@permission_required(services.SETUP)
+@permission_required(permissions.SETUP)
 def calendars(request):
     return render(request, "payroll/calendars.html", {
         "calendars": [services.calendar_for(f) for f in Frequency.values],

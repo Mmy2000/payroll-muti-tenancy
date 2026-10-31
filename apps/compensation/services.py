@@ -8,12 +8,11 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.errors import Conflict, NotFound, ValidationError
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 from apps.employees.targets import Target, resolve
 
 from .models import (
@@ -24,8 +23,8 @@ from .models import (
     PayItemBasis,
     PayItemKind,
 )
-
-GIVE = "compensation.entry.manage"
+from .permissions import GIVE
+from .selectors import overlapping_assignments
 
 
 @dataclass(frozen=True)
@@ -94,13 +93,6 @@ class AssignmentInput:
     note: str = ""
 
 
-def _overlapping(employees, item, starts_on: date, ends_on: date | None):
-    rows = PayItemAssignment.objects.filter(employee__in=employees, item=item,
-                                            status=AssignmentStatus.ACTIVE)
-    rows = rows.filter(Q(ends_on__isnull=True) | Q(ends_on__gte=starts_on))
-    return rows if ends_on is None else rows.filter(starts_on__lte=ends_on)
-
-
 def give_items(data: AssignmentInput, *, actor=None) -> list[PayItemAssignment]:
     """The item for each employee the target means on `starts_on`, sharing a batch. An item
     already running for the employee over any of the same days is refused."""
@@ -122,7 +114,7 @@ def give_items(data: AssignmentInput, *, actor=None) -> list[PayItemAssignment]:
     batch = uuid.uuid4()
     with transaction.atomic():
         people = resolve(data.target, on=data.starts_on, actor=actor, permission=GIVE)
-        clash = (_overlapping(people, item, data.starts_on, ends_on)
+        clash = (overlapping_assignments(people, item, data.starts_on, ends_on)
                  .select_related("employee").first())
         if clash is not None:
             raise ValidationError(

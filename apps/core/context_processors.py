@@ -136,9 +136,9 @@ def _navigation(request):
 
 
 def _bell(request) -> dict:
-    from apps.notifications.attention import ICONS as QUEUE_ICONS
     from apps.notifications.kinds import ICONS
-    from apps.notifications.services import unread_count
+    from apps.notifications.selectors import ICONS as QUEUE_ICONS
+    from apps.notifications.selectors import unread_count
 
     unread = unread_count(request.actor.membership)
     # Every icon the bell's menu may draw, for its script (notification kinds and queues).

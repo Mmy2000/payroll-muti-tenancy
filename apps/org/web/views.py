@@ -6,8 +6,9 @@ from django.utils.translation import gettext as _
 
 from apps.core.listing import ListQuery
 from apps.iam.authz import permission_required
-from apps.org import services
 from apps.org.models import Branch
+
+from .. import permissions, selectors
 
 
 @permission_required("org.branch.view")
@@ -42,16 +43,16 @@ def branch_edit(request, pk):
     return _branch_form(request, branch)
 
 
-@permission_required(services.DEPARTMENT_VIEW)
+@permission_required(permissions.DEPARTMENT_VIEW)
 def departments(request):
-    found = ListQuery(request, permission=services.DEPARTMENT_VIEW, search=("name",),
+    found = ListQuery(request, permission=permissions.DEPARTMENT_VIEW, search=("name",),
                       search_label=_("Department name"), date_field="")
-    rows = found.apply(services.visible_departments(request.actor))
+    rows = found.apply(selectors.visible_departments(request.actor))
     return render(request, "org/departments.html", {"filters": found, "page": found.page(rows)})
 
 
 def _department_form(request, department=None):
-    allowed = request.actor.branch_ids(services.DEPARTMENT_MANAGE)
+    allowed = request.actor.branch_ids(permissions.DEPARTMENT_MANAGE)
     branches = Branch.objects.filter(is_active=True).order_by("code")
     if allowed is not None:
         branches = branches.filter(pk__in=allowed)
@@ -65,14 +66,14 @@ def _department_form(request, department=None):
     })
 
 
-@permission_required(services.DEPARTMENT_MANAGE)
+@permission_required(permissions.DEPARTMENT_MANAGE)
 def department_new(request):
     return _department_form(request)
 
 
-@permission_required(services.DEPARTMENT_MANAGE)
+@permission_required(permissions.DEPARTMENT_MANAGE)
 def department_edit(request, pk):
-    department = services.visible_departments(request.actor, services.DEPARTMENT_MANAGE).filter(
+    department = selectors.visible_departments(request.actor, permissions.DEPARTMENT_MANAGE).filter(
         pk=pk).first()
     if department is None:
         raise Http404

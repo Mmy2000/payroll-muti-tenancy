@@ -13,6 +13,7 @@ from apps.payroll.models import (
 )
 from apps.payroll.selectors import visible_runs
 
+from .. import permissions
 from .serializers import (
     CalendarSerializer,
     CalendarWriteSerializer,
@@ -40,7 +41,7 @@ class CalendarViewSet(viewsets.GenericViewSet):
     serializer_class = CalendarSerializer
     lookup_field = "frequency"
     lookup_value_regex = "|".join(Frequency.values)
-    required_permissions = {"list": services.READ, "update": services.SETUP}
+    required_permissions = {"list": permissions.READ, "update": permissions.SETUP}
 
     def list(self, request):
         calendars = [services.calendar_for(f) for f in Frequency.values]
@@ -60,10 +61,10 @@ class RunViewSet(viewsets.GenericViewSet):
     serializer_class = RunSerializer
     filterset_fields = ["status", "period__frequency", "period__kind"]
     required_permissions = {
-        "list": services.READ, "retrieve": services.READ, "create": services.CALCULATE,
-        "destroy": services.CALCULATE, "calculate": services.CALCULATE,
-        "approve": services.APPROVE, "pay": services.PAY, "reverse": services.REVERSE,
-        "lines": services.CALCULATE,
+        "list": permissions.READ, "retrieve": permissions.READ, "create": permissions.CALCULATE,
+        "destroy": permissions.CALCULATE, "calculate": permissions.CALCULATE,
+        "approve": permissions.APPROVE, "pay": permissions.PAY, "reverse": permissions.REVERSE,
+        "lines": permissions.CALCULATE,
     }
 
     def get_queryset(self):
@@ -129,7 +130,7 @@ class RunViewSet(viewsets.GenericViewSet):
 class PayslipViewSet(viewsets.GenericViewSet):
     serializer_class = PayslipSerializer
     filterset_fields = ["run", "employee"]
-    required_permissions = {"list": services.READ, "retrieve": services.READ}
+    required_permissions = {"list": permissions.READ, "retrieve": permissions.READ}
 
     def get_queryset(self):
         return (Payslip.objects.filter(run__in=visible_runs(self.request.actor))
@@ -146,7 +147,7 @@ class PayslipViewSet(viewsets.GenericViewSet):
 class ManualLineViewSet(viewsets.GenericViewSet):
     """DELETE manual-lines/<id>/: remove a line a manager added to a draft."""
 
-    required_permissions = {"destroy": services.CALCULATE}
+    required_permissions = {"destroy": permissions.CALCULATE}
 
     def destroy(self, request, pk=None):
         if not ManualLine.objects.filter(pk=pk, run__in=visible_runs(request.actor)).exists():

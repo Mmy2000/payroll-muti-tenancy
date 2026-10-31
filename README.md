@@ -171,7 +171,7 @@ From "PayRole — the four gaps" (decisions of 2026-10-29).
   notes, and a card as a PDF with their dates and, for readers allowed to see pay, the year's
   pay (the pay at the year's end × 12, and the pay items of the year's approved payslips).
   Feature `evaluations`.
-- **The dashboard** (`apps/reports/dashboard.py`, PayRole Main Home): employees working, present
+- **The dashboard** (`apps/reports/selectors.py`, PayRole Main Home): employees working, present
   today, the last approved net pay; present each day (14 days), net pay by department, net pay
   and overtime hours each month (12 months), new hires each month (24 months); what is waiting.
   Each block only for those allowed to see it. Charts are drawn on the server
@@ -179,7 +179,7 @@ From "PayRole — the four gaps" (decisions of 2026-10-29).
   series colour per mode, thin rounded marks, a tooltip on hover (`static/core/js/bars.js`),
   the same numbers as a table.
 - **The bell** (`components/bell.html`, `static/core/js/bell.js`, from Saas_ERP): unread
-  notifications and what needs attention (`apps/notifications/attention.py`: leave and hourly
+  notifications and what needs attention (`apps/notifications/selectors.py`: leave and hourly
   leave to decide, incentives and penalties to approve, payroll runs to approve, devices not
   calling), refreshed every minute; the notifications page.
 

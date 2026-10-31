@@ -24,11 +24,15 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.core.errors import Conflict, DomainError, NotFound, PermissionDenied, ValidationError
+from apps.core.errors import (
+    Conflict,
+    DomainError,
+    NotFound,
+    PermissionDenied,
+    invalid_fields,
+)
 from apps.core.events import publish
-from apps.core.history import in_effect
 from apps.core.sequences import allocate_number
-from apps.employees.services import visible_employees
 from apps.loans import advances as advance_services
 from apps.loans import services as loan_services
 
@@ -54,15 +58,10 @@ from .models import (
     RunStatus,
     ScopeKind,
 )
+from .permissions import APPROVE, CALCULATE, PAY, REVERSE, SETUP
+from .selectors import candidates
 
-READ, CALCULATE = "payroll.run.read", "payroll.run.calculate"
-APPROVE, PAY, REVERSE = "payroll.run.approve", "payroll.run.pay", "payroll.run.reverse"
-SETUP = "payroll.calendar.manage"
 DEFAULT_ANCHOR = date(2026, 1, 3)  # a Saturday: weeks run Saturday to Friday until changed
-
-
-def _invalid(fields: dict) -> ValidationError:
-    return ValidationError(_("Please correct the highlighted fields."), fields=fields)
 
 
 # --- calendars -----------------------------------------------------------------------------
@@ -97,7 +96,7 @@ def save_calendar(data: CalendarInput, *, actor=None) -> PayCalendar:
     if data.monthly_items not in MonthlyRule.values:
         errors["monthly_items"] = [_("Choose from the list.")]
     if errors:
-        raise _invalid(errors)
+        raise invalid_fields(errors)
     with transaction.atomic():
         calendar = PayCalendar.objects.select_for_update().filter(pk=calendar_for(
             data.frequency).pk).get()
@@ -157,9 +156,9 @@ def _period(data: RunInput) -> PayrollPeriod:
             frequency=data.frequency, kind=PeriodKind.REGULAR, start=span.start, end=span.end)
         return period
     if data.start is None or data.end is None or data.end < data.start:
-        raise _invalid({"end": [_("Enter the first and last day of the off-cycle run.")]})
+        raise invalid_fields({"end": [_("Enter the first and last day of the off-cycle run.")]})
     if not data.reason.strip():
-        raise _invalid({"reason": [_("Say why this off-cycle run is needed.")]})
+        raise invalid_fields({"reason": [_("Say why this off-cycle run is needed.")]})
     return PayrollPeriod.objects.create(frequency=data.frequency, kind=PeriodKind.OFF_CYCLE,
                                         start=data.start, end=data.end,
                                         reason=data.reason.strip())
@@ -167,12 +166,12 @@ def _period(data: RunInput) -> PayrollPeriod:
 
 def create_run(data: RunInput, *, actor=None) -> PayrollRun:
     if data.frequency not in Frequency.values:
-        raise _invalid({"frequency": [_("Choose a pay frequency.")]})
+        raise invalid_fields({"frequency": [_("Choose a pay frequency.")]})
     if data.kind not in PeriodKind.values:
-        raise _invalid({"kind": [_("Choose a regular or an off-cycle run.")]})
+        raise invalid_fields({"kind": [_("Choose a regular or an off-cycle run.")]})
     if data.scope not in ScopeKind.values or (data.scope != ScopeKind.ALL
                                              and data.scope_id is None):
-        raise _invalid({"scope": [_("Choose who the run is for.")]})
+        raise invalid_fields({"scope": [_("Choose who the run is for.")]})
     _require_scope(actor, CALCULATE, data.scope, data.scope_id)
     with transaction.atomic():
         period = _period(data)
@@ -197,40 +196,6 @@ def _locked_run(run_id: int, actor, permission: str) -> PayrollRun:
 def _require_draft(run: PayrollRun) -> None:
     if run.status != RunStatus.DRAFT:
         raise Conflict(_("Only a draft run can be changed."), code="PAYROLL_RUN_STATE")
-
-
-def _frequency_of(employee, day: date) -> str | None:
-    pay = in_effect(employee.pay_history.all(), day)
-    return pay.pay_frequency if pay else None
-
-
-def _candidates(run: PayrollRun, actor):
-    """(employees to pay, the skipped with why) for the run's scope and frequency."""
-    period = run.period
-    people = visible_employees(actor, CALCULATE).filter(hired_on__lte=period.end).exclude(
-        left_on__lt=period.start)
-    if run.scope == ScopeKind.BRANCH:
-        people = people.filter(branch_id=run.scope_id)
-    elif run.scope == ScopeKind.DEPARTMENT:
-        people = people.filter(department_id=run.scope_id)
-    busy = {}
-    if period.kind == PeriodKind.REGULAR:
-        for slip in (Payslip.objects.filter(
-                run__status__in=LIVE, run__period__kind=PeriodKind.REGULAR,
-                run__period__frequency=period.frequency, run__period__start__lte=period.end,
-                run__period__end__gte=period.start).exclude(run=run).select_related("run")):
-            busy[slip.employee_id] = slip.run
-    chosen, skipped = [], []
-    for employee in people.select_related("branch").order_by("code"):
-        last = period.end if employee.left_on is None else min(period.end, employee.left_on)
-        if _frequency_of(employee, last) != period.frequency:
-            continue
-        if employee.pk in busy:
-            skipped.append({"employee_id": employee.pk, "name": employee.name,
-                            "reason": "in_run", "run": str(busy[employee.pk])})
-            continue
-        chosen.append(employee)
-    return chosen, skipped
 
 
 def _period_of(run: PayrollRun) -> Period:
@@ -276,7 +241,7 @@ def _totals(run: PayrollRun) -> None:
 
 
 def _calculate(run: PayrollRun, actor) -> None:
-    employees, skipped = _candidates(run, actor)
+    employees, skipped = candidates(run, actor)
     gatherer = _gatherer(run)
     run.payslips.exclude(employee__in=employees).delete()
     for employee in employees:
@@ -326,11 +291,11 @@ def add_manual_line(run_id: int, data: ManualLineInput, *, actor=None) -> Paysli
         employee = run.payslips.filter(employee_id=data.employee_id).select_related(
             "employee").first()
         if employee is None:
-            raise _invalid({"employee_id": [_("This employee isn't in the run.")]})
+            raise invalid_fields({"employee_id": [_("This employee isn't in the run.")]})
         if not data.label.strip():
-            raise _invalid({"label": [_("Say what the line is for.")]})
+            raise invalid_fields({"label": [_("Say what the line is for.")]})
         if data.amount <= 0:
-            raise _invalid({"amount": [_("Must be greater than zero.")]})
+            raise invalid_fields({"amount": [_("Must be greater than zero.")]})
         ManualLine.objects.create(run=run, employee_id=data.employee_id,
                                   label=data.label.strip(), amount=data.amount,
                                   addition=data.addition, taxable=data.taxable,
@@ -419,7 +384,7 @@ def record_payment(run_id: int, data: PaymentInput, *, actor=None) -> PayrollRun
 def reverse_run(run_id: int, reason: str, *, actor=None) -> PayrollRun:
     """Undo an approved (not paid) run: what it paid is released, its payslips stay on record."""
     if not reason.strip():
-        raise _invalid({"reason": [_("Say why the run is reversed.")]})
+        raise invalid_fields({"reason": [_("Say why the run is reversed.")]})
     with transaction.atomic():
         run = _locked_run(run_id, actor, REVERSE)
         if run.status != RunStatus.APPROVED:
@@ -442,16 +407,3 @@ def reverse_run(run_id: int, reason: str, *, actor=None) -> PayrollRun:
 # --- locks for the other apps (apps.core.locks) --------------------------------------------
 
 
-def period_locked(employee_id: int, start: date, end: date) -> bool:
-    return Payslip.objects.filter(
-        employee_id=employee_id, run__status__in=(RunStatus.APPROVED, RunStatus.PAID),
-        run__period__kind=PeriodKind.REGULAR, run__period__start__lte=end,
-        run__period__end__gte=start).exists()
-
-
-def source_locked(source: str, object_id: int) -> bool:
-    if PaidSource.objects.filter(source=source, source_id=object_id, released=False).exists():
-        return True
-    return PayslipLine.objects.filter(
-        source=source, source_id=object_id,
-        payslip__run__status__in=(RunStatus.APPROVED, RunStatus.PAID)).exists()

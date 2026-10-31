@@ -12,3 +12,6 @@ register_feature(Feature(
     "evaluations", _("Evaluations"),
     _("A yearly evaluation of each employee, with notes and a printed card."),
     PEOPLE, "clipboard-check", ("evaluations.",)))
+
+
+VIEW, MANAGE = "evaluations.evaluation.view", "evaluations.evaluation.manage"

@@ -22,3 +22,7 @@ register_feature(Feature(
     "penalties", _("Penalties"),
     _("Penalties for an employee, a department or a branch, deducted from pay."),
     PAY, "gavel", ("adjustments.penalty.",)))
+
+
+def permission(kind: str, action: str) -> str:
+    return f"adjustments.{kind}.{action}"

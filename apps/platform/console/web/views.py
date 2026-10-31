@@ -195,8 +195,8 @@ def tenant_new(request):
 
 
 def _owners(tenant: Tenant) -> list:
+    from apps.iam.catalog import OWNER
     from apps.iam.models import Membership
-    from apps.iam.services import OWNER
 
     with tenant_context(tenant.id):
         return list(Membership.objects.select_related("user").filter(

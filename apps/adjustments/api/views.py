@@ -20,6 +20,7 @@ from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.employees.api.serializers import TargetFields
 
+from .. import permissions
 from .serializers import (
     AddSerializer,
     AdjustmentSerializer,
@@ -35,7 +36,7 @@ from .serializers import (
 
 
 def _permissions(kind: str, actions: dict) -> dict:
-    return {name: services.permission(kind, level) for name, level in actions.items()}
+    return {name: permissions.permission(kind, level) for name, level in actions.items()}
 
 
 class _TypeViewSet(ActivateMixin, ServiceViewSet):
@@ -108,13 +109,13 @@ ROW_ACTIONS = {"list": "view", "partial_update": "manage", "destroy": "manage"}
 
 class IncentiveViewSet(_RowViewSet):
     kind = AdjustmentKind.INCENTIVE
-    view_permission = services.permission(kind, "view")
+    view_permission = permissions.permission(kind, "view")
     required_permissions = _permissions(kind, ROW_ACTIONS)
 
 
 class PenaltyViewSet(_RowViewSet):
     kind = AdjustmentKind.PENALTY
-    view_permission = services.permission(kind, "view")
+    view_permission = permissions.permission(kind, "view")
     required_permissions = _permissions(kind, ROW_ACTIONS)
 
 

@@ -7,64 +7,34 @@ the employees of those branches. Pay is a permission of its own (`employees.sala
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from datetime import date, time, timedelta
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Max
 from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.crypto import blind_index, encrypt
-from apps.core.errors import DomainError, NotFound, ValidationError
-from apps.org.models import Branch, Department, TenantProfile
-from apps.policies.models import LatenessPolicy, OvertimePolicy
+from apps.core.errors import DomainError, NotFound, invalid_fields
 
 from .models import (
     Compensation,
     Employee,
-    Gender,
-    MaritalStatus,
-    MilitaryStatus,
     PayFrequency,
     WageType,
-    Weekday,
     WorkSchedule,
 )
-
-VIEW, MANAGE = "employees.employee.view", "employees.employee.manage"
-SALARY_READ, SALARY_MANAGE = "employees.salary.read", "employees.salary.manage"
-NATIONAL_ID_PURPOSE = "employees.national_id"
-
-
-def _invalid(fields: dict) -> ValidationError:
-    return ValidationError(_("Please correct the highlighted fields."), fields=fields)
-
-
-def visible_employees(actor, code: str = VIEW):
-    """Employees of the branches where `actor` holds `code` (all of them for a trusted caller)."""
-    employees = Employee.objects.all()
-    if actor is None:
-        return employees
-    branches = actor.branch_ids(code)
-    return employees if branches is None else employees.filter(branch_id__in=branches)
-
-
-def get_employee(employee_id: int, actor=None, code: str = VIEW, *, lock=False) -> Employee:
-    employees = visible_employees(actor, code)
-    if lock:
-        employees = employees.select_for_update(of=("self",))
-    employee = employees.filter(pk=employee_id).first()
-    if employee is None:
-        raise NotFound(_("Not found."))
-    return employee
-
-
-def next_code() -> int:
-    return (Employee.objects.aggregate(top=Max("code"))["top"] or 0) + 1
-
+from .permissions import MANAGE, SALARY_MANAGE
+from .selectors import get_employee, visible_employees
+from .validators import (
+    NATIONAL_ID_PURPOSE,
+    check_card,
+    check_change_date,
+    check_pay,
+    check_schedule,
+    normalize_national_id,
+)
 
 # --- the card ------------------------------------------------------------------------------
 
@@ -90,59 +60,6 @@ class EmployeeInput:
     children: int = 0
     military_status: str = ""
     notes: str = ""
-
-
-def normalize_national_id(value: str) -> str:
-    return re.sub(r"\s+", "", value or "")
-
-
-def _national_id_problem(value: str) -> str | None:
-    if not value:
-        return None
-    if not value.isdigit():
-        return _("Use digits only.")
-    profile = TenantProfile.objects.first()
-    if profile is not None and profile.country == "EG" and len(value) != 14:
-        return _("An Egyptian national ID has 14 digits.")
-    if not 5 <= len(value) <= 20:
-        return _("Enter a valid national ID.")
-    return None
-
-
-def _check_card(data: EmployeeInput, employee: Employee) -> dict:
-    errors: dict[str, list[str]] = {}
-    if not data.name.strip():
-        errors["name"] = [_("Enter a name.")]
-    if data.code < 1:
-        errors["code"] = [_("Enter a code from 1.")]
-    elif Employee.objects.filter(code=data.code).exclude(pk=employee.pk).exists():
-        errors["code"] = [_("Another employee has this code.")]
-    if not Branch.objects.filter(pk=data.branch_id, is_active=True).exists():
-        errors["branch_id"] = [_("Choose an active branch.")]
-    if data.department_id is not None:
-        department = Department.objects.filter(pk=data.department_id, is_active=True).first()
-        if department is None:
-            errors["department_id"] = [_("Choose an active department.")]
-        elif department.branch_id != data.branch_id:
-            errors["department_id"] = [_("This department isn't in the employee's branch.")]
-    for name, choices in (("gender", Gender), ("marital_status", MaritalStatus),
-                          ("military_status", MilitaryStatus)):
-        value = getattr(data, name)
-        if value and value not in choices.values:
-            errors[name] = [_("Choose from the list.")]
-    national_id = normalize_national_id(data.national_id)
-    problem = _national_id_problem(national_id)
-    if problem:
-        errors["national_id"] = [problem]
-    elif national_id and Employee.objects.filter(
-            national_id_index=blind_index(national_id, purpose=NATIONAL_ID_PURPOSE)).exclude(
-            pk=employee.pk).exists():
-        errors["national_id"] = [_("Another employee has this national ID.")]
-    if employee.left_on is not None and data.hired_on > employee.left_on:
-        errors["hired_on"] = [_("Must not be after the day they left.")]
-    if data.birth_date is not None and data.birth_date >= data.hired_on:
-        errors["birth_date"] = [_("Must be before the hiring date.")]
-    return errors
 
 
 def _apply_card(employee: Employee, data: EmployeeInput, actor) -> None:
@@ -194,43 +111,6 @@ class ScheduleInput:
     note: str = ""
 
 
-def _check_pay(data: CompensationInput) -> dict:
-    errors: dict[str, list[str]] = {}
-    if data.wage_type not in WageType.values:
-        errors["wage_type"] = [_("Choose how the pay is counted.")]
-    if data.pay_frequency not in PayFrequency.values:
-        errors["pay_frequency"] = [_("Choose how often the employee is paid.")]
-    if data.salary < 0:
-        errors["salary"] = [_("Must not be negative.")]
-    if not Decimal(0) < data.hours_per_day <= Decimal(24):
-        errors["hours_per_day"] = [_("Enter hours from more than 0 to 24.")]
-    for name in ("overtime_multiplier", "absence_multiplier", "holiday_multiplier",
-                 "permission_hours"):
-        if getattr(data, name) < 0:
-            errors[name] = [_("Must not be negative.")]
-    if data.insured_salary is not None and data.insured_salary < 0:
-        errors["insured_salary"] = [_("Must not be negative.")]
-    return errors
-
-
-def _check_schedule(data: ScheduleInput) -> dict:
-    errors: dict[str, list[str]] = {}
-    if data.starts_at == data.ends_at:
-        errors["ends_at"] = [_("The shift must end at another time than it starts.")]
-    days = set(data.days_off)
-    if not days <= set(Weekday.values):
-        errors["days_off"] = [_("Choose days of the week.")]
-    elif len(days) == 7:
-        errors["days_off"] = [_("At least one day must be a working day.")]
-    if data.lateness_policy_id is not None and not LatenessPolicy.objects.filter(
-            pk=data.lateness_policy_id, is_active=True).exists():
-        errors["lateness_policy_id"] = [_("Choose an active policy.")]
-    if data.overtime_policy_id is not None and not OvertimePolicy.objects.filter(
-            pk=data.overtime_policy_id, is_active=True).exists():
-        errors["overtime_policy_id"] = [_("Choose an active policy.")]
-    return errors
-
-
 def _new_pay(employee: Employee, data: CompensationInput, actor) -> Compensation:
     values = {name: getattr(data, name) for name in (
         "wage_type", "pay_frequency", "salary", "hours_per_day", "overtime_multiplier",
@@ -265,10 +145,10 @@ def create_employee(data: EmployeeInput, pay: CompensationInput, schedule: Sched
         actor.require(SALARY_MANAGE, branch=data.branch_id)
     with transaction.atomic():
         employee = Employee(created_by=getattr(actor, "user", None))
-        errors = {**_check_card(data, employee), **_prefixed("pay", _check_pay(pay)),
-                  **_prefixed("schedule", _check_schedule(schedule))}
+        errors = {**check_card(data, employee), **_prefixed("pay", check_pay(pay)),
+                  **_prefixed("schedule", check_schedule(schedule))}
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         _apply_card(employee, data, actor)
         employee.save()
         _new_pay(employee, pay, actor)
@@ -282,26 +162,15 @@ def update_employee(employee_id: int, data: EmployeeInput, *, actor=None) -> Emp
         if actor is not None:
             actor.require(MANAGE, branch=employee.branch_id)
             actor.require(MANAGE, branch=data.branch_id)  # moving to another branch
-        errors = _check_card(data, employee)
+        errors = check_card(data, employee)
         first_pay = employee.pay_history.order_by("effective_from").first()
         if first_pay is not None and data.hired_on > first_pay.effective_from:
             errors.setdefault("hired_on", [_("Pay is recorded from an earlier date.")])
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         _apply_card(employee, data, actor)
         employee.save()
     return employee
-
-
-def _check_change_date(employee: Employee, effective_from: date | None) -> date:
-    if effective_from is None:
-        raise _invalid({"effective_from": [_("Enter the date the change starts.")]})
-    locks.ensure_open(employee.pk, effective_from, date.max)
-    if effective_from < employee.hired_on:
-        raise _invalid({"effective_from": [_("Must not be before the hiring date.")]})
-    if employee.left_on is not None and effective_from > employee.left_on:
-        raise _invalid({"effective_from": [_("Must not be after the day they left.")]})
-    return effective_from
 
 
 def change_pay(employee_id: int, data: CompensationInput, *, actor=None) -> Compensation:
@@ -310,12 +179,12 @@ def change_pay(employee_id: int, data: CompensationInput, *, actor=None) -> Comp
         employee = get_employee(employee_id, actor, SALARY_MANAGE, lock=True)
         if actor is not None:
             actor.require(SALARY_MANAGE, branch=employee.branch_id)
-        start = _check_change_date(employee, data.effective_from)
-        errors = _check_pay(data)
+        start = check_change_date(employee, data.effective_from)
+        errors = check_pay(data)
         if employee.pay_history.filter(effective_from=start).exists():
             errors["effective_from"] = [_("Pay already changes on this date.")]
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         return _new_pay(employee, data, actor)
 
 
@@ -325,12 +194,12 @@ def change_schedule(employee_id: int, data: ScheduleInput, *, actor=None) -> Wor
         employee = get_employee(employee_id, actor, MANAGE, lock=True)
         if actor is not None:
             actor.require(MANAGE, branch=employee.branch_id)
-        start = _check_change_date(employee, data.effective_from)
-        errors = _check_schedule(data)
+        start = check_change_date(employee, data.effective_from)
+        errors = check_schedule(data)
         if employee.schedules.filter(effective_from=start).exists():
             errors["effective_from"] = [_("The hours already change on this date.")]
         if errors:
-            raise _invalid(errors)
+            raise invalid_fields(errors)
         return _new_schedule(employee, data, actor)
 
 
@@ -367,12 +236,12 @@ def end_employment(employee_id: int, left_on: date, reason: str = "", *,
         if actor is not None:
             actor.require(MANAGE, branch=employee.branch_id)
         if left_on < employee.hired_on:
-            raise _invalid({"left_on": [_("Must not be before the hiring date.")]})
+            raise invalid_fields({"left_on": [_("Must not be before the hiring date.")]})
         locks.ensure_open(employee.pk, left_on + timedelta(days=1), date.max)
         later = (employee.pay_history.filter(effective_from__gt=left_on).exists()
                  or employee.schedules.filter(effective_from__gt=left_on).exists())
         if later:
-            raise _invalid({"left_on": [_("Pay or hours change after this date; remove those "
+            raise invalid_fields({"left_on": [_("Pay or hours change after this date; remove those "
                                           "changes first.")]})
         employee.left_on, employee.leave_reason = left_on, reason.strip()
         employee.updated_by = getattr(actor, "user", None)

@@ -24,7 +24,8 @@ from apps.core.errors import ValidationError
 from apps.core.history import in_effect
 
 from .models import Employee, WorkSchedule
-from .services import MANAGE, ScheduleInput, change_schedule
+from .permissions import MANAGE
+from .services import ScheduleInput, change_schedule
 from .targets import Group, resolve_group
 
 

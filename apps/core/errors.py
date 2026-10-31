@@ -3,6 +3,8 @@ error envelope and template views turn them into messages."""
 
 from __future__ import annotations
 
+from django.utils.translation import gettext as _
+
 
 class AppError(Exception):
     code = "ERROR"
@@ -45,3 +47,8 @@ class DomainError(AppError):
 
     code = "DOMAIN_RULE"
     status = 422
+
+
+def invalid_fields(fields: dict, message: str | None = None) -> ValidationError:
+    """The error for a form whose fields failed: `fields` is {"field": ["what is wrong"]}."""
+    return ValidationError(message or _("Please correct the highlighted fields."), fields=fields)

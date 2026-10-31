@@ -54,3 +54,18 @@ def limits() -> dict[str, LimitDef]:
 
 def is_known_permission(code: str) -> bool:
     return code == WILDCARD or code in _permissions
+
+
+OWNER = "owner"
+
+
+MANAGER = "manager"
+
+
+VIEWER = "viewer"
+
+
+EMPLOYEE = "employee"
+
+
+APP_SIGNIN = "mobile.signin"

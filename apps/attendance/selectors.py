@@ -10,7 +10,7 @@ from datetime import date, datetime, time, timedelta
 from django.db.models import Q, Sum
 from django.utils import timezone
 
-from apps.core.history import Timeline
+from apps.core.history import Timeline, in_effect
 from apps.core.tenancy.context import require_current_tenant_id
 from apps.employees.models import WorkSchedule
 from apps.platform.tenants import features
@@ -18,7 +18,7 @@ from apps.policies.models import PublicHoliday
 
 from .approvals import ACTIVE
 from .domain.days import DayFacts, DayResult, ManualEntry, Shift, evaluate_day
-from .domain.leave import days_between
+from .domain.leave import Balance, days_between, spans_overlap
 from .domain.workday import work_date_of
 from .models import AttendanceDay, HourlyLeave, LeaveRequest, Punch, RequestStatus
 
@@ -133,3 +133,32 @@ def active_requests(model, employee_id: int):
 def overlapping_leave(employee_id: int, start: date, end: date, *, exclude: int | None = None):
     return (active_requests(LeaveRequest, employee_id)
             .filter(Q(start_date__lte=end) & Q(end_date__gte=start)).exclude(pk=exclude))
+
+
+def balance(employee, year: int) -> Balance:
+    """Days counted against the annual balance in `year` (by the request's first day)."""
+    pay = in_effect(employee.pay_history.all(), max(date(year, 1, 1), employee.hired_on))
+    used = (LeaveRequest.objects.filter(employee=employee, leave_type__uses_annual_balance=True,
+                                        start_date__year=year)
+            .values("status").annotate(days=Sum("days")))
+    by_status = {row["status"]: row["days"] for row in used}
+    return Balance(entitled=pay.annual_leave_days if pay else 0,
+                   taken=by_status.get(RequestStatus.APPROVED, 0),
+                   requested=by_status.get(RequestStatus.PENDING, 0))
+
+
+def minutes_used(request: HourlyLeave) -> int:
+    month = HourlyLeave.objects.filter(
+        employee=request.employee, status=RequestStatus.APPROVED,
+        work_date__year=request.work_date.year, work_date__month=request.work_date.month)
+    return month.aggregate(total=Sum("minutes"))["total"] or 0
+
+
+def allowance(employee, day: date) -> int:
+    pay = in_effect(employee.pay_history.all(), day)
+    return int((pay.permission_hours if pay else 0) * 60)
+
+
+def clashes(employee_id: int, work_date: date, starts_at: time, ends_at: time) -> bool:
+    return any(spans_overlap((starts_at, ends_at), (row.starts_at, row.ends_at))
+               for row in active_requests(HourlyLeave, employee_id).filter(work_date=work_date))

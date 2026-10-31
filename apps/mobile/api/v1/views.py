@@ -29,9 +29,10 @@ from apps.iam import throttle
 from apps.iam.authz import build_actor
 from apps.iam.catalog import WILDCARD
 from apps.iam.signals import client_ip
+from apps.notifications import selectors as notifications_selectors
 from apps.notifications import services as notifications
 
-from ... import contract, devices, qr, services
+from ... import contract, devices, qr, selectors, services
 from ...contract import AppError
 from ...models import DeviceMethod, TrackSession
 from . import serializers as s
@@ -193,15 +194,15 @@ class ChangePasswordView(AppView):
 
 
 def _today(person):
-    day = services.work_day(person, timezone.now())
-    return day, services.day_punches(person, day)
+    day = selectors.work_day(person, timezone.now())
+    return day, selectors.day_punches(person, day)
 
 
 class MeView(AppView):
     def get(self, request):
         actor = request._request.actor
         person = _employee_or_none(self.member)
-        unread = notifications.unread_count(self.member)
+        unread = notifications_selectors.unread_count(self.member)
         if person is None:
             if not actor.can(MONITOR):
                 raise AppError("no_employee", status=404)
@@ -212,7 +213,7 @@ class MeView(AppView):
         return Response({
             "username": self.member.username, "is_superuser": actor.can(MONITOR),
             "employee": s.employee(person, request),
-            "leave_balance": services.balance(person, timezone.localdate().year),
+            "leave_balance": selectors.balance(person, timezone.localdate().year),
             "today": s.attendance_list(punches),
             "active_session": s.session(services.active_session(person)),
             "notifications_unread": unread})
@@ -277,7 +278,7 @@ class RevokeView(AppView):
 
 class BiometricStatusView(AppView):
     def get(self, request):
-        enrollment = services.active_enrollment(self.employee())
+        enrollment = selectors.active_enrollment(self.employee())
         return Response({"enrolled": enrollment is not None,
                          "enrollment_id": enrollment.pk if enrollment else None,
                          "device_id": enrollment.device_id if enrollment else None,
@@ -354,7 +355,7 @@ def _year(request):
 
 class LeavesView(AppView):
     def get(self, request):
-        return Response([s.leave(row) for row in services.leaves(self.employee(),
+        return Response([s.leave(row) for row in selectors.leaves(self.employee(),
                                                                  _year(request))])
 
     def post(self, request):
@@ -372,7 +373,7 @@ class LeaveDetailView(AppView):
 
 class LeaveBalanceView(AppView):
     def get(self, request):
-        return Response(services.balance(self.employee(),
+        return Response(selectors.balance(self.employee(),
                                          _year(request) or timezone.localdate().year))
 
 
@@ -381,7 +382,7 @@ class LeaveBalanceView(AppView):
 
 class NotificationsView(AppView):
     def get(self, request):
-        rows = notifications.for_member(self.member)
+        rows = notifications_selectors.for_member(self.member)
         if request.GET.get("unread") == "1":
             rows = rows.filter(read_at__isnull=True)
         before = request.GET.get("before", "")
@@ -389,7 +390,7 @@ class NotificationsView(AppView):
             rows = rows.filter(pk__lt=int(before))
         items = list(rows.order_by("-pk")[:notifications.PAGE])
         return Response({
-            "unread": notifications.unread_count(self.member),
+            "unread": notifications_selectors.unread_count(self.member),
             "items": [{"id": n.pk, "kind": n.kind, "title": n.title, "body": n.body,
                        "read": n.read_at is not None, "created_at": contract.moment(
                            n.created_at)} for n in items],
@@ -400,7 +401,8 @@ class NotificationsReadView(AppView):
     def post(self, request):
         data = _valid(s.NotificationsReadSerializer, request.data)
         marked = notifications.mark_read(self.member, data["ids"] or None)
-        return Response({"marked": marked, "unread": notifications.unread_count(self.member)})
+        return Response({"marked": marked,
+                         "unread": notifications_selectors.unread_count(self.member)})
 
 
 # --- tracking --------------------------------------------------------------------------------

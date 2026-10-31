@@ -5,8 +5,9 @@ from __future__ import annotations
 from rest_framework import serializers
 
 from apps.core.api.fields import MonthField
-from apps.loans import services
 from apps.loans.models import Advance, Loan, LoanInstallment
+
+from .. import validators
 
 
 class AdvanceSerializer(serializers.ModelSerializer):
@@ -47,6 +48,6 @@ class LoanWriteSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField()
     granted_on = serializers.DateField()
     amount = serializers.DecimalField(max_digits=12, decimal_places=2)
-    installments = serializers.IntegerField(min_value=1, max_value=services.MAX_INSTALLMENTS)
+    installments = serializers.IntegerField(min_value=1, max_value=validators.MAX_INSTALLMENTS)
     first_month = MonthField()
     reason = serializers.CharField(max_length=300, allow_blank=True, default="")

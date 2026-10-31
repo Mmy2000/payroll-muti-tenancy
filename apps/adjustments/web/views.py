@@ -15,13 +15,13 @@ from apps.core.listing import Choice, ListQuery
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
 from apps.org.models import Branch
-from apps.org.services import visible_departments
+from apps.org.selectors import visible_departments
 
-from .. import services
+from .. import selectors
 from ..domain.amounts import METHODS
 from ..models import AdjustmentBatch, AdjustmentKind, AdjustmentType, BatchStatus
+from ..permissions import permission
 from ..selectors import visible_batches
-from ..services import permission
 
 
 @dataclass(frozen=True)
@@ -121,7 +121,7 @@ def _batch(request, page: KindPage, pk: int):
     if batch is None:
         raise Http404
     _target_names([batch])
-    paid, now = services.paid_rows(batch), services.effective_amounts(batch)
+    paid, now = selectors.paid_rows(batch), selectors.effective_amounts(batch)
     rows = list(batch.rows.select_related("employee", "corrects").order_by("employee__code"))
     latest = dict(batch.rows.model.objects.filter(
         corrects__batch=batch, batch__status=BatchStatus.APPROVED).order_by("id")

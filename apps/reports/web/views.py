@@ -8,10 +8,10 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render
 from django.utils.http import content_disposition_header
 
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 from apps.iam.authz import permission_required
 from apps.org.models import Branch, TenantProfile
-from apps.org.services import visible_departments
+from apps.org.selectors import visible_departments
 
 from ..exporters import EXPORTERS, shape
 from ..registry import REPORTS, SECTIONS, Report, Scope
@@ -25,13 +25,13 @@ def visible_reports(actor) -> list[type[Report]]:
 
 @permission_required("authenticated")
 def home(request):
-    """The dashboard (apps/reports/dashboard.py): each block for those allowed to see it."""
+    """The dashboard (apps/reports/selectors.py): each block for those allowed to see it."""
     from django.utils import timezone
     from django.utils.formats import date_format
 
     from apps.iam.models import Membership, MembershipStatus
 
-    from ..dashboard import figures
+    from ..selectors import figures
 
     actor = request.actor
     now = timezone.localtime()

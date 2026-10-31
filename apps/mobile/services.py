@@ -25,9 +25,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.attendance import leave as leave_services
-from apps.attendance.domain.workday import work_date_of
-from apps.attendance.models import LeaveRequest, LeaveType, Punch, PunchSource, RequestStatus
-from apps.attendance.selectors import ScheduleHistory
+from apps.attendance.models import LeaveRequest, Punch, PunchSource, RequestStatus
 from apps.core.crypto import decrypt, encrypt
 from apps.core.errors import AppError as ServiceError
 from apps.employees.models import Employee
@@ -35,6 +33,7 @@ from apps.platform.tenants import features
 
 from .contract import MESSAGES, AppError, duplicate
 from .models import BiometricEnrollment, BiometricNonce, EndReason, TrackPoint, TrackSession
+from .selectors import active_enrollment, annual_type, balance, day_punches, work_day
 
 TRACK_INTERVAL_SECONDS = 120
 TRACK_DISTANCE_FILTER_M = 50
@@ -73,22 +72,6 @@ def config() -> dict:
 # --- work days and punches -------------------------------------------------------------------
 
 
-def work_day(employee: Employee, moment: datetime) -> date:
-    local = timezone.localtime(moment)
-    row = ScheduleHistory(employee.schedules.all()).on(local.date())
-    return work_date_of(moment, row.starts_at, timezone.get_current_timezone()) if row \
-        else local.date()
-
-
-def day_punches(employee: Employee, day: date) -> list[Punch]:
-    """The punches of one work day, oldest first."""
-    zone = timezone.get_current_timezone()
-    window = (datetime.combine(day - timedelta(days=1), datetime.min.time(), tzinfo=zone),
-              datetime.combine(day + timedelta(days=2), datetime.min.time(), tzinfo=zone))
-    return [p for p in Punch.objects.filter(employee=employee, at__range=window).order_by("at")
-            if work_day(employee, p.at) == day]
-
-
 def directions(punches: list[Punch]) -> dict[int, int]:
     """In (0) or out (1) for each punch: what the employee pressed, else first in, then out."""
     return {p.pk: p.direction if p.direction is not None else (0 if index == 0 else 1)
@@ -115,10 +98,6 @@ def enroll(employee: Employee, device_id: str, app_version: str = "") -> tuple:
 def revoke(employee: Employee, reason: str = "signout") -> int:
     return BiometricEnrollment.objects.filter(employee=employee, is_active=True).update(
         is_active=False, revoked_at=timezone.now(), revoked_reason=reason)
-
-
-def active_enrollment(employee: Employee) -> BiometricEnrollment | None:
-    return BiometricEnrollment.objects.filter(employee=employee, is_active=True).first()
 
 
 def _proof_time(text: str) -> datetime | None:
@@ -252,11 +231,6 @@ def close_stale(employee: Employee | None = None) -> int:
     return closed
 
 
-def active_session(employee: Employee) -> TrackSession | None:
-    close_stale(employee)
-    return TrackSession.objects.filter(employee=employee, is_active=True).first()
-
-
 def start_session(employee: Employee, check_in: Punch, device_id: str = "",
                   app_version: str = "") -> TrackSession:
     now = timezone.now()
@@ -319,30 +293,6 @@ def add_points(employee: Employee, session_id: int | None, points: list[dict]
 # --- leave -----------------------------------------------------------------------------------
 
 
-def annual_type() -> LeaveType:
-    found = LeaveType.objects.filter(is_active=True, uses_annual_balance=True).order_by(
-        "code").first()
-    if found is None:
-        raise AppError("no_leave_type")
-    return found
-
-
-def balance(employee: Employee, year: int) -> dict:
-    """PayRole counted waiting requests as used too."""
-    left = leave_services.balance(employee, year)
-    used = left.taken + left.requested
-    return {"year": year, "allowed": left.entitled, "used": used,
-            "remaining": left.entitled - used}
-
-
-def leaves(employee: Employee, year: int | None):
-    rows = LeaveRequest.objects.filter(
-        employee=employee, status__in=(RequestStatus.PENDING, RequestStatus.APPROVED))
-    if year:
-        rows = rows.filter(start_date__year=year)
-    return rows.order_by("-pk")
-
-
 def ask_leave(employee: Employee, member, start: date, end: date) -> LeaveRequest:
     """A request from the app is refused up front when the balance (waiting requests counted)
     can't cover it, as PayRole's was; the screens check it at approval."""
@@ -383,3 +333,8 @@ def withdraw_leave(employee: Employee, member, pk: int) -> None:
         leave_services.decide_leave(request.pk, "cancel", by=member)
     except ServiceError as error:
         raise AppError(error.code.lower(), detail=error.message) from None
+
+
+def active_session(employee: Employee) -> TrackSession | None:
+    close_stale(employee)
+    return TrackSession.objects.filter(employee=employee, is_active=True).first()

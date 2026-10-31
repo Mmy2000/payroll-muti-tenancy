@@ -3,7 +3,7 @@ only the rows of employees the member may see, in the branches of `view_permissi
 
 from rest_framework import viewsets
 
-from apps.employees.services import visible_employees
+from ..selectors import visible_employees
 
 
 class EmployeeRowsViewSet(viewsets.GenericViewSet):

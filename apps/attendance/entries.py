@@ -20,19 +20,18 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core import bulk, locks
-from apps.core.errors import NotFound, ValidationError
+from apps.core.errors import NotFound, invalid_fields
 from apps.employees.models import Employee
-from apps.employees.services import visible_employees
+from apps.employees.selectors import visible_employees
 from apps.employees.targets import Group, resolve_group
 
 from .domain.days import Status
 from .domain.workday import times_on
 from .models import AttendanceDay, DayKind
 from .selectors import ScheduleHistory, evaluate
+from .validators import check_day
 
 MANAGE = "attendance.day.manage"
-# Kinds that may be entered for a day still to come (planning a day off or an excused absence).
-PLANNABLE = {DayKind.EXCUSED, DayKind.DAY_OFF}
 
 
 @dataclass(frozen=True)
@@ -45,10 +44,6 @@ class DayEntryInput:
     shift_times: bool = False
 
 
-def _invalid(fields: dict) -> ValidationError:
-    return ValidationError(_("Please correct the highlighted fields."), fields=fields)
-
-
 def _employees(employee_ids, actor) -> list[Employee]:
     ids = set(employee_ids)
     found = list(visible_employees(actor, MANAGE).filter(pk__in=ids)
@@ -58,25 +53,13 @@ def _employees(employee_ids, actor) -> list[Employee]:
     return found
 
 
-def _check(data: DayEntryInput, work_date: date) -> None:
-    errors = {}
-    if data.kind not in DayKind.values:
-        errors["kind"] = [_("Choose what happened that day.")]
-    elif work_date > timezone.localdate() and data.kind not in PLANNABLE:
-        errors["work_date"] = [_("Only a day off or an excused absence can be entered ahead.")]
-    elif data.kind == DayKind.WORKED and not data.shift_times and data.check_in is None:
-        errors["check_in"] = [_("Enter the time they came.")]
-    if errors:
-        raise _invalid(errors)
-
-
 def _times(employee: Employee, work_date: date, data: DayEntryInput):
     if data.kind != DayKind.WORKED:
         return None, None
     if data.shift_times:
         row = ScheduleHistory(employee.schedules.all()).on(work_date)
         if row is None:
-            raise _invalid({"kind": [_("%(name)s has no working hours on that day.")
+            raise invalid_fields({"kind": [_("%(name)s has no working hours on that day.")
                                      % {"name": employee.name}]})
         start, end = row.starts_at, row.ends_at
     else:
@@ -87,7 +70,7 @@ def _times(employee: Employee, work_date: date, data: DayEntryInput):
 def _save(employee: Employee, work_date: date, data: DayEntryInput, actor) -> AttendanceDay:
     if not (employee.hired_on <= work_date
             and (employee.left_on is None or work_date <= employee.left_on)):
-        raise _invalid({"work_date": [_("%(name)s was not employed on that day.")
+        raise invalid_fields({"work_date": [_("%(name)s was not employed on that day.")
                                       % {"name": employee.name}]})
     if actor is not None:
         actor.require(MANAGE, branch=employee.branch_id)
@@ -105,7 +88,7 @@ def _save(employee: Employee, work_date: date, data: DayEntryInput, actor) -> At
 
 def set_day(employee_id: int, work_date: date, data: DayEntryInput, *,
             actor=None) -> AttendanceDay:
-    _check(data, work_date)
+    check_day(data, work_date)
     with transaction.atomic():
         (employee,) = _employees([employee_id], actor)
         return _save(employee, work_date, data, actor)
@@ -114,7 +97,7 @@ def set_day(employee_id: int, work_date: date, data: DayEntryInput, *,
 def set_days(employee_ids: list[int], work_date: date, data: DayEntryInput, *,
              actor=None) -> list[AttendanceDay]:
     """The same entry for several employees (the daily sheet's "mark all")."""
-    _check(data, work_date)
+    check_day(data, work_date)
     with transaction.atomic():
         return [_save(employee, work_date, data, actor)
                 for employee in _employees(employee_ids, actor)]
@@ -171,7 +154,7 @@ def _set_times(employee: Employee, data: GroupTimesInput, times, actor) -> Atten
             employee=employee, work_date=data.work_date).exists():
         errors["work_date"] = [_("Already entered by hand for that day.")]
     if errors:
-        raise _invalid(errors)
+        raise invalid_fields(errors)
     return _save(employee, data.work_date, DayEntryInput(
         kind=DayKind.WORKED, check_in=check_in, check_out=check_out, note=data.reason), actor)
 
@@ -182,15 +165,16 @@ def set_times_for_group(data: GroupTimesInput, *, save: bool = False,
     if actor is not None:
         actor.require(MANAGE)
     if not data.reason.strip():
-        raise _invalid({"reason": [_("Say why the times are entered by hand.")]})
-    _check(DayEntryInput(kind=DayKind.WORKED, check_in=data.check_in or time()),
+        raise invalid_fields({"reason": [_("Say why the times are entered by hand.")]})
+    check_day(DayEntryInput(kind=DayKind.WORKED, check_in=data.check_in or time()),
            data.work_date)
     own = data.own_times or {}
     with transaction.atomic():
         people = resolve_group(data.group, on=data.work_date, actor=actor, permission=MANAGE)
         unknown = set(own) - {employee.pk for employee in people}
         if unknown:
-            raise _invalid({"own_times": [_("Times are given for someone not in the group.")]})
+            raise invalid_fields(
+                {"own_times": [_("Times are given for someone not in the group.")]})
         items = []
         for employee in people:
             times = own.get(employee.pk, (data.check_in, data.check_out))

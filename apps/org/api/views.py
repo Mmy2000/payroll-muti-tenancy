@@ -6,6 +6,7 @@ from apps.core.api.viewsets import ActivateMixin, ServiceViewSet
 from apps.org import services
 from apps.org.models import Branch, Department
 
+from .. import selectors
 from .serializers import (
     BranchSerializer,
     BranchWriteSerializer,
@@ -75,7 +76,7 @@ class DepartmentViewSet(ActivateMixin, ServiceViewSet):
     }
 
     def get_queryset(self):
-        return services.visible_departments(self.request.actor)
+        return selectors.visible_departments(self.request.actor)
 
     def to_input(self, data):
         return services.DepartmentInput(branch_id=data["branch"], code=data["code"],

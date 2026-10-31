@@ -12,7 +12,7 @@ from __future__ import annotations
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.attendance import leave
+from apps.attendance import selectors as attendance_selectors
 from apps.attendance.domain.days import Status
 from apps.attendance.domain.summary import summarize
 from apps.attendance.models import HourlyLeave, LeaveRequest, RequestStatus
@@ -121,7 +121,7 @@ class LeaveBalances(Report):
         rows = []
         for person in scope.employees().exclude(left_on__lt=f"{year}-01-01").exclude(
                 hired_on__gt=f"{year}-12-31"):
-            left = leave.balance(person, year)
+            left = attendance_selectors.balance(person, year)
             rows.append({"code": person.code, "name": person.name, "branch": person.branch.name,
                          "entitled": left.entitled, "taken": left.taken,
                          "waiting": left.requested, "remaining": left.remaining})

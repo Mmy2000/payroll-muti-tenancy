@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 
 from apps.iam.catalog import AUTHENTICATED
 
-from .. import attention, services
+from .. import selectors, services
+from .. import selectors as attention
 from ..present import item
 
 LATEST = 20
@@ -17,10 +18,10 @@ class NotificationsView(APIView):
 
     def get(self, request):
         member = request.actor.membership
-        unread = services.unread_count(member)
+        unread = selectors.unread_count(member)
         if request.GET.get("count") == "1":
             return Response({"unread": unread})
-        rows = services.for_member(member).order_by("-id")[:LATEST]
+        rows = selectors.for_member(member).order_by("-id")[:LATEST]
         return Response({"unread": unread, "results": [item(r) for r in rows],
                          "attention": attention.waiting(request.actor)})
 
@@ -30,7 +31,7 @@ class ReadView(APIView):
 
     def post(self, request, pk):
         services.mark_read(request.actor.membership, [pk])
-        return Response({"unread": services.unread_count(request.actor.membership)})
+        return Response({"unread": selectors.unread_count(request.actor.membership)})
 
 
 class ReadAllView(APIView):

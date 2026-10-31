@@ -13,7 +13,7 @@ from apps.core.errors import AppError
 from apps.core.history import in_effect
 from apps.core.import_page import ImportPage, import_page, template_download
 from apps.core.listing import Choice, ListQuery
-from apps.employees import imports, services
+from apps.employees import imports
 from apps.employees.models import (
     Compensation,
     Gender,
@@ -23,13 +23,15 @@ from apps.employees.models import (
     WageType,
     Weekday,
 )
-from apps.employees.services import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
 from apps.employees.web.targets import group_page
 from apps.iam.authz import permission_required
 from apps.org.models import Branch
-from apps.org.services import visible_departments
+from apps.org.selectors import visible_departments
 from apps.platform.tenants.limits import is_app_login
 from apps.policies.models import LatenessPolicy, OvertimePolicy
+
+from .. import selectors
+from ..permissions import MANAGE, SALARY_MANAGE, SALARY_READ, VIEW
 
 # Saturday first: the working week of the clients this was built for.
 WEEK = [Weekday.SATURDAY, Weekday.SUNDAY, Weekday.MONDAY, Weekday.TUESDAY, Weekday.WEDNESDAY,
@@ -56,7 +58,7 @@ def employees(request):
                         + [(d.pk, d.label) for d in departments], "department_id",
                         depends_on="branch", parents={d.pk: d.branch_id for d in departments}),
                  Choice("status", _("Status"), STATUSES, apply=_by_status, value="active")])
-    rows = found.apply(services.visible_employees(request.actor).select_related(
+    rows = found.apply(selectors.visible_employees(request.actor).select_related(
         "branch", "department"))
     return render(request, "employees/employees.html", {
         "filters": found, "page": found.page(rows.order_by("code")),
@@ -89,7 +91,7 @@ def employee_new(request):
     if not request.actor.can(SALARY_MANAGE):
         raise Http404  # a new employee starts with their pay
     return render(request, "employees/employee_form.html", {
-        **_choices(request), "employee": None, "next_code": services.next_code(),
+        **_choices(request), "employee": None, "next_code": selectors.next_code(),
         "new_pay": Compensation(),  # the form starts from the model's defaults
         "today": timezone.localdate(), "endpoint": reverse("employee-list"), "method": "POST",
     })
@@ -98,7 +100,7 @@ def employee_new(request):
 @permission_required(MANAGE)
 def employee_edit(request, pk):
     try:
-        employee = services.get_employee(pk, request.actor, MANAGE)
+        employee = selectors.get_employee(pk, request.actor, MANAGE)
     except AppError:
         raise Http404 from None
     return render(request, "employees/employee_form.html", {
@@ -110,7 +112,7 @@ def employee_edit(request, pk):
 @permission_required(VIEW)
 def employee(request, pk):
     try:
-        person = services.get_employee(pk, request.actor, VIEW)
+        person = selectors.get_employee(pk, request.actor, VIEW)
     except AppError:
         raise Http404 from None
     actor, today = request.actor, timezone.localdate()
