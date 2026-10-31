@@ -1,4 +1,3 @@
-from rest_framework.routers import SimpleRouter
 
 from apps.core.api.viewsets import ActivateMixin, DestroyMixin, ServiceViewSet
 from apps.policies import services
@@ -133,12 +132,3 @@ class HolidayViewSet(DestroyMixin, ServiceViewSet):
 
     def destroy_object(self, pk, actor):
         services.delete_holiday(pk, actor=actor)
-
-
-router = SimpleRouter()
-router.register("lateness", LatenessPolicyViewSet, basename="lateness-policy")
-router.register("overtime", OvertimePolicyViewSet, basename="overtime-policy")
-router.register("tax-tables", TaxTableViewSet, basename="tax-table")
-router.register("insurance-rates", InsuranceRateViewSet, basename="insurance-rate")
-router.register("holidays", HolidayViewSet, basename="holiday")
-urlpatterns = router.urls

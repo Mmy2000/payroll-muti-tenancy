@@ -2,7 +2,6 @@
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.employees import group_hours, services
 from apps.employees.api.serializers import GroupFields
@@ -140,11 +139,3 @@ class GroupHoursViewSet(viewsets.GenericViewSet):
             group_hours.GroupHoursInput(group=group, days_off=days_off, **data), **options,
             actor=request.actor)
         return outcome_response(outcome)
-
-
-router = SimpleRouter()
-router.register("employees", EmployeeViewSet, basename="employee")
-router.register("pay-changes", PayChangeViewSet, basename="pay-change")
-router.register("schedule-changes", ScheduleChangeViewSet, basename="schedule-change")
-router.register("group-hours", GroupHoursViewSet, basename="group-hours")
-urlpatterns = router.urls

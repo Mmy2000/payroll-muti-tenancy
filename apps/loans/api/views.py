@@ -1,7 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.employees.api.scoped import EmployeeRowsViewSet
 from apps.loans import advances, services
@@ -81,10 +80,3 @@ class InstallmentViewSet(viewsets.GenericViewSet):
     def postpone(self, request, pk=None):
         loan = services.postpone_installment(int(pk), actor=request.actor)
         return Response(LoanSerializer(loan, context=self.get_serializer_context()).data)
-
-
-router = SimpleRouter()
-router.register("advances", AdvanceViewSet, basename="advance")
-router.register("loans", LoanViewSet, basename="loan")
-router.register("installments", InstallmentViewSet, basename="installment")
-urlpatterns = router.urls

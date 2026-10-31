@@ -1,10 +1,10 @@
 """The phones signed in to the app, one record each, so one phone can be signed out without
 touching the person's other phones or their login.
 
-A sign-in names its phone in the tokens (the `did` claim, apps/mobile/auth.py). Every request and
-token refresh then checks that phone is still allowed, which is what makes signing it out take
-effect at once rather than when its 30-day token runs out. An older app sends no device id and
-gets tokens without the claim; they work as they always did.
+A sign-in names its phone in the tokens (the `did` claim, apps/mobile/api/v1/auth.py). Every
+request and token refresh then checks that phone is still allowed, which is what makes signing
+it out take effect at once rather than when its 30-day token runs out. An older app sends no
+device id and gets tokens without the claim; they work as they always did.
 """
 
 from __future__ import annotations

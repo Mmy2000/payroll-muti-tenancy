@@ -8,9 +8,9 @@ from django.shortcuts import render
 
 from apps.iam.authz import permission_required
 
-from . import attention, services
-from .present import item
-from .stream import events
+from .. import attention, services
+from ..present import item
+from ..stream import events
 
 
 @permission_required("authenticated")

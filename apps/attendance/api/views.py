@@ -1,7 +1,6 @@
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.attendance import approvals, entries, hourly, leave
 from apps.attendance.models import HourlyLeave, LeaveRequest, LeaveType
@@ -198,11 +197,3 @@ class HourlyLeaveViewSet(_RequestViewSet):
             hourly.GroupHourlyLeaveInput(group=group, spans=spans, **data), approve=approve,
             **options, actor=request.actor)
         return outcome_response(outcome)
-
-
-router = SimpleRouter()
-router.register("days", DayEntryViewSet, basename="attendance-day")
-router.register("leave-types", LeaveTypeViewSet, basename="leave-type")
-router.register("leave-requests", LeaveRequestViewSet, basename="leave-request")
-router.register("hourly-leave", HourlyLeaveViewSet, basename="hourly-leave")
-urlpatterns = router.urls

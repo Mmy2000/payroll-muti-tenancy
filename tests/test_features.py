@@ -239,7 +239,7 @@ def test_the_consoles_switches_follow_the_rule(tenant_a):
 
 
 def test_a_plans_form_refuses_a_feature_without_what_it_needs():
-    from apps.platform.console.forms import PlanForm
+    from apps.platform.console.web.forms import PlanForm
 
     data = {"code": "mini", "name": "Mini", "currency": "EGP", "billing_period": "monthly",
             "position": "1", "is_active": "on",

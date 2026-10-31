@@ -1,47 +1,137 @@
 # Architecture standards
 
-How new code fits the existing design. The design itself is in the
-[architecture overview](../architecture/overview.md), and the apps in [modules](../architecture/modules.md).
-Where existing code breaks a rule here, the [debt register](../tech-debt.md) says so. New code
-doesn't copy those exceptions.
+How the code is organised, and where a new piece of code goes. Every app follows this.
+`tests/test_architecture.py` enforces what a machine can check. The decision and the reasons are
+in [ADR-105](../decisions/ADR-105-one-app-structure.md).
+
+## The layers of an app
+
+A request passes down through these, and only downwards:
+
+```
+api/ or web/      parse the request, render the answer. No rules, no queries.
+   |
+services          one business act each: permission, transaction, writes, events.
+   |      \
+selectors  validators   reads; checks that need data.
+   |      /
+models            fields, constraints, indexes, small display helpers.
+
+domain/           pure calculations. Any layer may call it; it calls none of them.
+```
+
+## App layout
+
+Every app has the same shape. Only the first group is required: a file exists when the app has
+something to put in it, never to complete the picture.
+
+```
+apps/<app>/
+  apps.py            AppConfig; ready() registers what the app contributes
+  models.py          fields, constraints, indexes, display helpers
+  permissions.py     register_permissions(...)
+
+  services.py        writes. Becomes services/ past about 300 lines, or with several topics
+  selectors.py       every read, including visible_* (what an actor may see)
+  validators.py      checks that read data and raise ValidationError
+  domain/            pure calculations: no ORM, no request, no translation of data
+  events.py          the domain events this app publishes
+  handlers.py        what this app does when another app's event happens
+  jobs.py            @task / daily(...)
+
+  api/               the browser's JSON API
+    serializers.py     parsing and shaping JSON; every Serializer class lives here
+    views.py           ViewSets with required_permissions
+    urls.py            the router. config/api_urls.py includes it
+  web/               pages
+    views.py           page views with @permission_required
+    forms.py           Django forms
+  templatetags/  templates/<app>/  management/  migrations/  tests/
+```
+
+The two names people look for are always the same two places: `api/` is JSON, `web/` is HTML. A
+big `views.py` or `serializers.py` becomes a package with the same name. Other modules (an
+adapter such as `messaging/gateways.py`, a protocol such as `devices/protocol.py`) stay at the top
+of the app under a name that says what they are.
+
+`apps/mobile` has two APIs, so it has `api/v1/` (PayRole's contract for the app, ADR-104) and
+`api/web/` (what the browser calls). `apps/platform/console` serves staff pages only, so it has
+`web/` and no `api/`.
 
 ## Where code goes
 
 | Kind of code | Goes in | Never in |
 |---|---|---|
-| A business rule: what may happen, what it costs, what it posts | a **service function** in the app's `services.py` (or a topical module such as `sales/returns.py`) | views, serializers, forms, templates, JS, signals, models' `save()` |
-| A pure calculation with no database (karat conversion, a price formula) | `domain/` in the app (`apps/catalog/domain/metal.py`) or a plain module | anywhere it gets copied |
-| A read query used by more than one screen | `selectors.py` | copied into each view |
-| Parsing and shaping JSON | API serializers in `api.py` / `api/` | services |
-| Rendering a page | web views in `views.py` / `web/` and templates | services |
-| A permission code | the app's `permissions.py` (`register_permissions`) | strings invented in a view |
-| Background work | a `@task` in the app's `jobs.py`, queued with `enqueue()` | threads, `on_commit` sends |
-| A money or gold effect | `apps.ledger.services.post_entry` / `reverse_entry` | direct writes to journal or balance tables (the database refuses them anyway) |
+| A business act: what may happen and what it changes | `services` | views, serializers, forms, templates, JS, signals, `save()` |
+| A read used by a view, a report or a service | `selectors.py` | views, services |
+| What an actor may see (`visible_*`) | `selectors.py` | views, services |
+| A check that reads the database | `validators.py` | views, serializers |
+| A check on one form or payload's own values | the serializer or form | services |
+| A pure calculation (a tax band, a working day) | `domain/` | anywhere it gets copied |
+| Parsing and shaping JSON | `api/serializers.py` | views, services |
+| Rendering a page | `web/views.py` and templates | services |
+| A route of the browser's API | the app's `api/urls.py` | views |
+| A route of a page | `config/urls.py` | the apps |
+| A permission code | the app's `permissions.py` | strings invented in a view |
+| Background work | a `@task` in `jobs.py`, queued with `enqueue()` | threads, `on_commit` sends |
+| A reaction in another app | `handlers.py`, on a domain event | a direct import of that app |
 | A document number | `apps.core.sequences.allocate_number` | `max(number) + 1` |
+
+### Views
+
+A view does four things: read the input, call a selector or a service, turn the result into a
+response, say which permission it needs. It holds no queries and no writes, so the same act can
+be called from a job, an import or a test.
+
+```python
+class LoanViewSet(ScopedViewSet):
+    required_permissions = {"create": MANAGE}
+
+    def create(self, request):
+        payload = LoanSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        loan = services.create_loan(LoanInput(**payload.validated_data), actor=request.actor)
+        return Response(LoanSerializer(loan).data, status=201)
+```
+
+### Selectors
+
+Plain functions that return querysets, rows or small dataclasses. They never write.
+
+```python
+def visible_loans(actor, code: str = VIEW) -> QuerySet[Loan]:
+    return scoped_to_branches(Loan.objects.select_related("employee"), actor, code)
+```
+
+A selector takes filters as arguments, not a request. Choice lists for a form are selectors too.
+
+### Validators
+
+A function that checks one rule against the data and raises `ValidationError(fields=...)`, or
+returns the clean value. Services call them in the transaction, after locking what they check.
+Extract one when a check is big enough to name or is used twice. A one-line check stays in the
+service.
 
 ### Service functions
 
-This is the shape every write follows (`apps/expenses/services.py` is a short, complete example):
+This is the shape every write follows:
 
 ```python
 @dataclass(frozen=True)
-class ExpenseInput:              # what the caller provides, as plain values
-    branch_id: int
-    amount: Decimal | str
+class LoanInput:                 # what the caller provides, as plain values
+    employee_id: int
+    amount: Decimal
     ...
 
-def post_expense(data: ExpenseInput, *, actor=None) -> ExpenseVoucher:
-    with transaction.atomic():                       # 1. one transaction for the whole act
-        branch = Branch.objects.filter(pk=data.branch_id, is_active=True).first()
+def create_loan(data: LoanInput, *, actor=None) -> Loan:
+    with transaction.atomic():                        # 1. one transaction for the whole act
+        employee = get_employee(data.employee_id, actor, MANAGE, lock=True)
         if actor is not None:
-            actor.require("expenses.voucher.create", branch=branch)   # 2. permission, per branch
-        ...                                          # 3. validate; raise ValidationError(fields=…)
-        ensure_cash_available(box, amount, "amount") # 4. lock what you check (select_for_update)
-        voucher = ExpenseVoucher.objects.create(...)
-        voucher.number = allocate_number("EX", branch=branch, fiscal_year=today.year)
-        voucher.journal_entry = post_entry(...)      # 5. ledger effect through the ledger
-        voucher.save()
-    return voucher
+            actor.require(MANAGE, branch=employee.branch_id)   # 2. permission, per branch
+        check_room_for_loan(employee, data.amount)    # 3. validate, after locking
+        loan = Loan.objects.create(...)               # 4. write
+        publish(LoanCreated(loan.pk))                 # 5. tell who cares
+    return loan
 ```
 
 Rules:
@@ -52,9 +142,8 @@ Rules:
 - **The service opens its own `transaction.atomic()`.** Don't rely on the request transaction:
   it commits on 4xx responses.
 - **Lock before you check** anything another request could change between your check and your
-  write (a piece's status, a box's balance, a document's state). Use
-  `select_for_update(of=("self",))`, so only the row you mean is locked, not the rows it joins.
-  Lock several rows in a stable order (by id).
+  write. Use `select_for_update(of=("self",))`, so only the row you mean is locked, not the rows
+  it joins. Lock several rows in a stable order (by id).
 - **Raise the errors from `apps.core.errors`:**
   - `ValidationError(message, fields={"field": [...]})` for input.
   - `DomainError(message, code="APP_SPECIFIC_CODE")` for a broken rule.
@@ -62,145 +151,100 @@ Rules:
   - `Conflict` for a stale state.
 - **Return the model.** The caller serialises it.
 
-### App layout
+### Size
 
-New apps, and new code in apps that already use it, follow the package layout:
+- A file past about 300 lines usually holds more than one topic: split it by topic. A file that
+  really is one thing stays whole (the pay engine; the tenants' models).
+- A function that needs "and" to describe it does two things.
 
-```
-apps/<app>/
-  apps.py            AppConfig; ready() registers documents, report types, checks
-  models.py          fields, constraints, indexes, display helpers
-  services.py        writes (or topical modules: returns.py, transfers.py…)
-  selectors.py       shared reads (optional)
-  domain/            pure calculations (optional)
-  permissions.py     register_permissions(...)
-  jobs.py            @task / daily(...) (optional)
-  api/ (or api.py)   serializers, ViewSets with required_permissions, urls (router)
-  web/ (or views.py) page views with @permission_required
-  templates/<app>/   templates
-  migrations/        including EnableTenantRLS and GuardTenantFKs operations
-  tests/             test_*.py
-```
+## Dependencies between apps
 
-Nine apps use `web/` and `api/` packages; thirteen use flat `views.py` and `api.py`. Both are
-accepted; don't reorganise an app just for this (TD-36). Web routes are in `config/urls.py` and
-API routes in each app's router, included from `config/api_urls.py`.
+Apps form layers. An app imports its own layer and the ones above it in this table, never below.
 
-### Adding an app
+The table is completed in the last phase of ADR-105.
 
-1. Is this a new business area, or a document inside an existing one? Most new features belong
-   in an existing app.
-2. Pick its layer in [modules](../architecture/modules.md#the-apps) and depend only on its own
-   layer and the layers above.
-3. Add it to `INSTALLED_APPS` in `config/settings/base.py`. Every model inherits
-   `TenantScopedModel`. Its first migrations add `EnableTenantRLS` and `GuardTenantFKs`, which
-   the isolation suite checks.
-4. Add a row to the table in [modules](../architecture/modules.md), and to README "What exists
-   so far".
-
-## Dependency direction
-
-- An app imports its own layer and the layers above it, never below
-  ([modules](../architecture/modules.md#the-apps)). `ledger` must not import `sales`; `core`
-  imports no business app.
-- **Need a lower app to act?** Give the higher app a **registry** it fills from `ready()`, or a
-  plain callback parameter. Don't import the lower app.
-- **Import public names only.** Never `_private` functions from another app. If you need one,
-  make it public in its own app, with a docstring.
-- Imports inside functions are allowed for heavy or optional modules. They are not a way around
-  a cycle: that is debt (TD-08).
+- `core` knows no business app. What it needs from one is given to it through a registry.
+- **A lower app needs a higher one to act?** Publish a domain event, or fill a registry from
+  `ready()`. Don't import upward, not even inside a function.
+- **Import public names only.** Never `_private` functions from another module.
+- Imports inside functions are for heavy or optional libraries. They are not a way round a cycle.
 
 ### Registries
 
-The project's main extension mechanism. An app adds itself and the consumer iterates:
+The main way apps plug into something below them. An app adds itself, and the owner iterates:
 
 ```python
-# apps/expenses/apps.py
+# apps/evaluations/apps.py
 def ready(self):
     from apps.core.documents import register_document
-    register_document("expenses.ExpenseVoucher", "expense-view", _("Expense"))
+    register_document("evaluations.Evaluation", "evaluation", _("Evaluation"))
 ```
 
-Use an existing registry ([modules → registries](../architecture/modules.md#registries)) before
-creating one. A new registry needs a reason two apps can't otherwise meet without a cycle;
-record it in an ADR.
+Use an existing registry before creating one: permissions and limits (`iam.catalog`), features
+(`platform.tenants.features`), jobs (`platform.jobs.registry`), documents (`core.documents`),
+reports (`reports.registry`), seeding (`core.seeding`), audit labels.
+
+### Domain events
+
+`apps/core/events.py` is an in-process Observer. A service publishes what happened, and
+`handlers.py` in another app reacts, inside the same transaction. The publisher knows nothing of
+who listens. That is how a leave decision reaches the notifications without `attendance` importing
+`notifications`.
 
 ## Patterns in use
 
-These patterns already exist and solve real problems here. Use them as they are. A new pattern
-needs an [ADR](../decisions/README.md).
+These exist and solve a real problem here. A new pattern needs an
+[ADR](../decisions/README.md).
 
-| Pattern | Problem it solves | Where | How to use it | Trade-off |
-|---|---|---|---|---|
-| **Service layer** (functions) | Business rules in one place, callable from API, jobs, imports and tests | `services.py` in every app | See [service functions](#service-functions) | Plain functions, not classes: no inheritance to share a skeleton, so cancel flows are copied (TD-09) |
-| **Command / input objects** | Many arguments, validated once, easy to build in tests | frozen `XInput` dataclasses (58); older `*Command` (`catalog`, `pricing`, `platform.tenants`) | Name new ones `XInput`; plain values (ids, strings, Decimals), never request objects | A second layer of fields next to the serializer |
-| **Registry + autodiscovery** | Apps contribute to a shared list without the owner importing them | permissions, jobs, document links, reports, printable documents | [Registries](#registries) | Import side effects: a module that isn't imported doesn't register |
-| **Strategy** | Interchangeable implementations behind one interface | market price sources (`platform/market/sources/base.py`); messaging gateways (`messaging/gateways.py`) | Subclass the base, register the new source or gateway | Only worth it with two or more real implementations |
-| **Outbox** | Side effects (e-mail, WhatsApp) only when the work commits | `apps/platform/jobs` (`enqueue` inside the transaction) | `enqueue("app.task", id=…)` with ids, not personal data | At-least-once delivery: tasks must be safe to run twice |
-| **Quote then post** | The browser shows exact prices without doing money arithmetic | `quote_sale`/`post_sale`, `plan_receipt` | Post re-computes from scratch; never trust a quote sent back | Two code paths must agree (both call the same helpers) |
-| **Ledger as the single source of balances** | One truth for money and gold | `ledger.post_entry` / `reverse_entry`, `BalanceProjection` | Post lines; read balances from selectors | Every feature must express its effect as journal lines |
-| **Idempotency key** | Double clicks and retries never post twice | `apps/core/api/idempotency.py` (`@idempotent`) | Decorate every API action that moves money or stock | Keys are stored; see TD-15 for missing expiry |
-| **Template-method-like layouts** | Printable documents share data, differ in look | `apps/printing/documents.py` (`Doc`), `layouts/*.html` | Builders produce a `Doc`; layouts only render | The registry is central (TD-19) |
+| Pattern | Problem it solves | Where |
+|---|---|---|
+| **Service layer** (functions) | One business act, callable from the API, a job, an import or a test | `services` in each app |
+| **Selector** | One place for reads, so a query isn't written twice | `selectors.py` |
+| **Input object** | Many values, built once, easy to make in a test | frozen `XInput` dataclasses |
+| **Registry** | Apps add to a list its owner can't import them for | see [registries](#registries) |
+| **Observer** | A reaction in another app, with no dependency on it | `core/events.py`, `handlers.py` |
+| **Strategy** | Interchangeable implementations of one interface | WhatsApp gateways (`messaging/gateways.py`), the frontend's pickers |
+| **Outbox** | A side effect only if the work commits | `apps/platform/jobs`: `enqueue` inside the transaction |
+| **Idempotency key** | A double click never acts twice | `apps/core/api/idempotency.py` |
 
-We do **not** use repositories over the ORM, dependency-injection containers, domain events or
-signals for business rules. The ORM with `TenantScopedModel` is already the persistence
-abstraction, and these would add layers without solving a problem we have.
+We do **not** use repositories over the ORM, or service classes and dependency injection
+(ADR-105). `TenantScopedModel` is already the persistence abstraction: it scopes every query to
+the client and fails closed.
 
 ## SOLID, applied here
 
-- **Single responsibility.**
-  - A service function does one business act: post an expense, cancel it.
-  - A view parses and renders.
-  - Split a function when it has more than one reason to change. `quote_sale` was 150 lines
-    with six reasons; it is now 29 lines calling one named step for each
-    (`apps/sales/services.py`).
-- **Open/closed.**
-  - Extend through registries and strategies, not by editing a central list.
-  - A new report registers itself; a new market source is a new module.
-- **Liskov.** A subclass of `Document`, `TenantScopedModel`, a market `Source` or a gateway must
-  keep the base's contract. That includes `TenantScopedModel`'s rules on tenant indexes, and a
-  document's draft → posted → voided states.
-- **Interface segregation.**
-  - Services take the values they need (an `XInput`), not a request.
-  - Selectors return querysets or small dataclasses.
-- **Dependency inversion.** Lower layers define the registry or callback, and higher layers plug
-  in. Don't invert with abstract base classes unless there are two real implementations.
+- **Single responsibility.** A service does one business act; a selector answers one question; a
+  view parses and renders. Split a function when it has more than one reason to change.
+- **Open/closed.** Extend through registries, events and strategies, not by editing a central list.
+- **Liskov.** A subclass of `TenantScopedModel` or a gateway keeps the base's contract.
+- **Interface segregation.** Services take the values they need (an `XInput`), not a request.
+  Selectors return querysets or small dataclasses.
+- **Dependency inversion.** Lower layers define the registry or the event; higher layers plug in.
+  Don't invert with abstract base classes unless there are two real implementations.
 
-**When is a new abstraction justified?**
-- When the same logic exists or will exist in three places.
-- When two apps must cooperate without a cycle.
-- When a test can't be written without it.
-
-Otherwise, write the plain function.
+**When is a new abstraction justified?** When the same logic exists in three places, when two apps
+must cooperate without a cycle, or when a test can't be written without it. Otherwise, write the
+plain function.
 
 ## Frontend
 
 The full rules are in README "Frontend assets". In short:
 
 - **Templates** use the component classes in `assets/css/app.css` and logical utilities
-  (`ms-`, `text-start`), so one template serves RTL and LTR. They never use `dark:` classes:
-  the theme tokens handle dark mode.
-- **One ES module per page** in `static/<app>/js/`, loaded in `{% block head %}`. It finds its
-  root by id or a `data-` attribute. It reads URLs and translated text from `data-*` attributes
-  or `json_script`, and row markup from `<template>`.
-- **Shared helpers** live in `static/core/js/` and are imported relatively:
-  - `api()` for every request: CSRF, idempotency key, error envelope.
-  - `toast()` and `strings()` from `ui.js`.
-  - `busy()` and `refreshing()` from `loading.js`.
-  - `formatNumber()` from `money.js`.
-
-  Don't write another `fetch` or HTML-escape helper (TD-23).
+  (`ms-`, `text-start`), so one template serves RTL and LTR.
+- **One ES module per page** in `static/<app>/js/`. It reads URLs and translated text from
+  `data-*` attributes or `json_script`.
+- **Shared helpers** live in `static/core/js/`: `api()` for every request, `toast()` from `ui.js`.
+  Don't write another `fetch` helper.
 - **Plain forms** use `<form data-api-form data-endpoint=…>`. Errors appear in
   `[data-error-for="field"]`.
-- **No money arithmetic in JS.** Ask the API for a quote.
-- **Icons** are `{% icon "name" %}`. A new name must be added to `assets/copy-assets.mjs`,
-  followed by `npm run build`.
+- **Icons** are `{% icon "name" %}`. A new name goes in `assets/copy-assets.mjs`, then
+  `npm run build`.
 - **Build output is committed:** `static/core/css/app.css`, `apps/core/ui_icons.json` and
-  `static/vendor/`. CI fails if it is stale.
+  `static/vendor/`.
 
 ## Recording decisions
 
 A decision that is hard to reverse or that others must follow gets an ADR in
-[docs/decisions/](../decisions/README.md). Examples: a new registry, a new dependency, a change
-to tenancy, money or identity rules, a new process or service. Propose it in the pull request
-that needs it; the ADR is reviewed with the code.
+[docs/decisions/](../decisions/README.md): a new registry, a new dependency, a change to tenancy,
+money or identity rules, a new process or service.

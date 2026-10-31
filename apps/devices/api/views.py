@@ -3,7 +3,6 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.devices import services
 from apps.devices.models import DeviceUser
@@ -70,9 +69,3 @@ class DeviceUserViewSet(viewsets.GenericViewSet):
         data = _valid(LinkSerializer, request.data)
         user = services.link(int(pk), data["employee_id"], actor=request.actor)
         return Response({"id": user.pk, "employee_id": user.employee_id})
-
-
-router = SimpleRouter()
-router.register("devices", DeviceViewSet, basename="device")
-router.register("device-users", DeviceUserViewSet, basename="device-user")
-urlpatterns = router.urls

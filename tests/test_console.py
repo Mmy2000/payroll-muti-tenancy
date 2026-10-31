@@ -216,7 +216,7 @@ def test_app_logins_have_a_limit_of_their_own(staff, tenant_a, make_employee):
 
     page = staff.get(f"/clients/{tenant_a.pk}/").content.decode()
     assert "App logins" in page
-    from apps.platform.console import metrics
+    from apps.platform.console.selectors import metrics
 
     usage = metrics.tenant_usage(tenant_a)
     assert (usage.users, usage.app_logins) == (1, 2)
@@ -369,7 +369,7 @@ def test_jobs_run_again_or_cancelled(staff, tenant_a):
 
 def test_the_overview_counts_each_client_in_its_own_data(staff, tenant_a, tenant_b,
                                                          make_employee):
-    from apps.platform.console import metrics
+    from apps.platform.console.selectors import metrics
 
     make_employee(tenant_a, 1)
     make_employee(tenant_a, 2)

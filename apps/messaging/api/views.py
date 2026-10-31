@@ -4,9 +4,8 @@ a run's payslips, and sending a failed message again."""
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
-from . import services
+from .. import services
 from .serializers import PayslipsSerializer, TestSerializer, WordingSerializer
 
 
@@ -59,8 +58,3 @@ class WhatsAppViewSet(viewsets.GenericViewSet):
     def again(self, request, pk=None):
         message = services.send_again(int(pk), actor=request.actor)
         return Response({"id": message.pk, "status": message.status})
-
-
-router = SimpleRouter()
-router.register("whatsapp", WhatsAppViewSet, basename="whatsapp")
-urlpatterns = router.urls

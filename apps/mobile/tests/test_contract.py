@@ -395,7 +395,7 @@ def test_every_app_endpoint_needs_the_app():
     """/api/v1/ answers only members who may use the app, but for signing in."""
     from django.urls import get_resolver
 
-    from apps.mobile.views import CanUseApp
+    from ..api.v1.views import CanUseApp
 
     public = {"api_login", "api_qr_login", "api_refresh", "api_verify"}
     loose = []

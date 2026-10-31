@@ -7,9 +7,9 @@ from django.http import JsonResponse
 from django.urls import include, path
 
 from apps.core import media
-from apps.platform.console import jobs as console_jobs
-from apps.platform.console import views as console
-from apps.platform.console import whatsapp as console_whatsapp
+from apps.platform.console.web import jobs as console_jobs
+from apps.platform.console.web import views as console
+from apps.platform.console.web import whatsapp as console_whatsapp
 
 
 def healthz(request):

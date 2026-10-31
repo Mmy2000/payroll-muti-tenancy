@@ -18,9 +18,9 @@ from apps.core.templatetags.ui import num
 from apps.iam.authz import permission_required
 from apps.iam.models import Membership
 
-from . import catalog
-from .labels import COLUMNS
-from .models import AuditAction, AuditEvent
+from .. import catalog
+from ..labels import COLUMNS
+from ..models import AuditAction, AuditEvent
 
 HIDDEN = "***"
 

@@ -38,8 +38,8 @@ from apps.platform.tenants.models import (
 )
 from apps.platform.tenants.services import ProvisionTenantCommand, provision_tenant
 
-from . import metrics
-from . import traffic as traffic_report
+from ..selectors import metrics
+from ..selectors import traffic as traffic_report
 from .forms import (
     DomainForm,
     PlanDeleteForm,

@@ -10,8 +10,8 @@ from django.utils.translation import gettext_lazy as _lazy
 from apps.core.listing import Choice, ListQuery
 from apps.iam.authz import permission_required
 
-from . import gateways, services
-from .models import Message, MessageStatus, WhatsAppLink
+from .. import gateways, services
+from ..models import Message, MessageStatus, WhatsAppLink
 
 STATUS_TABS = [("all", _lazy("All")), (MessageStatus.QUEUED, _lazy("Waiting")),
                (MessageStatus.SENT, _lazy("Sent")), (MessageStatus.FAILED, _lazy("Failed"))]

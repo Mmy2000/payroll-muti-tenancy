@@ -1,14 +1,13 @@
 """The browser's API for notifications (the bell, static/core/js/bell.js): GET the latest and
 what needs attention (?count=1: the unread count only), POST <id>/read/, POST read-all/."""
 
-from django.urls import path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.iam.catalog import AUTHENTICATED
 
-from . import attention, services
-from .present import item
+from .. import attention, services
+from ..present import item
 
 LATEST = 20
 
@@ -40,10 +39,3 @@ class ReadAllView(APIView):
     def post(self, request):
         marked = services.mark_read(request.actor.membership)
         return Response({"marked": marked, "unread": 0})
-
-
-urlpatterns = [
-    path("", NotificationsView.as_view(), name="notifications-api"),
-    path("<int:pk>/read/", ReadView.as_view(), name="notifications-read"),
-    path("read-all/", ReadAllView.as_view(), name="notifications-read-all"),
-]

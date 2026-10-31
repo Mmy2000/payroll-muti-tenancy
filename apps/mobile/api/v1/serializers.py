@@ -13,9 +13,9 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from apps.employees.models import Weekday
 
-from . import contract, devices, services
+from ... import contract, devices, services
+from ...contract import day, decimal, moment
 from .auth import DEVICE_CLAIM, TENANT_CLAIM, active_membership
-from .contract import day, decimal, moment
 
 DAY_CODES = {Weekday.MONDAY: "mo", Weekday.TUESDAY: "tu", Weekday.WEDNESDAY: "we",
              Weekday.THURSDAY: "th", Weekday.FRIDAY: "fr", Weekday.SATURDAY: "sa",
@@ -260,6 +260,3 @@ class TenantRefreshSerializer(TokenRefreshSerializer):
         return super().validate(attrs)
 
 
-class LoginWriteSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    password = serializers.CharField(max_length=128)

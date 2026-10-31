@@ -11,7 +11,7 @@ from apps.core.listing import ListQuery
 from apps.employees.web.targets import employee_choices
 from apps.iam.authz import permission_required
 
-from . import services
+from .. import services
 
 
 @permission_required(services.VIEW)

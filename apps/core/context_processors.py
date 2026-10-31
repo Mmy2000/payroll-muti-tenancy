@@ -25,7 +25,7 @@ class NavItem:
 
 
 def _any_report(actor) -> bool:
-    from apps.reports.views import visible_reports
+    from apps.reports.web.views import visible_reports
 
     return bool(visible_reports(actor))
 

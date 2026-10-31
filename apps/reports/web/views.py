@@ -13,8 +13,8 @@ from apps.iam.authz import permission_required
 from apps.org.models import Branch, TenantProfile
 from apps.org.services import visible_departments
 
-from .exporters import EXPORTERS, shape
-from .registry import REPORTS, SECTIONS, Report, Scope
+from ..exporters import EXPORTERS, shape
+from ..registry import REPORTS, SECTIONS, Report, Scope
 
 EXPORT = "reports.export"
 
@@ -31,7 +31,7 @@ def home(request):
 
     from apps.iam.models import Membership, MembershipStatus
 
-    from .dashboard import figures
+    from ..dashboard import figures
 
     actor = request.actor
     now = timezone.localtime()

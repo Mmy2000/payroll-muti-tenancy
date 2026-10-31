@@ -112,7 +112,8 @@ def test_dates_and_times_read_like_the_rest_of_the_page(tenant_a):
     from django.utils import timezone
 
     from apps.audit.models import AuditEvent
-    from apps.audit.views import _describe
+
+    from ..web.views import _describe
 
     def shown(table, column, old, new):
         event = AuditEvent(table_name=table, row_id=1, action="U", changes={column: [old, new]})

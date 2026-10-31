@@ -27,6 +27,7 @@ its code cites Gweb's decisions. The ones that apply here:
 | [ADR-102](ADR-102-features-registered-by-apps.md) | Features registered by each app, with dependencies | Accepted | 2026-10-28 |
 | [ADR-103](ADR-103-seeding-registry.md) | A seeding registry for new clients | Accepted | 2026-10-28 |
 | [ADR-104](ADR-104-web-api-and-mobile-api.md) | The browser's API at `/api/web/`; `/api/v1/` keeps PayRole's mobile contract | Accepted | 2026-10-28 |
+| [ADR-105](ADR-105-one-app-structure.md) | One structure for every app | Accepted | 2026-10-31 |
 
 ## When to write one
 

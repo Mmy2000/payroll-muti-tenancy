@@ -7,23 +7,23 @@ from django.urls import include, path
 
 from apps.adjustments.web import views as adjustments
 from apps.attendance.web import views as attendance
-from apps.audit import views as audit
+from apps.audit.web import views as audit
 from apps.compensation.web import views as compensation
 from apps.core import media
 from apps.devices import iclock
 from apps.devices.web import views as devices
 from apps.employees.web import views as employees
-from apps.evaluations import views as evaluations
+from apps.evaluations.web import views as evaluations
 from apps.iam.web import views as iam
 from apps.iam.web.forms import WorkspaceLoginForm
 from apps.loans.web import views as loans
-from apps.messaging import views as messaging
-from apps.notifications import views as notifications
+from apps.messaging.web import views as messaging
+from apps.notifications.web import views as notifications
 from apps.org.web import company
 from apps.org.web import views as org
 from apps.payroll.web import views as payroll
 from apps.policies.web import views as policies
-from apps.reports import views as reports
+from apps.reports.web import views as reports
 
 urlpatterns = [
     # Fingerprint devices (ZKTeco ADMS) call these, as PayRole served them: no trailing slash.
@@ -139,5 +139,5 @@ urlpatterns = [
     # The browser's JSON API (AJAX from static/core/js/api.js), and the mobile app's, whose
     # contract is PayRole's (docs/mobile-api.md).
     path("api/web/", include("config.api_urls")),
-    path("api/v1/", include("apps.mobile.urls")),
+    path("api/v1/", include("apps.mobile.api.v1.urls")),
 ]

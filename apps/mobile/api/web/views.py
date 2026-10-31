@@ -5,9 +5,8 @@ POST renew/, DELETE cancel); signing one phone out at DELETE /devices/<id>/."""
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
-from . import access, devices, qr
+from ... import access, devices, qr
 from .serializers import LoginWriteSerializer
 
 
@@ -50,10 +49,3 @@ class AppDeviceViewSet(viewsets.GenericViewSet):
     def destroy(self, request, pk=None):
         devices.revoke(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-router = SimpleRouter()
-router.register("logins", AppLoginViewSet, basename="app-login")
-router.register("qr", AppQrViewSet, basename="app-qr")
-router.register("devices", AppDeviceViewSet, basename="app-device")
-urlpatterns = router.urls

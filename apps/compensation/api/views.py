@@ -1,7 +1,6 @@
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.compensation import services
 from apps.compensation.models import (
@@ -90,9 +89,3 @@ class AssignmentViewSet(EmployeeRowsViewSet):
         row = services.end_assignment(int(pk), payload.validated_data["ends_on"],
                                       actor=request.actor)
         return Response(self.get_serializer(row).data)
-
-
-router = SimpleRouter()
-router.register("items", PayItemViewSet, basename="pay-item")
-router.register("assignments", AssignmentViewSet, basename="pay-item-assignment")
-urlpatterns = router.urls

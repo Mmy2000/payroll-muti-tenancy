@@ -18,7 +18,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.iam.authz import build_actor
 from apps.iam.models import Membership, MembershipStatus
 
-from . import devices
+from ... import devices
 
 TENANT_CLAIM = "tid"
 DEVICE_CLAIM = "did"  # the phone's record (apps/mobile/devices.py), when it named itself

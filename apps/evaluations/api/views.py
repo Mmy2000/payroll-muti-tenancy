@@ -2,9 +2,8 @@
 
 from rest_framework import status, viewsets
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
-from . import services
+from .. import services
 from .serializers import EvaluationWriteSerializer
 
 
@@ -28,8 +27,3 @@ class EvaluationViewSet(viewsets.GenericViewSet):
     def destroy(self, request, pk=None):
         services.delete(int(pk), actor=request.actor)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-router = SimpleRouter()
-router.register("evaluations", EvaluationViewSet, basename="evaluation")
-urlpatterns = router.urls

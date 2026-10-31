@@ -3,7 +3,6 @@ from django.utils.translation import gettext as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.core.errors import NotFound
 from apps.payroll import services
@@ -154,11 +153,3 @@ class ManualLineViewSet(viewsets.GenericViewSet):
             raise NotFound(_("Not found."))
         slip = services.remove_manual_line(int(pk), actor=request.actor)
         return Response(PayslipSerializer(slip).data)
-
-
-router = SimpleRouter()
-router.register("calendars", CalendarViewSet, basename="pay-calendar")
-router.register("runs", RunViewSet, basename="payroll-run")
-router.register("payslips", PayslipViewSet, basename="payslip")
-router.register("manual-lines", ManualLineViewSet, basename="manual-line")
-urlpatterns = router.urls

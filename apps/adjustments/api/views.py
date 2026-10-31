@@ -11,7 +11,6 @@ permissions (`adjustments.incentive.*`, `adjustments.penalty.*`).
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import SimpleRouter
 
 from apps.adjustments import services
 from apps.adjustments.domain.amounts import CHOICES
@@ -221,13 +220,3 @@ class IncentiveBatchViewSet(_BatchViewSet):
 class PenaltyBatchViewSet(_BatchViewSet):
     kind = AdjustmentKind.PENALTY
     required_permissions = _permissions(kind, BATCH_ACTIONS)
-
-
-router = SimpleRouter()
-router.register("incentive-types", IncentiveTypeViewSet, basename="incentive-type")
-router.register("penalty-types", PenaltyTypeViewSet, basename="penalty-type")
-router.register("incentive-batches", IncentiveBatchViewSet, basename="incentive-batch")
-router.register("penalty-batches", PenaltyBatchViewSet, basename="penalty-batch")
-router.register("incentives", IncentiveViewSet, basename="incentive")
-router.register("penalties", PenaltyViewSet, basename="penalty")
-urlpatterns = router.urls
