@@ -1093,13 +1093,6 @@ msgstr "الفرع أو القسم"
 msgid "Branches"
 msgstr "الفروع"
 
-msgid ""
-"Branches, their departments and the people in them. Drag to reorganise, or "
-"select something to see what you can do."
-msgstr ""
-"الفروع وأقسامها والموظفون فيها. اسحب لإعادة التنظيم، أو اختر عنصراً لترى ما "
-"يمكنك فعله."
-
 msgid "Brand"
 msgstr "العلامة التجارية"
 
@@ -1198,6 +1191,9 @@ msgstr "الملغاة لا تُحسب في الإجمالي."
 
 msgid "Cancelled."
 msgstr "تم الإلغاء."
+
+msgid "Canvas"
+msgstr "اللوحة"
 
 msgid "Caps Lock is on"
 msgstr "مفتاح الأحرف الكبيرة (Caps Lock) مفعّل"
@@ -1774,6 +1770,13 @@ msgstr "المسودات"
 msgid "Drafts only"
 msgstr "المسودات فقط"
 
+msgid ""
+"Drop a card on a branch or a department to move it. Drag the background to "
+"look around, Ctrl + scroll to zoom."
+msgstr ""
+"أفلت البطاقة على فرع أو قسم لنقلها. اسحب الخلفية للتنقل، واستخدم Ctrl مع "
+"عجلة الفأرة للتكبير."
+
 msgid "Due"
 msgstr "مستحق"
 
@@ -2345,6 +2348,9 @@ msgstr "أول يوم في إحدى الفترات"
 
 msgid "First installment in"
 msgstr "أول قسط في"
+
+msgid "Fit everything on screen"
+msgstr "عرض الكل على الشاشة"
 
 msgid "Fixed amount"
 msgstr "مبلغ ثابت"
@@ -3063,6 +3069,9 @@ msgstr "مربوط بالمستخدم"
 
 msgid "Linked."
 msgstr "تم الربط."
+
+msgid "List"
+msgstr "القائمة"
 
 msgid "Live"
 msgstr "مباشر"
@@ -5051,6 +5060,9 @@ msgstr "عرض الكل"
 msgid "Show inactive"
 msgstr "إظهار غير النشط"
 
+msgid "Show more"
+msgstr "عرض المزيد"
+
 msgid "Show password"
 msgstr "إظهار كلمة المرور"
 
@@ -5768,6 +5780,9 @@ msgstr "هذه الصلاحية تعمل فقط عند منح الدور لكل 
 msgid "Thursday"
 msgstr "الخميس"
 
+msgid "Tidy up"
+msgstr "ترتيب تلقائي"
+
 msgid "Time away"
 msgstr "مدة الإذن"
 
@@ -6014,6 +6029,9 @@ msgstr "تستخدم الرصيد السنوي"
 
 msgid "Value"
 msgstr "القيمة"
+
+msgid "View"
+msgstr "العرض"
 
 msgid "View attendance"
 msgstr "عرض الحضور"
@@ -6404,6 +6422,12 @@ msgstr ""
 msgid ""
 "ZKTeco devices sending punches to the system (ADMS), linked to employees."
 msgstr "أجهزة ZKTeco ترسل البصمات إلى النظام (ADMS)، مربوطة بالموظفين."
+
+msgid "Zoom in"
+msgstr "تكبير"
+
+msgid "Zoom out"
+msgstr "تصغير"
 
 msgid "{count} days saved."
 msgstr "تم حفظ {count} يوم."

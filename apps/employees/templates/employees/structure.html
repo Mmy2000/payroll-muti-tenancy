@@ -1,55 +1,73 @@
 {% extends "layouts/app.html" %}
 {% load i18n static ui authz %}
 {% block title %}{% translate "Company structure" %}{% endblock %}
-{% block page_header %}
+{% block main %}
 {% can "org.department.manage" as can_add_department %}{% can "employees.salary.manage" as can_add_employee %}
-<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-  <div class="min-w-0">
-    <h1 class="page-title">{% translate "Company structure" %}</h1>
-    <p class="mt-1 text-sm text-slate-500">{% translate "Branches, their departments and the people in them. Drag to reorganise, or select something to see what you can do." %}</p>
-  </div>
-  <div class="flex shrink-0 flex-wrap gap-2">
-    {% if can_add_department %}<a href="{% url 'department-new' %}" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
-    {% if can_add_employee %}<a href="{% url 'employee-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
-  </div>
-</div>
-{% endblock %}
-{% block content %}
 {{ config|json_script:"structure-config" }}
-<div class="space-y-5" data-structure>
-  <dl class="org-stats">
-    <div class="org-stat"><span class="stat-icon">{% icon "store" "size-[18px]" %}</span><div><dd class="num" data-stat="branches">—</dd><dt>{% translate "Branches" %}</dt></div></div>
-    <div class="org-stat"><span class="stat-icon">{% icon "users-round" "size-[18px]" %}</span><div><dd class="num" data-stat="departments">—</dd><dt>{% translate "Departments" %}</dt></div></div>
-    <div class="org-stat"><span class="stat-icon">{% icon "user" "size-[18px]" %}</span><div><dd class="num" data-stat="people">—</dd><dt>{% translate "Employees" %}</dt></div></div>
-    <div class="org-stat"><span class="stat-icon">{% icon "triangle-alert" "size-[18px]" %}</span><div><dd class="num" data-stat="unassigned">—</dd><dt>{% translate "No department" %}</dt></div></div>
-  </dl>
+<main class="flow-page" data-structure>
+  <header class="flow-bar">
+    <h1 class="flow-title">{% translate "Company structure" %}</h1>
+    <dl class="flow-stats me-auto">
+      <div class="flow-stat" title="{% translate 'Branches' %}">{% icon "store" "size-3.5" %}<dt class="sr-only">{% translate "Branches" %}</dt><dd class="num" data-stat="branches">—</dd></div>
+      <div class="flow-stat" title="{% translate 'Departments' %}">{% icon "users-round" "size-3.5" %}<dt class="sr-only">{% translate "Departments" %}</dt><dd class="num" data-stat="departments">—</dd></div>
+      <div class="flow-stat" title="{% translate 'Employees' %}">{% icon "user" "size-3.5" %}<dt class="sr-only">{% translate "Employees" %}</dt><dd class="num" data-stat="people">—</dd></div>
+      <div class="flow-stat" title="{% translate 'No department' %}">{% icon "triangle-alert" "size-3.5" %}<dt class="sr-only">{% translate "No department" %}</dt><dd class="num" data-stat="unassigned">—</dd></div>
+    </dl>
+    <div class="flow-search" data-search-box>
+      <span class="pointer-events-none absolute inset-y-0 start-3 grid place-items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" class="form-input ps-9" data-search placeholder="{% translate 'Find an employee, a department or a branch' %}" aria-label="{% translate 'Search' %}" autocomplete="off">
+      <div class="flow-results" data-results hidden></div>
+    </div>
+    <label class="flex shrink-0 items-center gap-2 text-sm text-slate-600"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-show-inactive>{% translate "Show inactive" %}</label>
+    <div class="flex items-center gap-1 max-sm:hidden">
+      <button type="button" class="btn btn-ghost px-2" data-expand-all title="{% translate 'Open everything' %}" aria-label="{% translate 'Open everything' %}">{% icon "maximize-2" "size-4" %}</button>
+      <button type="button" class="btn btn-ghost px-2" data-collapse-all title="{% translate 'Close everything' %}" aria-label="{% translate 'Close everything' %}">{% icon "minimize-2" "size-4" %}</button>
+    </div>
+    <div class="segmented" role="radiogroup" aria-label="{% translate 'View' %}">
+      <label title="{% translate 'Canvas' %}"><input type="radio" class="peer sr-only" name="structure-view" value="canvas" data-view-choice aria-label="{% translate 'Canvas' %}"><span class="segment">{% icon "workflow" "size-4" %}</span></label>
+      <label title="{% translate 'List' %}"><input type="radio" class="peer sr-only" name="structure-view" value="list" data-view-choice aria-label="{% translate 'List' %}"><span class="segment">{% icon "list-tree" "size-4" %}</span></label>
+    </div>
+    {% if can_add_department %}<a href="{% url 'department-new' %}" class="btn btn-secondary" title="{% translate 'New department' %}" aria-label="{% translate 'New department' %}">{% icon "plus" "size-4" %}<span class="hidden 2xl:inline">{% translate "New department" %}</span></a>{% endif %}
+    {% if can_add_employee %}<a href="{% url 'employee-new' %}" class="btn btn-primary" title="{% translate 'New employee' %}" aria-label="{% translate 'New employee' %}">{% icon "plus" "size-4" %}<span class="max-sm:hidden">{% translate "New employee" %}</span></a>{% endif %}
+  </header>
 
-  <div class="org-layout">
-    <section class="card min-w-0 overflow-hidden" aria-label="{% translate 'Company structure' %}">
-      <div class="org-toolbar">
-        <label class="relative min-w-full flex-1 sm:min-w-56">
-          <span class="pointer-events-none absolute inset-y-0 start-3 grid place-items-center text-slate-400">{% icon "search" "size-4" %}</span>
-          <input type="search" class="form-input ps-9" data-search placeholder="{% translate 'Find an employee, a department or a branch' %}" aria-label="{% translate 'Search' %}" autocomplete="off">
-        </label>
-        <label class="me-auto flex shrink-0 items-center gap-2 text-sm text-slate-600 sm:me-0"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-show-inactive>{% translate "Show inactive" %}</label>
-        <button type="button" class="btn btn-ghost" data-expand-all title="{% translate 'Open everything' %}" aria-label="{% translate 'Open everything' %}">{% icon "maximize-2" "size-4" %}</button>
-        <button type="button" class="btn btn-ghost" data-collapse-all title="{% translate 'Close everything' %}" aria-label="{% translate 'Close everything' %}">{% icon "minimize-2" "size-4" %}</button>
+  <div class="flow-body" data-body data-view="canvas">
+    <section class="flow-canvas-view" data-canvas-view aria-label="{% translate 'Company structure' %}">
+      <div class="flow-canvas" data-canvas tabindex="-1">
+        <div class="flow-world" data-world>
+          <svg class="flow-wires" data-wires aria-hidden="true"></svg>
+          <div data-nodes role="tree" aria-label="{% translate 'Company structure' %}"></div>
+          <button type="button" class="flow-cut" data-cut hidden></button>
+        </div>
       </div>
+      <div class="flow-tools">
+        <button type="button" class="flow-tool" data-zoom-out title="{% translate 'Zoom out' %}" aria-label="{% translate 'Zoom out' %}">{% icon "minus" "size-4" %}</button>
+        <span class="flow-zoom num" data-zoom-label aria-live="polite">100%</span>
+        <button type="button" class="flow-tool" data-zoom-in title="{% translate 'Zoom in' %}" aria-label="{% translate 'Zoom in' %}">{% icon "plus" "size-4" %}</button>
+        <span class="mx-0.5 h-5 w-px bg-slate-200" aria-hidden="true"></span>
+        <button type="button" class="flow-tool" data-zoom-fit title="{% translate 'Fit everything on screen' %}" aria-label="{% translate 'Fit everything on screen' %}">{% icon "maximize" "size-4" %}</button>
+        <button type="button" class="flow-tool" data-tidy title="{% translate 'Tidy up' %}" aria-label="{% translate 'Tidy up' %}">{% icon "wand-sparkles" "size-4" %}</button>
+      </div>
+      <p class="flow-help">{% translate "Drop a card on a branch or a department to move it. Drag the background to look around, Ctrl + scroll to zoom." %}</p>
+    </section>
+
+    <section class="card min-w-0 overflow-hidden" data-list-view aria-label="{% translate 'Company structure' %}" hidden>
       <div class="org-tree-wrap" data-tree-wrap>
         <div class="p-2" data-tree role="tree" aria-label="{% translate 'Company structure' %}"></div>
-      </div>
-      <div class="org-selection" data-selection hidden>
-        <span class="text-sm font-medium text-slate-800" data-selection-count></span>
-        <div class="flex gap-2">
-          <button type="button" class="btn btn-ghost" data-selection-clear></button>
-          <button type="button" class="btn btn-primary" data-selection-move>{% icon "arrow-left-right" "size-4" %}<span data-selection-move-label></span></button>
-        </div>
       </div>
     </section>
 
     <aside class="card org-inspector" data-inspector aria-live="polite"></aside>
   </div>
-</div>
+
+  <div class="org-selection" data-selection hidden>
+    <span class="text-sm font-medium text-slate-800" data-selection-count></span>
+    <div class="flex gap-2">
+      <button type="button" class="btn btn-ghost" data-selection-clear></button>
+      <button type="button" class="btn btn-primary" data-selection-move>{% icon "arrow-left-right" "size-4" %}<span data-selection-move-label></span></button>
+    </div>
+  </div>
+</main>
 
 {# The panel for a move. Not a <dialog>: the dropdowns open on the page body, behind a modal one. #}
 <div class="org-backdrop" data-panel-backdrop hidden></div>
@@ -119,5 +137,7 @@
 <template data-icon="plus">{% icon "plus" "size-4" %}</template>
 <template data-icon="eye">{% icon "eye" "size-4" %}</template>
 <template data-icon="triangle-alert">{% icon "triangle-alert" "size-4" %}</template>
-<script type="module" src="{% static 'employees/js/structure.js' %}"></script>
+<template data-icon="building-2">{% icon "building-2" "size-5" %}</template>
+<template data-icon="x">{% icon "x" "size-4" %}</template>
+<script type="module" src="{% static 'employees/js/structure/page.js' %}"></script>
 {% endblock %}

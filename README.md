@@ -238,12 +238,19 @@ server and document-design pages):
 
 ### The company structure page
 
-`/people/structure/` shows branches, their departments and the people in them as a tree
-(`apps/employees/api/structure.py`, `services/structure.py`, `static/employees/js/structure.js`).
-Head counts load at once, and a department's people when it is opened, so a large company stays
-quick. Moving someone or a department is dated and goes on the assignments, by dragging or from
-the side panel. Moving a department takes its people in that branch with it; removing it from a
-branch asks for their new department. The tree and the moves follow the member's branches.
+`/people/structure/` is a workspace in the manner of n8n: branches, their departments and the
+people in them as cards joined by wires on a canvas, with a list view of the same company for
+phones (`apps/employees/api/structure.py`, `services/structure.py`,
+`static/employees/js/structure/`). Head counts load at once, and a department's people when it is
+opened, so a large company stays quick.
+
+Drag the background to look around, Ctrl + scroll to zoom, and a card to arrange it; each browser
+remembers its own arrangement until **Tidy up**. Dropping a card on a place it can go opens the
+move: moving someone or a department is dated and goes on the assignments, and every move is also
+a button in the details panel. A branch's **+** adds a department, or draws a wire to one to place
+it there too. A department's wire end pulls it to another branch, which takes its people there with
+it. The button on a wire removes it from that branch and asks for their new department. The
+canvas, the list and the moves follow the member's branches.
 
 ### Real-time search and the pickers
 

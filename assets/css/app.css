@@ -9,7 +9,7 @@
 @source "../../apps/**/*.html";
 @source "../../apps/**/*.py";
 @source "../../static/core/js";
-@source "../../static/*/js/*.js";
+@source "../../static/*/js/**/*.js";
 
 @font-face {
   font-family: "Inter";
@@ -439,14 +439,68 @@
 
 /* The company structure page (employees/structure.html, static/employees/js/structure.js). */
 @layer components {
-  .org-stats { @apply grid grid-cols-2 gap-3 lg:grid-cols-4; }
-  .org-stat { @apply flex items-center gap-3 rounded-[14px] border border-slate-200/70 bg-surface px-4 py-3 shadow-card; }
-  .org-stat dd { @apply text-xl leading-6 font-semibold tracking-tight text-slate-900; }
-  .org-stat dt { @apply text-xs text-slate-500; }
-  .org-layout { @apply grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]; }
-  .org-inspector { @apply lg:sticky lg:top-20; }
-  .org-toolbar { @apply flex flex-wrap items-center gap-3 border-b border-slate-100 p-3; }
-  .org-tree-wrap { @apply max-h-[calc(100vh-19rem)] min-h-80 overflow-y-auto; }
+  /* The company structure workspace: the whole page under the header, canvas or list. */
+  .flow-page { @apply flex h-[calc(100dvh-3.5rem)] min-h-[30rem] flex-col; }
+  .flow-bar { @apply relative z-30 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-200/70 bg-surface px-4 py-2.5 sm:px-6; }
+  .flow-title { @apply text-base font-semibold tracking-tight text-slate-900; }
+  .flow-stats { @apply flex items-center gap-3.5 text-xs text-slate-500; }
+  .flow-bar .segment { @apply px-2.5; }
+  .flow-stat { @apply flex items-center gap-1.5; }
+  .flow-stat dd { @apply font-semibold text-slate-800; }
+  .flow-search { @apply relative w-full sm:w-56; }
+  .flow-results { @apply absolute start-0 top-full mt-1.5 max-h-96 w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-slate-200 bg-surface p-1 shadow-pop; }
+  .flow-result { @apply flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-start text-sm text-slate-700 hover:bg-slate-100; }
+  .flow-result > svg { @apply shrink-0 text-slate-400; }
+  .flow-body { @apply relative min-h-0 flex-1; }
+  .flow-body[data-view="list"] { @apply grid items-start gap-5 overflow-y-auto p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_19rem]; }
+  .flow-canvas-view { @apply absolute inset-0; }
+  .flow-canvas { @apply absolute inset-0 cursor-grab touch-none overflow-clip bg-canvas outline-none select-none;
+    isolation: isolate; background-image: radial-gradient(circle, var(--color-slate-300) 1px, transparent 1.2px); }
+  .flow-canvas.is-panning { @apply cursor-grabbing; }
+  .flow-world { @apply absolute top-0 left-0 origin-top-left; }
+  .flow-wires { @apply pointer-events-none absolute top-0 left-0 size-px overflow-visible; }
+  .flow-wire { @apply fill-none stroke-slate-300; stroke-width: 2; }
+  .flow-wire.is-lit { @apply stroke-brand-500; }
+  .flow-wire.is-ghost { stroke-dasharray: 6 5; }
+  .flow-wire.is-lifted { @apply opacity-20; }
+  .flow-wire-reach { @apply cursor-pointer fill-none stroke-transparent; pointer-events: stroke; stroke-width: 18; }
+  .flow-wire-reach:hover { @apply stroke-brand-500/15; }
+  .flow-cut { @apply absolute top-0 left-0 z-10 grid size-7 place-items-center rounded-full border border-slate-200 bg-surface text-red-600 shadow-lift hover:bg-red-50; }
+  .flow-node { @apply absolute top-0 left-0 flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-200 bg-surface px-3 text-sm text-slate-700 shadow-lift outline-none transition-[border-color,box-shadow,opacity]; }
+  .flow-node:hover { @apply border-slate-300; }
+  .flow-node:focus-visible { @apply ring-2 ring-brand-500/60; }
+  .flow-node.is-selected { @apply border-brand-500 ring-2 ring-brand-500/25; }
+  .flow-node.is-twin { @apply border-dashed border-brand-500; }
+  .flow-node.is-inactive { @apply opacity-60; }
+  .flow-node.is-carried { @apply z-10 cursor-grabbing shadow-pop; }
+  .flow-node-company { @apply border-brand-500/40; }
+  .flow-node-employee { @apply gap-2 rounded-[10px] px-2.5 shadow-card; }
+  .flow-node-more, .flow-node-hint { @apply justify-center rounded-[10px] border-dashed bg-transparent text-xs text-slate-500 shadow-none; }
+  .flow-node-more { @apply gap-2 hover:bg-surface hover:text-slate-800; }
+  .flow-node-hint { @apply cursor-grab; }
+  .is-carrying .flow-node:not(.can-drop, .is-carried) { @apply opacity-40; }
+  .flow-node.can-drop { @apply border-dashed border-brand-500; }
+  .flow-node.is-drop { @apply border-solid border-brand-500 bg-brand-50 ring-4 ring-brand-500/25; }
+  .flow-tile { @apply grid size-10 shrink-0 place-items-center rounded-[10px] bg-slate-100 text-slate-600; }
+  .flow-tile-company { @apply bg-brand-600 text-white; }
+  .flow-tile-branch { @apply bg-brand-50 text-brand-700; }
+  .flow-tile-none { @apply bg-amber-50 text-amber-700; }
+  .flow-tile-employee { @apply size-8 rounded-full; }
+  .flow-tag { @apply shrink-0 rounded-full bg-brand-50 px-1.5 py-0.5 text-[11px] font-medium text-brand-700; }
+  .flow-carried { @apply absolute -end-2 -top-2 grid size-6 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white; }
+  .flow-port { @apply absolute top-1/2 size-3 -translate-y-1/2 rounded-full border-2 border-slate-300 bg-surface; }
+  .flow-port-in { @apply -start-1.5; }
+  .flow-port-out { @apply -end-1.5; }
+  .flow-port-in.is-live { @apply cursor-crosshair hover:border-brand-500 hover:bg-brand-500; }
+  .flow-port-add { @apply -end-3 grid size-6 cursor-crosshair place-items-center border-slate-300 text-slate-500 hover:border-brand-500 hover:text-brand-600; }
+  .flow-port-add > svg { @apply size-3.5; }
+  .flow-tools { @apply absolute start-3 bottom-3 z-10 flex items-center gap-0.5 rounded-xl border border-slate-200 bg-surface p-1 shadow-lift; }
+  .flow-tool { @apply grid size-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
+  .flow-zoom { @apply w-11 text-center text-xs font-medium text-slate-600; }
+  .flow-help { @apply pointer-events-none absolute inset-x-0 bottom-4 mx-auto hidden w-fit rounded-md bg-canvas/85 px-2 py-0.5 text-center text-xs text-slate-500 xl:block; }
+  .flow-body[data-view="canvas"] .org-inspector { @apply absolute end-3 top-3 z-20 max-h-[calc(100%-1.5rem)] w-80 overflow-y-auto shadow-pop max-md:inset-x-2 max-md:top-auto max-md:bottom-2 max-md:max-h-[55%] max-md:w-auto; }
+  .flow-body[data-view="canvas"] .org-inspector[data-empty] { @apply hidden; }
+  .org-tree-wrap { @apply overflow-y-auto; }
   .org-group { @apply ms-[1.15rem] border-s border-slate-200/80 ps-2; }
   .org-row { @apply flex min-h-10 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-sm text-slate-700
                     outline-none transition-colors hover:bg-slate-100/80 focus-visible:ring-2 focus-visible:ring-brand-500/40; }
@@ -466,7 +520,7 @@
   .org-sub { @apply block truncate text-xs font-normal text-slate-500; }
   .org-count { @apply min-w-7 shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-center text-xs font-medium text-slate-600; }
   .org-hint { @apply px-3 py-2 text-sm text-slate-500; }
-  .org-selection { @apply flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-4 py-2.5; }
+  .org-selection { @apply fixed inset-x-0 bottom-4 z-30 mx-auto flex w-fit max-w-[calc(100vw-2rem)] flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-2 shadow-pop; }
   .org-backdrop { @apply fixed inset-0 z-[45] bg-black/40 backdrop-blur-[2px]; }
   .org-panel { @apply fixed inset-y-0 end-0 z-[45] w-[min(27rem,100vw)] translate-x-full border-s border-slate-200 bg-surface
                       text-slate-800 shadow-pop transition-transform duration-200 motion-reduce:transition-none; }

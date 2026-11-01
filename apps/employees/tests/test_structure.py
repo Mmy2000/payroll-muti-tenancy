@@ -48,6 +48,16 @@ def _branch(tree, branch):
     return next(node for node in tree["branches"] if node["id"] == branch.pk)
 
 
+def test_the_page_opens_the_workspace_for_the_company(tenant_a, company):
+    client = login(tenant_a, language="en")
+    response = client.get(reverse("structure"), HTTP_HOST=f"{tenant_a.slug}.localhost")
+    assert response.status_code == 200
+    assert response.context["config"]["company"] == tenant_a.name
+    page = response.content.decode()
+    assert "data-canvas" in page and "data-tree" in page  # the canvas, and the list for phones
+    assert "employees/js/structure/page" in page
+
+
 def test_the_tree_counts_each_branchs_own_people(tenant_a, company):
     with tenant_context(tenant_a.id):
         tree = selectors.structure_tree(_owner())

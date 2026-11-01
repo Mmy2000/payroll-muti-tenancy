@@ -46,6 +46,7 @@ const icons = [
   "calendar", "calendar-days", "calendar-x", "calendar-clock", "fingerprint", "map-pin", "timer",
   "alarm-clock", "hand-coins", "piggy-bank", "badge-percent", "file-spreadsheet", "user-check",
   "user-x", "users-round", "briefcase", "award", "gavel", "smartphone", "toggle-right", "unlink",
+  "minus", "maximize", "workflow", "wand-sparkles",
 ];
 const bundle = {};
 for (const name of icons) {

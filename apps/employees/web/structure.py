@@ -1,5 +1,5 @@
-"""The company structure page: the page itself. static/employees/js/structure.js draws the tree
-from the API, so moving something never reloads the page."""
+"""The company structure page: the page itself. static/employees/js/structure/ draws the canvas
+and the list from the API, so moving something never reloads the page."""
 
 from django.shortcuts import render
 from django.urls import reverse
@@ -19,6 +19,7 @@ def _words() -> dict:
         "branch": _("Branch"), "department": _("Department"), "employee": _("Employee"),
         "no_department": _("No department"), "head_office": _("Head office"),
         "inactive": _("Inactive"), "employees": _("Employees"), "departments": _("Departments"),
+        "branches": _("Branches"), "close": _("Close"), "show_more": _("Show more"),
         "code": _("Code"), "job": _("Job"), "also_in": _("Also in"), "only_here": _("Only here"),
         "open": _("Open the employee's page"), "edit": _("Edit"),
         "edit_branch": _("Edit the branch"), "edit_department": _("Edit the department"),
@@ -53,6 +54,7 @@ def structure(request):
         "all_departments": active_departments(),
         "config": {
             "words": _words(),
+            "company": request.tenant.name,
             "api": {"tree": reverse("structure-list"), "people": reverse("structure-people"),
                     "search": reverse("structure-search"),
                     "move_people": reverse("structure-move-people"),
