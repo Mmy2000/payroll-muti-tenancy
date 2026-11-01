@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Roles" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% translate "Bundles of permissions you give to users." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'role-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New role" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'role-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New role" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -32,7 +32,7 @@
         {% if item.is_owner %}{% translate "Full access" %}{% else %}{% blocktranslate count counter=item.count %}{{ counter }} permission{% plural %}{{ counter }} permissions{% endblocktranslate %}{% endif %}
         · {% blocktranslate count counter=item.role.member_count %}{{ counter }} user{% plural %}{{ counter }} users{% endblocktranslate %}
       </span>
-      {% if can_manage and not item.is_owner %}<a class="btn btn-ghost text-xs" href="{% url 'role-edit' item.role.pk %}">{% translate "Edit" %}</a>{% endif %}
+      {% if can_manage and not item.is_owner %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'role-edit' item.role.pk %}">{% translate "Edit" %}</a>{% endif %}
     </div>
   </section>
   {% endfor %}

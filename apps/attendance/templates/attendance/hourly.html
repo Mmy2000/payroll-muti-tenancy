@@ -10,7 +10,7 @@
   </div>
   {% if can_request %}<div class="flex gap-2">
     <a href="{% url 'hourly-leave-for-group' %}" class="btn btn-secondary">{% icon "users" "size-4" %}{% translate "For a group" %}</a>
-    <a href="{% url 'hourly-leave-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New hourly leave" %}</a>
+    <a data-form-modal href="{% url 'hourly-leave-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New hourly leave" %}</a>
   </div>{% endif %}
 </div>
 {% endblock %}

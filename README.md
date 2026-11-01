@@ -253,6 +253,15 @@ it there too. A department's wire end pulls it to another branch, which takes it
 it. The button on a wire removes it from that branch and asks for their new department. The
 canvas, the list and the moves follow the member's branches.
 
+### The form modal
+
+`<a href="/people/new/" data-form-modal>` shows that page's form in a modal
+(`static/core/js/form_modal.js`), so people can create and edit without leaving where they are. The
+page stays the only definition of the form, and still opens by itself. After saving the page
+reloads; `data-form-modal="follow"` goes on to where the form leads, and `"stay"` leaves it to the
+page, which hears `form-modal:saved`. Unsaved changes are never closed away silently. A test keeps
+every link to a `-new` or `-edit` page on the modal.
+
 ### Real-time search and the pickers
 
 - **Search and filters** answer as you type (`static/core/js/live_filter.js`): any

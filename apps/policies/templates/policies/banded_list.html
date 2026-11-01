@@ -8,7 +8,7 @@
     <h1 class="page-title">{{ kind.title }}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{{ kind.intro }}</p>
   </div>
-  {% if can_manage %}<a href="{% url kind.area|add:'-policy-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{{ kind.new_label }}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url kind.area|add:'-policy-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{{ kind.new_label }}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -27,7 +27,7 @@
             {% for band in policy.bands.all %}<span class="me-2 inline-block whitespace-nowrap"><span class="num">{{ band.from_minutes }}–{{ band.to_minutes }}</span> → <span class="num">{% if kind.area == "lateness" %}{{ band.deduct_hours|num:2 }}{% else %}{{ band.paid_hours|num:2 }}{% endif %}</span> {% translate "h" %}</span>{% empty %}<span class="text-slate-400">{% translate "Actual time" %}</span>{% endfor %}
           </td>
           <td>{% if policy.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
-          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url kind.area|add:'-policy-edit' policy.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url kind.area|add:'-policy-edit' policy.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

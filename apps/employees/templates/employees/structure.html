@@ -23,8 +23,8 @@
       <label title="{% translate 'Canvas' %}"><input type="radio" class="peer sr-only" name="structure-view" value="canvas" data-view-choice aria-label="{% translate 'Canvas' %}"><span class="segment">{% icon "workflow" "size-4" %}</span></label>
       <label title="{% translate 'List' %}"><input type="radio" class="peer sr-only" name="structure-view" value="list" data-view-choice aria-label="{% translate 'List' %}"><span class="segment">{% icon "list-tree" "size-4" %}</span></label>
     </div>
-    {% if can_add_department %}<a href="{% url 'department-new' %}" class="btn btn-secondary max-sm:hidden" title="{% translate 'New department' %}" aria-label="{% translate 'New department' %}">{% icon "plus" "size-4" %}<span class="hidden 2xl:inline">{% translate "New department" %}</span></a>{% endif %}
-    {% if can_add_employee %}<a href="{% url 'employee-new' %}" class="btn btn-primary" title="{% translate 'New employee' %}" aria-label="{% translate 'New employee' %}">{% icon "plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
+    {% if can_add_department %}<a data-form-modal href="{% url 'department-new' %}" class="btn btn-secondary max-sm:hidden" title="{% translate 'New department' %}" aria-label="{% translate 'New department' %}">{% icon "plus" "size-4" %}<span class="hidden 2xl:inline">{% translate "New department" %}</span></a>{% endif %}
+    {% if can_add_employee %}<a data-form-modal="stay" href="{% url 'employee-new' %}" class="btn btn-primary" title="{% translate 'New employee' %}" aria-label="{% translate 'New employee' %}">{% icon "plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
   </header>
 
   <div class="flow-body" data-body data-view="canvas">

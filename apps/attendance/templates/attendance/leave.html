@@ -10,7 +10,7 @@
   </div>
   <div class="flex gap-2">
     {% if can_view %}<a href="{% url 'leave-types' %}" class="btn btn-secondary">{% icon "list" "size-4" %}{% translate "Leave types" %}</a>{% endif %}
-    {% if can_request %}<a href="{% url 'leave-request-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New request" %}</a>{% endif %}
+    {% if can_request %}<a data-form-modal href="{% url 'leave-request-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New request" %}</a>{% endif %}
   </div>
 </div>
 {% endblock %}

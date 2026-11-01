@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n ui %}
 {% block body %}
-<div class="min-h-full">
+<div class="min-h-full" data-shell>
   {# Sidebar: off-canvas below lg, fixed at lg and up. Logical "start" = right in Arabic. #}
   <div class="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden" data-sidebar-backdrop hidden></div>
   <aside id="sidebar" data-open="false"
@@ -117,6 +117,8 @@
     {% include "components/scroll_buttons.html" %}
   </div>
 </div>
+
+{% include "components/form_modal.html" %}
 
 {# Command palette: every screen the user may open, filtered as they type (static/core/js/cmdk.js). #}
 <dialog class="cmdk" data-cmdk aria-label="{% translate 'Search…' %}">

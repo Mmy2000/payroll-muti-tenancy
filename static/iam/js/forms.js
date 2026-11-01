@@ -95,13 +95,13 @@ function refreshGroupToggles() {
   });
 }
 
-document.querySelector("[data-add-missing]")?.addEventListener("click", (event) => {
-  keepRoleWhole(event.target.form ?? event.target.closest("form"), true);
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-add-missing]");
+  if (!button) return;
+  keepRoleWhole(button.form ?? button.closest("form"), true);
   document.querySelector("[data-role-gaps]")?.remove();
 });
 
-// Group toggles start checked when every permission in the group is.
-document.querySelectorAll("[data-permission-group]").forEach((group) => {
-  const boxes = group.querySelectorAll("[data-permission]");
-  group.querySelector("[data-group-toggle]").checked = boxes.length > 0 && Array.from(boxes).every((b) => b.checked);
-});
+// Group toggles start checked when every permission in the group is: on the page, or in a modal.
+refreshGroupToggles();
+document.addEventListener("form:opened", refreshGroupToggles);

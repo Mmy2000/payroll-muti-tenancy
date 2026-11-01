@@ -9,7 +9,7 @@
   </div>
   <div class="flex gap-2">
     <a href="{% url page_kind.kind|add:'-types' %}" class="btn btn-secondary">{% icon "list" "size-4" %}{{ page_kind.types_title }}</a>
-    {% if can_manage %}<a href="{% url page_kind.kind|add:'-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{{ page_kind.new_label }}</a>{% endif %}
+    {% if can_manage %}<a data-form-modal="follow" href="{% url page_kind.kind|add:'-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{{ page_kind.new_label }}</a>{% endif %}
   </div>
 </div>
 {% endblock %}

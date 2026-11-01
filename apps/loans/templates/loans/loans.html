@@ -7,7 +7,7 @@
     <h1 class="page-title">{% translate "Loans" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Sums recovered in monthly installments by payroll. An employee repays one loan at a time." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'loan-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New loan" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'loan-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New loan" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}

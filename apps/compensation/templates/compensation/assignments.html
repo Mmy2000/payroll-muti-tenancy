@@ -10,7 +10,7 @@
   <div class="flex gap-2">
     <a class="btn btn-secondary px-3" href="?month={{ previous|date:'Y-m' }}" aria-label="{% translate 'Previous month' %}"><span class="rtl:rotate-180">←</span></a>
     <a class="btn btn-secondary px-3" href="?month={{ next|date:'Y-m' }}" aria-label="{% translate 'Next month' %}"><span class="rtl:rotate-180">→</span></a>
-    {% if can_manage %}<a href="{% url 'pay-item-assignment-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Give a pay item" %}</a>{% endif %}
+    {% if can_manage %}<a data-form-modal href="{% url 'pay-item-assignment-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "Give a pay item" %}</a>{% endif %}
   </div>
 </div>
 {% endblock %}

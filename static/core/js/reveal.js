@@ -20,10 +20,12 @@ function refresh(form) {
   });
 }
 
+export function revealForm(form) {
+  if (form.querySelector("[data-show-when]")) refresh(form);
+}
+
 export function initReveal() {
-  document.querySelectorAll("form").forEach((form) => {
-    if (form.querySelector("[data-show-when]")) refresh(form);
-  });
+  document.querySelectorAll("form").forEach(revealForm);
   document.addEventListener("change", (event) => {
     const form = event.target.closest("form");
     if (form?.querySelector("[data-show-when]")) refresh(form);

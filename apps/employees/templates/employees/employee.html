@@ -11,7 +11,7 @@
     <span class="ms-auto flex gap-2">
       {% history_link employee %}
       {% if can_see_attendance %}<a class="btn btn-secondary" href="{% url 'attendance-employee' employee.pk %}">{% icon "clock" "size-4" %}{% translate "Attendance" %}</a>{% endif %}
-      {% if can_manage %}<a class="btn btn-secondary" href="{% url 'employee-edit' employee.pk %}">{% icon "pencil" "size-4" %}{% translate "Edit" %}</a>{% endif %}
+      {% if can_manage %}<a data-form-modal class="btn btn-secondary" href="{% url 'employee-edit' employee.pk %}">{% icon "pencil" "size-4" %}{% translate "Edit" %}</a>{% endif %}
     </span>
   </div>
 </div>
@@ -197,7 +197,7 @@
       <div class="card-body space-y-3">
         <h2 class="text-base font-semibold text-slate-900">{% translate "Mobile app" %}</h2>
         {% if linked_user %}
-          <p class="text-sm text-slate-600">{% translate "Linked to the user" %} <a class="num font-medium text-brand-700 hover:underline" href="{% url 'user-edit' linked_user.pk %}">{{ linked_user.username }}</a>{% if linked_user.status != "active" %} ({{ linked_user.get_status_display }}){% endif %}</p>
+          <p class="text-sm text-slate-600">{% translate "Linked to the user" %} <a data-form-modal class="num font-medium text-brand-700 hover:underline" href="{% url 'user-edit' linked_user.pk %}">{{ linked_user.username }}</a>{% if linked_user.status != "active" %} ({{ linked_user.get_status_display }}){% endif %}</p>
           <p class="text-xs text-slate-500">{% translate "They sign in with their own login; change it on their user page." %}</p>
           <form data-api-form data-method="DELETE" data-endpoint="{% url 'app-login-detail' employee.pk %}" data-success="{% translate 'Unlinked. The user keeps their login.' %}">
             <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-form-error role="alert"></div>

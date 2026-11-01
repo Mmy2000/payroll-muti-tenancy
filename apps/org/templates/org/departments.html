@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Departments" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% translate "A department can operate in several branches, each with its own employees." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'department-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'department-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -26,7 +26,7 @@
           <td class="font-medium text-slate-900">{{ department.name }}</td>
           <td class="text-slate-600">{% for row in department.placements.all %}{{ row.branch.name }}{% if not forloop.last %} · {% endif %}{% endfor %}</td>
           <td>{% if department.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
-          <td class="text-end">{% if department.can_edit %}<a class="btn btn-ghost text-xs" href="{% url 'department-edit' department.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+          <td class="text-end">{% if department.can_edit %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'department-edit' department.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

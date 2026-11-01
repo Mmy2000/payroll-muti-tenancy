@@ -107,6 +107,11 @@ async function submit(form) {
   const done = busy(button); // stays busy while the next page loads after a success
   try {
     const data = await api(form.dataset.endpoint, { method: form.dataset.method || "POST", body });
+    // Whoever cancels this takes over what happens next (form_modal.js).
+    if (!form.dispatchEvent(new CustomEvent("form:saved", { bubbles: true, cancelable: true, detail: { data } }))) {
+      done();
+      return;
+    }
     const redirect = form.dataset.redirect;
     flash(form.dataset.success || "");
     const next = redirect ? redirect.replace("{id}", data && data.id) : window.location.href;

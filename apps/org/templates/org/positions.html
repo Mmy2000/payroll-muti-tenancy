@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Positions" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% translate "The jobs in the company. Several employees can hold the same position." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'position-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New position" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'position-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New position" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -25,7 +25,7 @@
           <td class="font-medium text-slate-900">{{ position.name }}</td>
           <td class="text-slate-600">{% if position.department %}{{ position.department.name }}{% else %}—{% endif %}</td>
           <td>{% if position.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-warning">{% translate "Inactive" %}</span>{% endif %}</td>
-          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'position-edit' position.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'position-edit' position.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Pay items" %}</h1>
     <p class="mt-1 text-sm text-slate-500">{% translate "Allowances and other additions and deductions given to employees for a month." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'pay-item-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New pay item" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'pay-item-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New pay item" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -28,7 +28,7 @@
           <td class="text-slate-600">{{ item.get_basis_display }}</td>
           <td>{% if item.taxable %}{% icon "check" "size-4 text-emerald-600" %}{% else %}<span class="text-slate-400">—</span>{% endif %}</td>
           <td>{% if item.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}</td>
-          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'pay-item-edit' item.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'pay-item-edit' item.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

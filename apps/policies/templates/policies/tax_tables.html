@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Income tax" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Tax tables by the date they start. A month's tax is worked out on the yearly income (the month × 12, less the exemption), bracket by bracket, then divided by 12." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'tax-table-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New tax table" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'tax-table-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New tax table" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -21,7 +21,7 @@
       {% if forloop.first %}<span class="badge badge-brand">{% translate "Latest" %}</span>{% endif %}
       <span class="text-sm text-slate-500">{% translate "Yearly exemption" %}: <span class="num">{{ table.annual_exemption|num:2 }}</span></span>
       {% if table.note %}<span class="text-sm text-slate-500">· {{ table.note }}</span>{% endif %}
-      {% if can_manage %}<a class="btn btn-ghost ms-auto text-xs" href="{% url 'tax-table-edit' table.pk %}">{% translate "Edit" %}</a>{% endif %}
+      {% if can_manage %}<a data-form-modal class="btn btn-ghost ms-auto text-xs" href="{% url 'tax-table-edit' table.pk %}">{% translate "Edit" %}</a>{% endif %}
     </div>
     <table class="table">
       <thead><tr><th>{% translate "Yearly income up to" %}</th><th class="text-end">{% translate "Rate" %}</th></tr></thead>

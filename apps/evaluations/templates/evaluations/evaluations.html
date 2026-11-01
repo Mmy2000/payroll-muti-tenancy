@@ -7,7 +7,7 @@
     <h1 class="page-title">{% translate "Evaluations" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "A yearly evaluation of each employee: up to four notes, and a card to print with their dates and pay." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'evaluation-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New evaluation" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'evaluation-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New evaluation" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}

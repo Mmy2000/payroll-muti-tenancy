@@ -552,6 +552,12 @@
   .org-count { @apply min-w-7 shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-center text-xs font-medium text-slate-600; }
   .org-hint { @apply px-3 py-2 text-sm text-slate-500; }
   .org-selection { @apply fixed inset-x-0 bottom-4 z-30 mx-auto flex w-fit max-w-[calc(100vw-2rem)] flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-2 shadow-pop; }
+  /* The form modal (static/core/js/form_modal.js), over everything but dropdowns and calendars. */
+  .modal-backdrop { @apply fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]; }
+  .modal-box { @apply fixed inset-0 z-50 m-auto flex h-fit max-h-[calc(100dvh-3rem)] w-[min(58rem,calc(100vw-2rem))] animate-pop flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-pop max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-0; }
+  .modal-head { @apply flex shrink-0 items-center gap-1 border-b border-slate-100 px-6 py-3.5; }
+  .modal-guard { @apply flex shrink-0 flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-amber-800; }
+  .modal-body { @apply min-h-0 flex-1 overflow-y-auto; }
   .org-backdrop { @apply fixed inset-0 z-[45] bg-black/40 backdrop-blur-[2px]; }
   .org-panel { @apply fixed inset-y-0 end-0 z-[45] w-[min(27rem,100vw)] translate-x-full border-s border-slate-200 bg-surface
                       text-slate-800 shadow-pop transition-transform duration-200 motion-reduce:transition-none; }
@@ -812,6 +818,16 @@ input[type="checkbox"]:indeterminate { background-color: var(--color-brand-300);
 input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { input[type="checkbox"] { transition: none; } }
+/* A page's form inside the modal. Outside the layers, to win over the page's own grid utilities. */
+.modal-body form[data-api-form] { display: block; }
+.modal-body form[data-api-form] > :not(.modal-actions) { padding: 0.25rem 0.5rem; }
+.modal-body .card { border: 0; box-shadow: none; background: transparent; }
+.modal-body form[data-api-form] > :not(.modal-actions) > :not(.card) { margin-inline: 1.25rem; }
+.modal-body .modal-actions {
+  position: sticky; bottom: 0; z-index: 1; display: flex; justify-content: flex-end; gap: 0.75rem;
+  padding: 0.75rem 1.5rem; border-top: 1px solid var(--color-slate-100); background: var(--color-surface);
+}
+.modal-body .modal-actions .btn { flex: none; }
 /* Picking rows of a list: a box, since the row isn't being switched on. */
 input[type="checkbox"].org-check {
   width: 1rem; height: 1rem; flex-shrink: 0; border-radius: 0.3rem; background-size: auto;

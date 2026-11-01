@@ -48,7 +48,7 @@
       <p class="mt-1" data-branch-warning-steps>{{ company_wide_held|join:" · " }}</p>
       <p class="mt-2">{% translate "They have this role for selected branches. Give it to them for all branches on their user page:" %}</p>
       <ul class="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-        {% for member in limited_holders %}<li><a class="font-medium underline" href="{% url 'user-edit' member.pk %}">{{ member.user.display_name|default:member.username }}</a></li>{% endfor %}
+        {% for member in limited_holders %}<li><a data-form-modal class="font-medium underline" href="{% url 'user-edit' member.pk %}">{{ member.user.display_name|default:member.username }}</a></li>{% endfor %}
       </ul>
     </div>
     {% endif %}

@@ -160,7 +160,7 @@ resultsBox.addEventListener("keydown", (event) => {
 // "/" goes to the search from anywhere that isn't being typed in.
 document.addEventListener("keydown", (event) => {
   if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) return;
-  if (event.target.closest("input, textarea, select, [contenteditable]") || event.target.closest("dialog, [data-panel]")) return;
+  if (event.target.closest("input, textarea, select, [contenteditable], dialog, [data-panel], [data-modal]")) return;
   event.preventDefault();
   searchBox.focus();
 });
@@ -213,5 +213,7 @@ async function start() {
   onChange(draw);
   setView(view);
 }
+
+window.addEventListener("form-modal:saved", () => refresh());
 
 start();

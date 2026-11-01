@@ -11,7 +11,7 @@
   <div class="flex gap-2">
     {% if can_manage %}<a href="{% url 'employees-hours' %}" class="btn btn-secondary">{% icon "clock" "size-4" %}{% translate "Hours for a group" %}</a>{% endif %}
     {% if can_import %}<a href="{% url 'employee-import' %}" class="btn btn-secondary">{% icon "file-spreadsheet" "size-4" %}{% translate "Import from Excel" %}</a>{% endif %}
-    {% if can_manage and can_pay %}<a href="{% url 'employee-new' %}" class="btn btn-primary">{% icon "user-plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
+    {% if can_manage and can_pay %}<a data-form-modal href="{% url 'employee-new' %}" class="btn btn-primary">{% icon "user-plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
   </div>
 </div>
 {% endblock %}

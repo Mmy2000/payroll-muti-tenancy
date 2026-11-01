@@ -1,0 +1,23 @@
+{% load i18n ui %}{# Create and edit without leaving the page (static/core/js/form_modal.js). Not a <dialog>: the dropdowns and the calendar open on the page body, behind a modal one. #}
+<div class="modal-backdrop" data-modal-backdrop hidden></div>
+<section class="modal-box" data-modal role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <header class="modal-head">
+    <h2 id="modal-title" class="min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-slate-900" data-modal-title></h2>
+    <a class="btn btn-ghost shrink-0 px-2" data-modal-full title="{% translate 'Open the full page' %}" aria-label="{% translate 'Open the full page' %}">{% icon "maximize-2" "size-4" %}</a>
+    <button type="button" class="btn btn-ghost -me-2 shrink-0 px-2" data-modal-close aria-label="{% translate 'Close' %}">{% icon "x" "size-4" %}</button>
+  </header>
+  <div class="modal-guard" data-modal-guard role="alert" hidden>
+    <p class="min-w-0 flex-1 text-sm font-medium">{% translate "You have unsaved changes." %}</p>
+    <button type="button" class="btn btn-ghost" data-modal-keep>{% translate "Keep editing" %}</button>
+    <button type="button" class="btn btn-secondary text-red-600" data-modal-discard>{% translate "Discard" %}</button>
+  </div>
+  <div class="modal-body">
+    <div class="space-y-4 p-6" data-modal-loading aria-busy="true">
+      <span class="sr-only">{% translate "Loading…" %}</span>
+      <div class="h-4 w-1/3 animate-pulse rounded bg-slate-100"></div>
+      <div class="h-10 animate-pulse rounded-lg bg-slate-100"></div>
+      <div class="h-10 animate-pulse rounded-lg bg-slate-100"></div>
+    </div>
+    <div data-modal-form></div>
+  </div>
+</section>

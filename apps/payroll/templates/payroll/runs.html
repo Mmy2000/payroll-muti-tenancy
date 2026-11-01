@@ -7,7 +7,7 @@
     <h1 class="page-title">{% translate "Payroll runs" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "A run calculates the payslips of one pay period. It is checked as a draft, approved, then paid; an approved run can be reversed to correct it." %}</p>
   </div>
-  {% if can_calculate %}<a href="{% url 'payroll-run-new' %}" class="btn btn-primary">{% icon "calculator" "size-4" %}{% translate "New run" %}</a>{% endif %}
+  {% if can_calculate %}<a data-form-modal="follow" href="{% url 'payroll-run-new' %}" class="btn btn-primary">{% icon "calculator" "size-4" %}{% translate "New run" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}

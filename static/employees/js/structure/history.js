@@ -101,7 +101,7 @@ redoButton.addEventListener("click", redo);
 // The usual keys, except while typing, where they belong to the field, or in the move panel.
 document.addEventListener("keydown", (event) => {
   if (!(event.ctrlKey || event.metaKey) || event.altKey || !panel.hidden) return;
-  if (event.target.closest("input, textarea, select, [contenteditable]")) return;
+  if (event.target.closest("input, textarea, select, [contenteditable], [data-modal]")) return;
   const key = event.key.toLowerCase();
   if (key !== "z" && key !== "y") return;
   event.preventDefault();

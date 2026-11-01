@@ -1731,6 +1731,9 @@ msgstr "موقوف"
 msgid "Disabled."
 msgstr "موقوف."
 
+msgid "Discard"
+msgstr "تجاهل"
+
 msgid "Disconnected"
 msgstr "غير متصل"
 
@@ -2874,6 +2877,9 @@ msgstr "الأردن"
 
 msgid "Just switched on? It takes a few seconds: reload this page."
 msgstr "شغّلتها للتو؟ تحتاج بضع ثوانٍ: أعد تحميل الصفحة."
+
+msgid "Keep editing"
+msgstr "متابعة التعديل"
 
 msgid "Key"
 msgstr "المفتاح"
@@ -4030,6 +4036,9 @@ msgstr "فتح القائمة"
 
 msgid "Open the employee's page"
 msgstr "فتح صفحة الموظف"
+
+msgid "Open the full page"
+msgstr "فتح الصفحة كاملة"
 
 msgid "Open the workspace"
 msgstr "فتح مساحة العمل"
@@ -6441,6 +6450,9 @@ msgstr "ليست لديك صلاحية لتنفيذ هذا الإجراء."
 
 msgid "You don't have access to this page"
 msgstr "ليست لديك صلاحية لفتح هذه الصفحة"
+
+msgid "You have unsaved changes."
+msgstr "لديك تغييرات غير محفوظة."
 
 msgid "Your data kept private to your company"
 msgstr "بياناتك خاصة بشركتك وحدها"

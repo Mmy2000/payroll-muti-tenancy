@@ -65,10 +65,11 @@ function peoplePreview(key, total) {
   return stack;
 }
 
-function action(label, iconName, onClick, { href = "", primary = false, danger = false } = {}) {
+function action(label, iconName, onClick, { href = "", modal, primary = false, danger = false } = {}) {
   const node = el(href ? "a" : "button", `btn ${primary ? "btn-primary" : "btn-secondary"} w-full justify-start`);
   if (href) node.href = href;
-  else {
+  if (modal !== undefined) node.dataset.formModal = modal;
+  if (!href) {
     node.type = "button";
     node.addEventListener("click", onClick);
   }
@@ -117,9 +118,9 @@ function drawBranch(body, actions, branch) {
     actions.append(action(words.add_department, "plus", () => openAddDepartment(branch), { primary: true }));
   }
   if (state.tree.can_add_employee && branch.can_manage_people) {
-    actions.append(action(words.new_employee, "plus", null, { href: newEmployee({ branch: branch.id }) }));
+    actions.append(action(words.new_employee, "plus", null, { href: newEmployee({ branch: branch.id }), modal: "stay" }));
   }
-  if (branch.edit_url) actions.append(action(words.edit_branch, "pencil", null, { href: branch.edit_url }));
+  if (branch.edit_url) actions.append(action(words.edit_branch, "pencil", null, { href: branch.edit_url, modal: "" }));
 }
 
 function drawDepartment(body, actions, branch, department) {
@@ -137,10 +138,10 @@ function drawDepartment(body, actions, branch, department) {
     if (department.branch_ids.length > 1) {
       actions.append(action(words.remove_department, "unlink", () => openRemoveDepartment(branch, department), { danger: true }));
     }
-    if (department.edit_url) actions.append(action(words.edit_department, "pencil", null, { href: department.edit_url }));
+    if (department.edit_url) actions.append(action(words.edit_department, "pencil", null, { href: department.edit_url, modal: "" }));
   }
   if (state.tree.can_add_employee && branch.can_manage_people) {
-    actions.append(action(words.new_employee, "plus", null, { href: newEmployee({ branch: branch.id, department: department.id }) }));
+    actions.append(action(words.new_employee, "plus", null, { href: newEmployee({ branch: branch.id, department: department.id }), modal: "stay" }));
   }
 }
 

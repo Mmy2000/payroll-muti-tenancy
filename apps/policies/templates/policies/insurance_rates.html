@@ -8,7 +8,7 @@
     <h1 class="page-title">{% translate "Social insurance" %}</h1>
     <p class="mt-1 max-w-2xl text-sm text-slate-500">{% translate "Rates by the date they start, as a percentage of each employee's insured salary." %}</p>
   </div>
-  {% if can_manage %}<a href="{% url 'insurance-rate-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New rates" %}</a>{% endif %}
+  {% if can_manage %}<a data-form-modal href="{% url 'insurance-rate-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New rates" %}</a>{% endif %}
 </div>
 {% endblock %}
 {% block content %}
@@ -28,7 +28,7 @@
           <td class="text-end"><span class="num">{% if rate.min_insured is None %}—{% else %}{{ rate.min_insured|num:2 }}{% endif %}</span></td>
           <td class="text-end"><span class="num">{% if rate.max_insured is None %}—{% else %}{{ rate.max_insured|num:2 }}{% endif %}</span></td>
           <td class="text-sm text-slate-500">{{ rate.note }}</td>
-          <td class="text-end">{% if can_manage %}<a class="btn btn-ghost text-xs" href="{% url 'insurance-rate-edit' rate.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
+          <td class="text-end">{% if can_manage %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'insurance-rate-edit' rate.pk %}">{% translate "Edit" %}</a>{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>
