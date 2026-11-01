@@ -14,7 +14,7 @@
 {% block content %}
 {% can "policies.tax.manage" as can_manage %}
 <div class="space-y-4">
-{% for table in tables %}
+{% for table in page %}
   <section class="card overflow-hidden">
     <div class="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-3">
       <h2 class="font-semibold text-slate-900">{% blocktranslate trimmed with day=table.effective_from|date:"DATE_FORMAT" %}From {{ day }}{% endblocktranslate %}</h2>
@@ -41,4 +41,5 @@
   </section>
 {% endfor %}
 </div>
+{% if page.has_other_pages %}<div class="card mt-5 overflow-hidden">{% include "components/pager.html" %}</div>{% endif %}
 {% endblock %}

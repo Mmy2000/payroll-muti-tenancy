@@ -113,11 +113,11 @@
 <section class="card mt-6 overflow-hidden">
   {% if slips %}
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Employee" %}</th><th class="text-end">{% translate "Earnings" %}</th><th class="text-end">{% translate "Deductions" %}</th>
         <th class="text-end">{% translate "Net pay" %}</th><th class="text-end">{% translate "Employer costs" %}</th><th>{% translate "Checks" %}</th><th></th></tr></thead>
       <tbody>
-      {% for slip in slips %}
+      {% for slip in page %}
         <tr>
           <td><span class="num text-xs text-slate-500">{{ slip.employee.code }}</span> <span class="font-medium text-slate-900">{{ slip.employee.name }}</span></td>
           <td class="text-end"><span class="num">{{ slip.earnings|num:2 }}</span></td>
@@ -133,6 +133,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
   {% else %}
     {% translate "Nobody to pay in this run" as empty_title %}
     {% translate "No employee on this pay frequency is in the run's scope, or they are all in another run of the same days." as empty_text %}

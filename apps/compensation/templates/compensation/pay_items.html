@@ -14,13 +14,13 @@
 {% block content %}
 {% can "compensation.item.manage" as can_manage %}
 <section class="card overflow-hidden">
-  {% if items %}
+  {% if page %}
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Kind" %}</th>
         <th>{% translate "Counted" %}</th><th>{% translate "Taxable" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>
-      {% for item in items %}
+      {% for item in page %}
         <tr>
           <td><span class="num text-slate-500">{{ item.code }}</span></td>
           <td class="font-medium text-slate-900">{{ item.name }}</td>
@@ -34,6 +34,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
   {% else %}
     {% translate "No pay items yet" as empty_title %}
     {% translate "Add allowances such as transport or meals, and deductions such as uniform costs." as empty_text %}

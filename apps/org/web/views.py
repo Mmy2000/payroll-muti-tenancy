@@ -7,14 +7,14 @@ from django.utils.translation import gettext as _
 from apps.iam.authz import permission_required
 
 from .. import permissions, selectors
-from ..listing import ListQuery
+from ..listing import ListQuery, page_of
 from ..validators import branch_in_use, department_in_use
 
 
 @permission_required("org.branch.view")
 def branches(request):
     return render(request, "org/branches.html", {
-        "branches": selectors.branches_with_department_counts(),
+        "page": page_of(request, selectors.branches_with_department_counts()),
         "can_create": request.actor.holds_everywhere(permissions.BRANCH_MANAGE)})
 
 

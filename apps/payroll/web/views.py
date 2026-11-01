@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 
 from apps.iam.authz import permission_required
-from apps.org.listing import Choice, ListQuery
+from apps.org.listing import Choice, ListQuery, page_of
 from apps.org.selectors import active_departments, branch_choices
 
 from .. import permissions, printing, selectors
@@ -81,7 +81,8 @@ def run_detail(request, pk):
            for code in (permissions.CALCULATE, permissions.APPROVE, permissions.PAY,
                         permissions.REVERSE)}
     return render(request, "payroll/run.html", {
-        "run": run, "slips": slips, "today": timezone.localdate(),
+        "run": run, "slips": slips, "page": page_of(request, slips),
+        "today": timezone.localdate(),
         "blocked": sum(1 for s in slips if s.blocking),
         "warned": sum(1 for s in slips if s.warnings and not s.blocking),
         "can_calculate": run.is_draft and can[permissions.CALCULATE],

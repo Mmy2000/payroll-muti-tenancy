@@ -10,6 +10,7 @@ from django.utils.http import content_disposition_header
 
 from apps.iam.authz import permission_required
 from apps.iam.selectors import active_member_count
+from apps.org.listing import page_of
 from apps.org.selectors import (
     active_branch_count,
     branches_by_code,
@@ -100,8 +101,15 @@ def run_report(request, code):
                 return render(request, "printing/pdf_unavailable.html", status=503)
         query = request.GET.copy()
         query.pop("format", None)
+        query.pop("page", None)
+        shaped = [shape(table) for table in tables]
+        # The screen shows a page; totals, prints and exports are of everything. A report of
+        # several tables is a summary, and each of them short.
+        page = page_of(request, shaped[0]["rows"]) if len(shaped) == 1 else None
+        if page is not None:
+            shaped[0]["rows"] = page.object_list
         return render(request, "reports/report.html", {
-            "report": report, "tables": [shape(table) for table in tables],
+            "report": report, "tables": shaped, "page": page,
             "params": params.chosen, "profile": tenant_profile_or_none(),
             "query": query.urlencode(), "can_export": request.actor.can(EXPORT), **options,
         })

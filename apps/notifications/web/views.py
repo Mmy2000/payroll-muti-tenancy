@@ -2,11 +2,11 @@
 the live stream behind the bell."""
 
 from django.core.handlers.asgi import ASGIRequest
-from django.core.paginator import Paginator
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
 
 from apps.iam.authz import permission_required
+from apps.org.listing import page_of
 
 from .. import selectors
 from .. import selectors as attention
@@ -18,7 +18,7 @@ from ..stream import events
 def notifications(request):
     member = request.actor.membership
     rows = selectors.newest_for(member, unread_only=request.GET.get("unread") == "1")
-    page = Paginator(rows, 30).get_page(request.GET.get("page"))
+    page = page_of(request, rows)
     return render(request, "notifications/notifications.html", {
         "page": page, "items": [item(r) for r in page.object_list],
         "attention": attention.waiting(request.actor),

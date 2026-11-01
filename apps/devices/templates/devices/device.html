@@ -65,6 +65,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with page=users %}
   {% else %}
   <p class="px-4 py-5 text-sm text-slate-500">{% translate "Nobody yet: pull the device's users, or wait for its first punches." %}</p>
   {% endif %}

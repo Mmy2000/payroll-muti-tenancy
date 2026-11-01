@@ -72,11 +72,11 @@
 
   <section class="card overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="table" data-report>
+      <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
         <thead><tr><th>{% translate "Employee" %}</th><th class="text-end">{% translate "Quantity" %}</th><th class="text-end">{% translate "Amount" %}</th>
           {% if batch.status == "approved" and not batch.corrects %}<th class="text-end">{% translate "After corrections" %}</th>{% endif %}<th>{% translate "Paid" %}</th>{% if can_edit %}<th class="min-w-[16rem]"></th>{% endif %}</tr></thead>
         <tbody>
-        {% for row in rows %}
+        {% for row in page %}
           <tr>
             <td class="font-medium text-slate-900"><span class="num text-slate-500">#{{ row.employee.code }}</span> {{ row.employee.name }}</td>
             <td class="text-end"><span class="num">{{ row.quantity|num:2 }}</span></td>
@@ -99,6 +99,7 @@
         </tbody>
       </table>
     </div>
+    {% include "components/pager.html" %}
   </section>
 
   {% if can_edit %}

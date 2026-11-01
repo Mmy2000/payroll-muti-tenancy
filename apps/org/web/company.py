@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.media import ImageUploadInput, validate_image
+from apps.core.paging import PAGE_SIZE_CHOICES
 from apps.iam.authz import permission_required
 
 from .. import selectors, services
@@ -28,6 +29,12 @@ class CompanyForm(forms.Form):
         widget=ImageUploadInput(attrs={"class": "form-file"}),
         help_text=_("PNG, JPEG, WEBP, GIF or ICO, up to 2 MB. A square or wide image on a "
                     "transparent background works best."))
+    page_size = forms.TypedChoiceField(
+        label=_("Rows on each page of a list"), choices=PAGE_SIZE_CHOICES, coerce=int,
+        required=False, empty_value=None,
+        widget=forms.Select(attrs={"class": "form-input"}),
+        help_text=_("For every list and report on screen, for everyone in the company. Prints and "
+                    "exports always include every row."))
     app_qr_minutes = forms.IntegerField(
         label=_("A sign-in QR works for (minutes)"), min_value=1, max_value=QR_MOST_MINUTES,
         widget=forms.NumberInput(attrs={"class": "form-input num w-full text-start"}),
@@ -40,7 +47,8 @@ def company(request):
     profile = selectors.tenant_profile()
     form = CompanyForm(request.POST or None, request.FILES or None, initial={
         "display_name": profile.display_name, "accent": profile.accent,
-        "logo": profile.logo or None, "app_qr_minutes": profile.app_qr_minutes})
+        "logo": profile.logo or None, "app_qr_minutes": profile.app_qr_minutes,
+        "page_size": profile.page_size})
     uses_the_app = request.actor.can("mobile.qr.manage")
     if not uses_the_app:
         del form.fields["app_qr_minutes"]
@@ -48,6 +56,7 @@ def company(request):
         services.save_company(
             profile, display_name=form.cleaned_data["display_name"],
             accent=form.cleaned_data["accent"], logo=form.cleaned_data["logo"],
+            page_size=form.cleaned_data["page_size"],
             app_qr_minutes=form.cleaned_data["app_qr_minutes"] if uses_the_app else None)
         messages.success(request, _("Saved."))
         return redirect("company")

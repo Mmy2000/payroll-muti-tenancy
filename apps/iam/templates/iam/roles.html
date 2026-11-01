@@ -37,4 +37,5 @@
   </section>
   {% endfor %}
 </div>
+{% if page.has_other_pages %}<div class="card mt-5 overflow-hidden">{% include "components/pager.html" %}</div>{% endif %}
 {% endblock %}

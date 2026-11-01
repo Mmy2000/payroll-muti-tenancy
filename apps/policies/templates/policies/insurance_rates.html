@@ -14,13 +14,13 @@
 {% block content %}
 {% can "policies.insurance.manage" as can_manage %}
 <section class="card overflow-hidden">
-  {% if rates %}
+  {% if page %}
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Applies from" %}</th><th class="text-end">{% translate "Employee" %}</th><th class="text-end">{% translate "Employer" %}</th>
         <th class="text-end">{% translate "Minimum insured" %}</th><th class="text-end">{% translate "Maximum insured" %}</th><th>{% translate "Note" %}</th><th></th></tr></thead>
       <tbody>
-      {% for rate in rates %}
+      {% for rate in page %}
         <tr>
           <td><span class="num">{{ rate.effective_from|date:"Y-m-d" }}</span>{% if forloop.first %} <span class="badge badge-brand">{% translate "Latest" %}</span>{% endif %}</td>
           <td class="text-end"><span class="num">{{ rate.employee_rate|num:2 }}%</span></td>
@@ -34,6 +34,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
   {% else %}
     {% translate "No insurance rates yet" as empty_title %}
     {% translate "Without rates, payroll deducts no social insurance." as empty_text %}

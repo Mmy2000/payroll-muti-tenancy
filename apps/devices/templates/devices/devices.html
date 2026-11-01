@@ -11,12 +11,12 @@
 {% block content %}
 <div class="space-y-6">
 <section class="card overflow-hidden">
-  {% if devices %}
+  {% if page %}
   <div class="overflow-x-auto">
     <table class="table">
       <thead><tr><th>{% translate "Device" %}</th><th>{% translate "Serial number" %}</th><th>{% translate "Branch" %}</th><th>{% translate "Status" %}</th><th>{% translate "Last call" %}</th></tr></thead>
       <tbody>
-      {% for d in devices %}
+      {% for d in page %}
         <tr>
           <td><a class="font-medium text-brand-700 hover:underline" href="{% url 'device' d.pk %}">{{ d.name }}</a></td>
           <td><span class="num">{{ d.serial }}</span></td>
@@ -28,6 +28,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
   {% else %}
     {% translate "No devices yet" as empty_title %}
     {% translate "Add a device with the serial number on its label; it starts sending punches on its next call." as empty_text %}

@@ -15,13 +15,13 @@
 {% can "org.branch.manage" as can_manage %}
 <section class="card overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr>
         <th class="w-20">{% translate "Code" %}</th><th>{% translate "Name" %}</th>
         <th>{% translate "Phone" %}</th><th class="text-end">{% translate "Departments" %}</th><th>{% translate "Type" %}</th><th>{% translate "Status" %}</th><th></th>
       </tr></thead>
       <tbody>
-      {% for branch in branches %}
+      {% for branch in page %}
       {% can "org.branch.manage" branch as can_edit %}
         <tr>
           <td><span class="num text-slate-500">{{ branch.code|stringformat:"02d" }}</span></td>
@@ -38,5 +38,6 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
 </section>
 {% endblock %}

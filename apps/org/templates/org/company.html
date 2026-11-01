@@ -13,6 +13,7 @@
         <div class="min-w-0 flex-1">{% include "components/form_field.html" with field=form.logo %}</div>
       </div>
       {% include "components/form_field.html" with field=form.accent %}
+      {% include "components/form_field.html" with field=form.page_size %}
       {% if form.app_qr_minutes %}{% include "components/form_field.html" with field=form.app_qr_minutes %}{% endif %}
     </div>
     <div class="flex justify-end border-t border-slate-100 px-5 py-4">

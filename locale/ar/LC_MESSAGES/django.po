@@ -1856,6 +1856,9 @@ msgid ""
 "Each client is a separate workspace with its own data, users and address."
 msgstr "كل عميل مساحة عمل مستقلة ببياناتها ومستخدميها وعنوانها."
 
+msgid "Each client sets its own in Company settings."
+msgstr "يحدد كل عميل قيمته في إعدادات الشركة."
+
 msgid ""
 "Each employee's days: status, when they came and left, time worked, late, "
 "early and extra. At most 31 days at a time."
@@ -2449,6 +2452,13 @@ msgstr ""
 msgid ""
 "For each time it is paid, or for each day worked if the item is per day."
 msgstr "عن كل مرة يُصرف فيها، أو عن كل يوم عمل إذا كان البند يوميًا."
+
+msgid ""
+"For every list and report on screen, for everyone in the company. Prints and"
+" exports always include every row."
+msgstr ""
+"لكل القوائم والتقارير على الشاشة ولجميع مستخدمي الشركة. الطباعة والتصدير "
+"يشملان كل الصفوف دائماً."
 
 msgid "For the %(name)s team: every client, in one place."
 msgstr "لفريق %(name)s: كل العملاء في مكان واحد."
@@ -4916,6 +4926,12 @@ msgstr "الصف"
 msgid "Rows"
 msgstr "الصفوف"
 
+msgid "Rows on each page of a console list"
+msgstr "عدد الصفوف في كل صفحة من قوائم لوحة التحكم"
+
+msgid "Rows on each page of a list"
+msgstr "عدد الصفوف في كل صفحة من القوائم"
+
 msgid "Run"
 msgstr "المسير"
 
@@ -5860,6 +5876,9 @@ msgid ""
 "This PIN's punches are already in an employee's attendance: the link can't "
 "change."
 msgstr "بصمات هذا الرقم في حضور موظف بالفعل: لا يمكن تغيير الربط."
+
+msgid "This prints the first 10,000 rows. Export it to get them all."
+msgstr "ستُطبع أول 10,000 صف فقط. صدّر الملف للحصول عليها كلها."
 
 msgid "This QR has expired."
 msgstr "انتهت صلاحية رمز QR هذا."

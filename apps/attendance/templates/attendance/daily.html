@@ -59,7 +59,7 @@
   </form>
   {% endif %}
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr>
         {% if can_manage %}<th class="w-8"></th>{% endif %}
         <th>{% translate "Employee" %}</th><th>{% translate "Status" %}</th>
@@ -68,7 +68,7 @@
         {% if can_manage %}<th class="min-w-[22rem]">{% translate "Correct" %}</th>{% endif %}
       </tr></thead>
       <tbody>
-      {% for row in rows %}{% with e=row.employee d=row.day %}
+      {% for row in page %}{% with e=row.employee d=row.day %}
         <tr>
           {% if can_manage %}<td>{% if row.can_manage %}<input type="checkbox" form="bulk" data-multi="employee_ids" value="{{ e.pk }}" class="size-4 rounded border-slate-300 accent-brand-600" aria-label="{{ e.name }}" {% if d.status == "absent" or d.status == "upcoming" %}checked{% endif %}>{% endif %}</td>{% endif %}
           <td><a class="font-medium text-slate-900 hover:underline" href="{% url 'attendance-employee' e.pk %}?month={{ day|date:'Y-m' }}">{{ e.name }}</a>
@@ -87,6 +87,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" with query=query %}
   {% else %}
     {% translate "Nobody to show" as empty_title %}
     {% translate "No employees were working for you on this day, with these filters." as empty_text %}

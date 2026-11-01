@@ -71,7 +71,7 @@
     {% if tables|length > 1 %}<h2 class="px-6 pt-5 pb-2 text-sm font-semibold text-slate-900">{{ table.title }}</h2>{% endif %}
     {% if table.rows %}
     <div class="overflow-x-auto">
-      <table class="table" data-report="{{ table.title|default:report.title }}">
+      <table class="table" data-report="{{ table.title|default:report.title }}"{% if page %} data-pages="{{ page.paginator.num_pages }}"{% endif %}>
         <thead><tr>{% for column in table.columns %}<th {% if column.numeric %}class="text-end"{% endif %}>{{ column.label }}</th>{% endfor %}</tr></thead>
         <tbody>
         {% for row in table.rows %}<tr class="{% if row.style == 'heading' %}bg-slate-50/80 font-semibold text-slate-900{% elif row.style == 'subtotal' %}font-semibold text-slate-900{% elif row.style == 'total' %}border-t-2 border-slate-200 bg-slate-50 font-semibold text-slate-900{% endif %}">{% for cell in row.cells %}{% include "reports/_cell.html" %}{% endfor %}</tr>{% endfor %}
@@ -79,6 +79,7 @@
         {% if table.totals %}<tfoot><tr class="border-t-2 border-slate-200 font-semibold">{% for cell in table.totals %}{% include "reports/_cell.html" %}{% endfor %}</tr></tfoot>{% endif %}
       </table>
     </div>
+    {% if page %}<div data-no-print>{% include "components/pager.html" with query=query %}</div>{% endif %}
     {% else %}
     <p class="px-6 py-5 text-sm text-slate-400">{% translate "Nothing in this period." %}</p>
     {% endif %}

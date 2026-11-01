@@ -11,12 +11,12 @@
 {% can "policies.holiday.manage" as can_manage %}
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
   <section class="card overflow-hidden lg:col-span-2">
-    {% if holidays %}
+    {% if page %}
     <div class="overflow-x-auto">
-      <table class="table" data-report>
+      <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
         <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Name" %}</th><th>{% translate "Branch" %}</th><th></th></tr></thead>
         <tbody>
-        {% for holiday in holidays %}
+        {% for holiday in page %}
           <tr>
             <td><span class="num">{{ holiday.date|date:"Y-m-d" }}</span> <span class="text-xs text-slate-500">{{ holiday.date|date:"l" }}</span></td>
             <td class="font-medium text-slate-900">{{ holiday.name }}</td>
@@ -30,6 +30,7 @@
         </tbody>
       </table>
     </div>
+    {% include "components/pager.html" %}
     {% else %}
       {% translate "No public holidays yet" as empty_title %}
       {% translate "Add the year's holidays so payroll pays them and attendance doesn't count them as absences." as empty_text %}

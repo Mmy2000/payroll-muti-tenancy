@@ -16,13 +16,13 @@
 {% can "admin.signins.history" as can_history %}
 <section class="card overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr>
         <th>{% translate "User" %}</th><th>{% translate "Username" %}</th><th>{% translate "Roles" %}</th>
         <th>{% translate "Last sign-in" %}</th><th>{% translate "Status" %}</th><th></th>
       </tr></thead>
       <tbody>
-      {% for member in members %}
+      {% for member in page %}
         <tr>
           <td>
             <div class="flex items-center gap-3">
@@ -49,5 +49,6 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
 </section>
 {% endblock %}

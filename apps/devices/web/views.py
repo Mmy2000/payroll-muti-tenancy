@@ -6,6 +6,7 @@ from django.http import Http404
 from django.shortcuts import render
 
 from apps.iam.authz import permission_required
+from apps.org.listing import page_of
 from apps.org.selectors import branch_choices
 
 from .. import permissions, selectors
@@ -18,11 +19,11 @@ def _branches(actor):
 
 @permission_required(permissions.VIEW)
 def devices(request):
-    rows = list(selectors.visible_devices(request.actor))
-    for device in rows:
+    page = page_of(request, selectors.visible_devices(request.actor))
+    for device in page.object_list:
         device.online = selectors.is_online(device)
     return render(request, "devices/devices.html", {
-        "devices": rows, "branches": _branches(request.actor),
+        "page": page, "branches": _branches(request.actor),
         "can_manage": request.actor.can(permissions.MANAGE),
         "server": request.get_host()})
 
@@ -34,9 +35,8 @@ def device(request, pk):
         raise Http404
     sync.expire_commands(found)
     found.online = selectors.is_online(found)
-    users = list(selectors.users_of_branch(found.branch))
     return render(request, "devices/device.html", {
-        "device": found, "users": users,
+        "device": found, "users": page_of(request, selectors.users_of_branch(found.branch)),
         "commands": selectors.recent_commands(found),
         "punches": selectors.recent_punches(found),
         "employees": selectors.linkable_employees(request.actor, found.branch),

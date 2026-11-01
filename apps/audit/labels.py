@@ -135,6 +135,7 @@ COLUMNS = {
     "code_hash": _("Code"), "expires_at": _("Expires at"), "used_at": _("Used at"),
     "used_device_id": _("Used on"), "cancelled_at": _("Cancelled at"),
     "issued_by_id": _("Given out by"), "app_qr_minutes": _("Sign-in QR works for (minutes)"),
+    "page_size": _("Rows on each page of a list"),
     "revoked_reason": _("Why it was revoked"), "photo": _("Photo"),
     "member_id": _("App login"), "latitude": _("Latitude"), "longitude": _("Longitude"),
     "radius_m": _("Radius (metres)"), "info": _("What the device says about itself"),

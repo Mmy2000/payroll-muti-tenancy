@@ -11,6 +11,7 @@ from django.db.models import Q
 
 from apps.core.media import TenantUploadPath, validate_image
 from apps.core.models import TenantScopedModel
+from apps.core.paging import DEFAULT_PAGE_SIZE, PAGE_SIZE_CHOICES
 
 
 def validate_timezone(value: str) -> None:
@@ -41,6 +42,9 @@ class TenantProfile(TenantScopedModel):
     accent = models.CharField(max_length=16, default="teal")
     # How long a QR for signing in to the app works (apps/mobile/services/qr.py), at most a week.
     app_qr_minutes = models.PositiveIntegerField(default=15)
+    # How many rows a list shows at a time (apps.core.paging).
+    page_size = models.PositiveSmallIntegerField(default=DEFAULT_PAGE_SIZE,
+                                                 choices=PAGE_SIZE_CHOICES)
 
     class Meta:
         constraints = [

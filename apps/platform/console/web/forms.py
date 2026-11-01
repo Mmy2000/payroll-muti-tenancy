@@ -207,17 +207,19 @@ class TrafficLimitForm(Styled, forms.Form):
 class PlatformSettingsForm(Styled, forms.ModelForm):
     class Meta:
         model = PlatformSettings
-        fields = ["brand_name", "tagline", "footer_text", "logo", "logo_dark"]
+        fields = ["brand_name", "tagline", "footer_text", "page_size", "logo", "logo_dark"]
         labels = {
             "brand_name": _("Platform name"),
             "tagline": _("Line under each client's name"),
             "footer_text": _("Footer text"),
+            "page_size": _("Rows on each page of a console list"),
             "logo": _("Logo"),
             "logo_dark": _("Logo for dark backgrounds"),
         }
         help_texts = {
             "tagline": _("Shown in every workspace sidebar. Empty: the platform name."),
             "footer_text": _("e.g. © 2026 Your Company. All rights reserved."),
+            "page_size": _("Each client sets its own in Company settings."),
             "logo": LOGO_HELP,
             "logo_dark": _("Used on the dark sidebar, the sign-in panel and in dark mode. "
                            "Empty: the logo above."),

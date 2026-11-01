@@ -14,7 +14,7 @@
     <table class="table">
       <thead><tr><th class="w-24">{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Paid" %}</th><th>{% translate "Uses the yearly balance" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>
-      {% for t in leave_types %}
+      {% for t in page %}
         <tr>
           {% if can_manage %}
           <td><input form="type-{{ t.pk }}" name="code" class="form-input num h-9 w-20 py-1 text-start" inputmode="numeric" value="{{ t.code }}" aria-label="{% translate 'Code' %}"></td>
@@ -41,6 +41,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
   {% if can_manage %}
   <form class="flex flex-wrap items-end gap-3 border-t border-slate-100 p-4" data-api-form data-method="POST" data-endpoint="{% url 'leave-type-list' %}" data-success="{% translate 'Saved.' %}" novalidate>
     <label><span class="form-label is-required">{% translate "Code" %}</span><input name="code" class="form-input num w-20 text-start" inputmode="numeric" required></label>

@@ -14,12 +14,12 @@
 {% block content %}
 {% can "policies."|add:kind.area|add:".manage" as can_manage %}
 <section class="card overflow-hidden">
-  {% if policies %}
+  {% if page %}
   <div class="overflow-x-auto">
-    <table class="table" data-report>
+    <table class="table" data-report data-pages="{{ page.paginator.num_pages }}">
       <thead><tr><th>{% translate "Name" %}</th><th class="text-end">{{ kind.minutes_label }}</th><th>{% translate "Bands" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>
-      {% for policy in policies %}
+      {% for policy in page %}
         <tr>
           <td class="font-medium text-slate-900">{{ policy.name }}</td>
           <td class="text-end"><span class="num">{% if kind.area == "lateness" %}{{ policy.grace_minutes }}{% else %}{{ policy.starts_after_minutes }}{% endif %}</span></td>
@@ -33,6 +33,7 @@
       </tbody>
     </table>
   </div>
+  {% include "components/pager.html" %}
   {% else %}
     {% translate "No policies yet" as empty_title %}
     {% include "components/empty_state.html" with icon="list" title=empty_title text=kind.intro %}

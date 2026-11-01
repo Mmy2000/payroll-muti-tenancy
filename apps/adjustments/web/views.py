@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _lazy
 
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
-from apps.org.listing import Choice, ListQuery, by_status
+from apps.org.listing import Choice, ListQuery, by_status, page_of
 from apps.org.selectors import visible_departments
 
 from .. import selectors
@@ -116,7 +116,8 @@ def _batch(request, page: KindPage, pk: int):
     editable = draft and batch.corrects_id is None
     may_approve = actor.can(page.approve)
     return render(request, "adjustments/batch.html", {
-        "page_kind": page, "batch": batch, "rows": rows, "paid": bool(paid),
+        "page_kind": page, "batch": batch, "rows": rows, "page": page_of(request, rows),
+        "paid": bool(paid),
         "total": sum((row.amount for row in rows), 0),
         "corrections": selectors.corrections_of(batch),
         "can_edit": editable and actor.can(page.manage),
@@ -134,7 +135,7 @@ def _batch(request, page: KindPage, pk: int):
 
 def _types(request, page: KindPage):
     return render(request, "adjustments/types.html", {
-        "page_kind": page, "types": selectors.types_of(page.kind),
+        "page_kind": page, "page": page_of(request, selectors.types_of(page.kind)),
         "can_manage": request.actor.can(page.manage)})
 
 

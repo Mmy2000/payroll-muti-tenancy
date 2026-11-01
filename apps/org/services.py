@@ -161,10 +161,12 @@ def set_department_active(department_id: int, active: bool, *, actor=None) -> De
 
 
 def save_company(profile: TenantProfile, *, display_name: str, accent: str, logo,
-                 app_qr_minutes: int | None = None) -> TenantProfile:
+                 app_qr_minutes: int | None = None, page_size: int | None = None) -> TenantProfile:
     """The client's name on screens, colour and logo; `app_qr_minutes` when it was on the form."""
     profile.display_name = display_name
     profile.accent = accent
+    if page_size is not None:
+        profile.page_size = page_size
     if app_qr_minutes is not None:
         profile.app_qr_minutes = app_qr_minutes
     replace_file(profile, "logo", logo)

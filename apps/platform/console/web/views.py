@@ -7,11 +7,11 @@ from __future__ import annotations
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
-from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 
+from apps.core.paging import paginate
 from apps.platform.tenants.models import TenantStatus
 
 from ..selectors import metrics
@@ -67,7 +67,7 @@ def tls_allowed(request):
 def events(request):
     tenant_id = request.GET.get("tenant", "")
     queryset = platform_events(int(tenant_id) if tenant_id.isdigit() else None)
-    page = Paginator(queryset, 50).get_page(request.GET.get("page"))
+    page = paginate(request, queryset, settings_row().page_size)
     return render(request, "console/events.html", {"page": page, "section": "events"})
 
 

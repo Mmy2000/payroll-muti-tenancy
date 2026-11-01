@@ -20,8 +20,17 @@ from operator import or_
 from urllib.parse import urlencode
 
 from django.apps import apps
-from django.core.paginator import Paginator
 from django.db.models import Q
+
+from apps.core.paging import DEFAULT_PAGE_SIZE, paginate
+
+
+def page_of(request, rows):
+    """A page of any list, as long as the client's admin chose (Company settings)."""
+    from apps.org.models import TenantProfile
+
+    size = TenantProfile.objects.values_list("page_size", flat=True).first()
+    return paginate(request, rows, size or DEFAULT_PAGE_SIZE)
 
 
 def by_status(queryset, value: str):
@@ -73,7 +82,6 @@ class ListQuery:
     party_param: str = "party"  # the address's name for it
     party_model: str = ""  # "app_label.Model" whose `name` labels the chip
     choices: list = field(default_factory=list)
-    per_page: int = 25
     keep: tuple = ()  # other query parameters the page owns (e.g. "month"), kept in its links
 
     def __post_init__(self):
@@ -134,7 +142,7 @@ class ListQuery:
         return queryset
 
     def page(self, queryset):
-        return Paginator(queryset, self.per_page).get_page(self.request.GET.get("page"))
+        return page_of(self.request, queryset)
 
     @property
     def query(self) -> str:

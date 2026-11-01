@@ -7,7 +7,6 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, datetime, time
 
-from django.core.paginator import Paginator
 from django.db import models
 from django.shortcuts import render
 from django.utils import formats, timezone
@@ -16,6 +15,7 @@ from django.utils.translation import gettext as _
 from apps.core.templatetags.ui import num
 from apps.iam.authz import permission_required
 from apps.iam.selectors import members_by_name
+from apps.org.listing import page_of
 
 from .. import catalog, selectors
 from ..labels import COLUMNS
@@ -150,7 +150,7 @@ def activity(request):
     events = selectors.activity_events(table, model, row_id=row_id,
                                        user_id=int(who) if who.isdigit() else None,
                                        date_from=date_from, date_to=date_to)
-    page = Paginator(events, 40).get_page(request.GET.get("page"))
+    page = page_of(request, events)
     rows = _describe(list(page.object_list))
     record = None
     if row_id is not None:

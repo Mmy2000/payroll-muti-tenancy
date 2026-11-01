@@ -269,6 +269,13 @@ The branch form picks its location on a map (`templates/components/location_pick
 then drag the pin and size the attendance zone. It still sends plain coordinates and a radius, which
 can be typed in, so it works without the map too. See ADR-109 for what goes to OpenStreetMap.
 
+### Pagination
+
+Every list shows pages of one length, which an admin sets: each client in **Company settings**, and
+the platform for the console in its settings (`apps/core/paging.py`, `apps.org.listing.page_of`).
+Prints and exports always include every row, and totals count everything. The mobile API keeps its
+own contract. A test stops a list choosing its own length.
+
 ### Sample data
 
 `manage.py create_sample` builds a whole company in a client of its own, `nile`, to try every screen

@@ -15,6 +15,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.crypto import decrypt, encrypt
 from apps.core.media import PlatformUploadPath, validate_image
 from apps.core.models import TimeStampedModel
+from apps.core.paging import DEFAULT_PAGE_SIZE, PAGE_SIZE_CHOICES
 
 RESERVED_SLUGS = frozenset({"admin", "api", "www", "static", "media", "platform", "support"})
 
@@ -306,6 +307,9 @@ class PlatformSettings(models.Model):
     logo_dark = models.FileField(upload_to=PlatformUploadPath("branding"), blank=True,
                                  validators=[validate_image])
     footer_text = models.CharField(max_length=200, blank=True)
+    # How many rows the console's lists show at a time; each client sets its own.
+    page_size = models.PositiveSmallIntegerField(default=DEFAULT_PAGE_SIZE,
+                                                 choices=PAGE_SIZE_CHOICES)
     updated_at = models.DateTimeField(auto_now=True)
 
     CACHE_KEY = "platform:settings"

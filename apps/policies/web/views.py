@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from apps.iam.authz import permission_required
+from apps.org.listing import page_of
 from apps.org.selectors import branch_choices
 from apps.policies import selectors
 from apps.policies.models import LatenessPolicy, OvertimePolicy
@@ -60,8 +61,8 @@ OVERTIME = BandedKind(
 
 
 def _banded_list(request, kind: BandedKind):
-    policies = selectors.listed_banded_policies(kind.model)
-    return render(request, "policies/banded_list.html", {"kind": kind, "policies": policies})
+    page = page_of(request, selectors.listed_banded_policies(kind.model))
+    return render(request, "policies/banded_list.html", {"kind": kind, "page": page})
 
 
 def _banded_form(request, kind: BandedKind, pk=None):
@@ -114,7 +115,7 @@ def overtime_policy_edit(request, pk):
 @permission_required("policies.tax.view")
 def tax_tables(request):
     return render(request, "policies/tax_tables.html",
-                  {"tables": selectors.listed_tax_tables()})
+                  {"page": page_of(request, selectors.listed_tax_tables())})
 
 
 def _tax_form(request, pk=None):
@@ -144,7 +145,7 @@ def tax_table_edit(request, pk):
 @permission_required("policies.insurance.view")
 def insurance_rates(request):
     return render(request, "policies/insurance_rates.html",
-                  {"rates": selectors.listed_insurance_rates()})
+                  {"page": page_of(request, selectors.listed_insurance_rates())})
 
 
 def _insurance_form(request, pk=None):
@@ -174,7 +175,7 @@ def insurance_rate_edit(request, pk):
 def holidays(request):
     allowed = request.actor.branch_ids("policies.holiday.manage")
     return render(request, "policies/holidays.html", {
-        "holidays": selectors.listed_holidays(),
+        "page": page_of(request, selectors.listed_holidays()),
         "branches": branch_choices(allowed),
         "all_branches": allowed is None,
     })

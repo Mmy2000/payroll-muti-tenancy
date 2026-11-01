@@ -14,7 +14,7 @@ from apps.compensation.models import (
 from apps.core import months
 from apps.employees.web.targets import target_choices
 from apps.iam.authz import permission_required
-from apps.org.listing import Choice, ListQuery, by_status
+from apps.org.listing import Choice, ListQuery, by_status, page_of
 
 from .. import permissions, selectors
 
@@ -25,7 +25,7 @@ STATUS_TABS = [(AssignmentStatus.ACTIVE, _lazy("In effect")),
 @permission_required("compensation.item.view")
 def pay_items(request):
     return render(request, "compensation/pay_items.html",
-                  {"items": selectors.pay_items()})
+                  {"page": page_of(request, selectors.pay_items())})
 
 
 def _form(request, item=None):

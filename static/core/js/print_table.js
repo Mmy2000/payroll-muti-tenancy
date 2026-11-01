@@ -10,7 +10,9 @@
 // Tables of one group follow each other into one printed table unless they have captions.
 // Columns are matched by their header text, so the statement's per-currency tables share them.
 
-const MAX_PAGES = 100;
+import { strings, toast } from "./ui.js";
+
+const MAX_ROWS = 10000; // the admin chooses how long a page is, so the limit counts rows
 const SKIP = "svg, button, input, select, textarea, [data-no-print], .sr-only";
 
 const esc = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -51,8 +53,12 @@ function readTable(table) {
 // Tables of the current page, with paginated ones replaced by every page's when asked.
 async function collect(all, progress) {
   const live = [...document.querySelectorAll("table[data-report]")].map(readTable);
-  const pages = Math.min(MAX_PAGES, Math.max(1, ...[...document.querySelectorAll("table[data-report][data-pages]")].map((t) => Number(t.dataset.pages) || 1)));
+  const pagedTables = [...document.querySelectorAll("table[data-report][data-pages]")];
+  const wanted = Math.max(1, ...pagedTables.map((t) => Number(t.dataset.pages) || 1));
+  const perPage = Math.max(1, ...pagedTables.map((table) => table.tBodies[0]?.rows.length ?? 0));
+  const pages = Math.min(wanted, Math.ceil(MAX_ROWS / perPage));
   if (!all || pages < 2) return live;
+  if (pages < wanted) toast(strings().print_limit, { kind: "error" });
   const fetched = [];
   for (let n = 1; n <= pages; n++) {
     progress(n, pages);

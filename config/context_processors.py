@@ -178,6 +178,7 @@ def shell(request):
             "loading": gettext("Searching…"),
             "clear": gettext("Clear"),
             "page_loading": gettext("Loading…"),
+            "print_limit": gettext("This prints the first 10,000 rows. Export it to get them all."),
             "pinned": gettext("Pinned to your shortcuts."),
             "unpinned": gettext("Removed from your shortcuts."),
         },

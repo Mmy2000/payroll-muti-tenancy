@@ -1,4 +1,3 @@
-from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import reverse
@@ -8,18 +7,20 @@ from apps.iam.authz import permission_required
 from apps.iam.catalog import WILDCARD
 from apps.iam.member_links import employee_link
 from apps.iam.models import SignInOutcome
+from apps.org.listing import page_of
 from apps.org.selectors import active_branches_by_code
 
 
 @permission_required("admin.users.view")
 def users(request):
-    return render(request, "iam/users.html", {"members": selectors.members_with_last_sign_in()})
+    return render(request, "iam/users.html",
+                  {"page": page_of(request, selectors.members_with_last_sign_in())})
 
 
 @permission_required("admin.signins.history")
 def sign_ins(request):
     events, filters = signins.search(request.GET)
-    page = Paginator(events, 40).get_page(request.GET.get("page"))
+    page = page_of(request, events)
     for event in page.object_list:
         event.device = signins.device(event.user_agent)
     query = request.GET.copy()
@@ -82,12 +83,14 @@ def user_edit(request, pk):
 
 @permission_required("admin.users.view")
 def roles(request):
-    items = selectors.roles_with_member_counts()
+    page = page_of(request, selectors.roles_with_member_counts())
     return render(request, "iam/roles.html", {
+        "page": page,
         "roles": [{"role": r, "is_owner": any(g.permission == WILDCARD for g in r.grants.all()),
                    "count": len(r.grants.all()),
                    "incomplete": bool(selectors.role_gaps(
-                       {g.permission for g in r.grants.all()} - {WILDCARD}))} for r in items],
+                       {g.permission for g in r.grants.all()} - {WILDCARD}))}
+                  for r in page.object_list],
     })
 
 

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from django.contrib import messages
-from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -11,11 +10,13 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.core.errors import ValidationError
+from apps.core.paging import paginate
 from apps.platform.tenants import features as feature_registry
 from apps.platform.tenants.models import Tenant, TenantStatus
 
 from ..selectors import metrics
 from ..selectors.events import client_events
+from ..selectors.settings import settings_row
 from ..selectors.tenants import (
     LIVE_STATUSES,
     client_domains,
@@ -58,7 +59,7 @@ def tenants(request):
     term = request.GET.get("q", "").strip()
     status = request.GET.get("status", "")
     queryset = search_clients(term, status, request.GET.get("plan", ""))
-    page = Paginator(queryset, 25).get_page(request.GET.get("page"))
+    page = paginate(request, queryset, settings_row().page_size)
     rows = [{"tenant": t, "domain": primary_domain(t),
              "usage": metrics.tenant_usage(t) if t.status in LIVE_STATUSES else None}
             for t in page.object_list]

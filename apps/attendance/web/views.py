@@ -18,7 +18,7 @@ from apps.core.import_page import ImportPage, import_page, template_download
 from apps.employees.selectors import branch_choices, department_choices, get_employee
 from apps.employees.web.targets import employee_choices, group_page
 from apps.iam.authz import permission_required
-from apps.org.listing import Choice, ListQuery, by_status
+from apps.org.listing import Choice, ListQuery, by_status, page_of
 
 from .. import selectors
 from ..domain.summary import summarize
@@ -56,8 +56,11 @@ def daily(request):
     results = evaluate(people, day, day, today=today)
     rows = [{"employee": e, "day": results[e.pk][0],
              "can_manage": actor.can(entries.MANAGE, branch=e.branch_id)} for e in people]
+    query = request.GET.copy()
+    query.pop("page", None)
     return render(request, "attendance/daily.html", {
         "day": day, "today": today, "rows": rows, "summary": summarize(r["day"] for r in rows),
+        "page": page_of(request, rows), "query": query.urlencode(),
         "previous": day - timedelta(days=1), "next": day + timedelta(days=1),
         "branches": branches, "branch": branch, "departments": departments,
         "department": department, "kinds": DayKind.choices,
@@ -179,7 +182,7 @@ def times_group(request):
 @permission_required("attendance.leave.view")
 def leave_types(request):
     return render(request, "attendance/leave_types.html", {
-        "leave_types": selectors.leave_types(),
+        "page": page_of(request, selectors.leave_types()),
         "can_manage": request.actor.can(leave.MANAGE_TYPES)})
 
 
