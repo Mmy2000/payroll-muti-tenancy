@@ -15,23 +15,26 @@
     </dl>
     <div class="flow-search" data-search-box>
       <span class="pointer-events-none absolute inset-y-0 start-3 grid place-items-center text-slate-400">{% icon "search" "size-4" %}</span>
-      <input type="search" class="form-input ps-9" data-search placeholder="{% translate 'Find an employee, a department or a branch' %}" aria-label="{% translate 'Search' %}" autocomplete="off">
+      <input type="search" class="form-input ps-9 pe-9" data-search placeholder="{% translate 'Find an employee, a department or a branch' %}" aria-label="{% translate 'Search' %}" autocomplete="off">
+      <kbd class="kbd pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 max-sm:hidden">/</kbd>
       <div class="flow-results" data-results hidden></div>
-    </div>
-    <label class="flex shrink-0 items-center gap-2 text-sm text-slate-600"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-show-inactive>{% translate "Show inactive" %}</label>
-    <div class="flex items-center gap-1 max-sm:hidden">
-      <button type="button" class="btn btn-ghost px-2" data-expand-all title="{% translate 'Open everything' %}" aria-label="{% translate 'Open everything' %}">{% icon "maximize-2" "size-4" %}</button>
-      <button type="button" class="btn btn-ghost px-2" data-collapse-all title="{% translate 'Close everything' %}" aria-label="{% translate 'Close everything' %}">{% icon "minimize-2" "size-4" %}</button>
     </div>
     <div class="segmented" role="radiogroup" aria-label="{% translate 'View' %}">
       <label title="{% translate 'Canvas' %}"><input type="radio" class="peer sr-only" name="structure-view" value="canvas" data-view-choice aria-label="{% translate 'Canvas' %}"><span class="segment">{% icon "workflow" "size-4" %}</span></label>
       <label title="{% translate 'List' %}"><input type="radio" class="peer sr-only" name="structure-view" value="list" data-view-choice aria-label="{% translate 'List' %}"><span class="segment">{% icon "list-tree" "size-4" %}</span></label>
     </div>
-    {% if can_add_department %}<a href="{% url 'department-new' %}" class="btn btn-secondary" title="{% translate 'New department' %}" aria-label="{% translate 'New department' %}">{% icon "plus" "size-4" %}<span class="hidden 2xl:inline">{% translate "New department" %}</span></a>{% endif %}
-    {% if can_add_employee %}<a href="{% url 'employee-new' %}" class="btn btn-primary" title="{% translate 'New employee' %}" aria-label="{% translate 'New employee' %}">{% icon "plus" "size-4" %}<span class="max-sm:hidden">{% translate "New employee" %}</span></a>{% endif %}
+    {% if can_add_department %}<a href="{% url 'department-new' %}" class="btn btn-secondary max-sm:hidden" title="{% translate 'New department' %}" aria-label="{% translate 'New department' %}">{% icon "plus" "size-4" %}<span class="hidden 2xl:inline">{% translate "New department" %}</span></a>{% endif %}
+    {% if can_add_employee %}<a href="{% url 'employee-new' %}" class="btn btn-primary" title="{% translate 'New employee' %}" aria-label="{% translate 'New employee' %}">{% icon "plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
   </header>
 
   <div class="flow-body" data-body data-view="canvas">
+    <div class="flow-status" data-status hidden></div>
+    <div class="flow-filters">
+      <label class="flex items-center gap-2 px-1.5 text-sm text-slate-600"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-show-inactive>{% translate "Show inactive" %}</label>
+      <span class="h-5 w-px bg-slate-200" aria-hidden="true"></span>
+      <button type="button" class="flow-tool" data-expand-all title="{% translate 'Open everything' %}" aria-label="{% translate 'Open everything' %}">{% icon "maximize-2" "size-4" %}</button>
+      <button type="button" class="flow-tool" data-collapse-all title="{% translate 'Close everything' %}" aria-label="{% translate 'Close everything' %}">{% icon "minimize-2" "size-4" %}</button>
+    </div>
     <section class="flow-canvas-view" data-canvas-view aria-label="{% translate 'Company structure' %}">
       <div class="flow-canvas" data-canvas tabindex="-1">
         <div class="flow-world" data-world>
@@ -47,8 +50,26 @@
         <span class="mx-0.5 h-5 w-px bg-slate-200" aria-hidden="true"></span>
         <button type="button" class="flow-tool" data-zoom-fit title="{% translate 'Fit everything on screen' %}" aria-label="{% translate 'Fit everything on screen' %}">{% icon "maximize" "size-4" %}</button>
         <button type="button" class="flow-tool" data-tidy title="{% translate 'Tidy up' %}" aria-label="{% translate 'Tidy up' %}">{% icon "wand-sparkles" "size-4" %}</button>
+        <button type="button" class="flow-tool" popovertarget="flow-help" title="{% translate 'How the canvas works' %}" aria-label="{% translate 'How the canvas works' %}">?</button>
       </div>
-      <p class="flow-help">{% translate "Drop a card on a branch or a department to move it. Drag the background to look around, Ctrl + scroll to zoom." %}</p>
+      <svg class="flow-map" data-map viewBox="0 0 176 112" width="176" height="112" aria-hidden="true">
+        <path class="flow-map-cards" data-map-cards></path>
+        <path class="flow-map-selected" data-map-selected></path>
+        <rect class="flow-map-frame" data-map-frame rx="2"></rect>
+      </svg>
+      <div class="flow-help" id="flow-help" popover>
+        <h2 class="mb-2 text-sm font-semibold text-slate-900">{% translate "How the canvas works" %}</h2>
+        <dl class="space-y-1.5 text-xs">
+          <div><dt>{% translate "Look around" %}</dt><dd>{% translate "Drag the background" %}</dd></div>
+          <div><dt>{% translate "Zoom" %}</dt><dd><kbd class="kbd">Ctrl</kbd> + {% translate "scroll" %}</dd></div>
+          <div><dt>{% translate "Arrange" %}</dt><dd>{% translate "Drag a card" %}</dd></div>
+          <div><dt>{% translate "Move" %}</dt><dd>{% translate "Drop a card on a branch or a department" %}</dd></div>
+          <div><dt>{% translate "Add a department" %}</dt><dd>{% translate "A branch's + , or draw its wire to a department" %}</dd></div>
+          <div><dt>{% translate "Select several" %}</dt><dd><kbd class="kbd">Shift</kbd> + {% translate "click" %}</dd></div>
+          <div><dt>{% translate "Search" %}</dt><dd><kbd class="kbd">/</kbd></dd></div>
+          <div><dt>{% translate "Fit everything on screen" %}</dt><dd><kbd class="kbd">0</kbd></dd></div>
+        </dl>
+      </div>
     </section>
 
     <section class="card min-w-0 overflow-hidden" data-list-view aria-label="{% translate 'Company structure' %}" hidden>

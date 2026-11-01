@@ -2,40 +2,37 @@
 // wires on an endless grid. Drag the background to look around, and a card to arrange it. Dropped on
 // a place it can go, a card opens the move for that place. A branch's "+" draws a wire to a
 // department to place it there too, and a department's own wire end pulls it to another branch.
+import { bringIntoView, camera, centerOn, fit, overview, panBy, panTo, rtl, shift, zoomAt, zoomIn } from "./camera.js";
 import { el, icon } from "./dom.js";
 import { drawCard } from "./card.js";
-import { bounds, buildGraph, flatten, inPoint, layOut, outPoint, showMore, wirePath } from "./graph.js";
+import { buildGraph, flatten, inPoint, layOut, outPoint, showMore, wirePath } from "./graph.js";
+import { drawMap } from "./minimap.js";
+import { between, tween } from "./motion.js";
 import { dropAllowed, dropOn, openAddDepartment, openRemoveDepartment, peopleToCarry } from "./moves.js";
 import { changed, select, state, toggleChecked, toggleOpen, words } from "./store.js";
 
-const MIN_ZOOM = 0.25;
-const MAX_ZOOM = 1.5;
-const ZOOM_STEP = 1.2;
-const READABLE_ZOOM = 0.85;
-const GRID = 24;
-const SPARSE_GRID_BELOW = 0.5;
 const DRAG_FROM = 4; // pixels before a press becomes a drag
-const EDGE_MARGIN = 32;
+const SETTLE = 240; // how long cards take to reach their new places
+const SETTLE_AT_MOST = 400; // with more cards than this they go straight there
+const EDGE_ZONE = 48; // dragging this close to the edge moves the canvas
+const EDGE_SPEED = 12;
 const SVG = "http://www.w3.org/2000/svg";
 
 const viewport = document.querySelector("[data-canvas]");
-const world = viewport.querySelector("[data-world]");
 const wiresBox = viewport.querySelector("[data-wires]");
 const nodesBox = viewport.querySelector("[data-nodes]");
 const cut = viewport.querySelector("[data-cut]");
-const inspector = document.querySelector("[data-inspector]");
-const zoomLabel = document.querySelector("[data-zoom-label]");
 
-const rtl = document.documentElement.dir === "rtl";
 const storageKey = `structure.layout.${rtl ? "rtl" : "ltr"}`;
 
-const camera = { x: 0, y: 0, zoom: 1 };
 const offsets = readOffsets();
 const cards = new Map(); // key → its card
 const wires = new Map(); // key → the wire into that node
+const shown = new Map(); // key → where its card is right now
 let root = null;
 let nodes = [];
 let byKey = new Map();
+let settling = null; // cards on their way to new places
 let cutting = null; // the node whose wire the cut button is on
 let ignoreClick = false; // the click that ends a drag
 
@@ -57,91 +54,71 @@ function saveOffsets() {
   }
 }
 
-// --- the camera -------------------------------------------------------------------------------
-
-function applyCamera() {
-  world.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`;
-  const grid = GRID * camera.zoom * (camera.zoom < SPARSE_GRID_BELOW ? 2 : 1);
-  viewport.style.backgroundSize = `${grid}px ${grid}px`;
-  viewport.style.backgroundPosition = `${camera.x}px ${camera.y}px`;
-  zoomLabel.textContent = `${Math.round(camera.zoom * 100)}%`;
-}
-
-const clampZoom = (zoom) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
-
-function zoomAt(x, y, zoom) {
-  const next = clampZoom(zoom);
-  camera.x = x - ((x - camera.x) * next) / camera.zoom;
-  camera.y = y - ((y - camera.y) * next) / camera.zoom;
-  camera.zoom = next;
-  applyCamera();
-}
-
-function zoomBy(factor) {
-  zoomAt(viewport.clientWidth / 2, viewport.clientHeight / 2, camera.zoom * factor);
-}
-
-// The part of the canvas the details panel doesn't cover.
-function freeArea() {
-  const area = { left: EDGE_MARGIN, top: EDGE_MARGIN, right: viewport.clientWidth - EDGE_MARGIN, bottom: viewport.clientHeight - EDGE_MARGIN };
-  if (!inspector.offsetWidth) return area;
-  if (inspector.offsetWidth > viewport.clientWidth * 0.7) area.bottom -= inspector.offsetHeight;
-  else if (rtl) area.left += inspector.offsetWidth;
-  else area.right -= inspector.offsetWidth;
-  return area;
-}
-
-function fit() {
-  if (!nodes.length || !viewport.clientWidth) return;
-  const area = freeArea();
-  const box = bounds(nodes);
-  const width = box.right - box.left;
-  const height = box.bottom - box.top;
-  camera.zoom = clampZoom(Math.min(1, (area.right - area.left) / width, (area.bottom - area.top) / height));
-  camera.x = (area.left + area.right - width * camera.zoom) / 2 - box.left * camera.zoom;
-  camera.y = (area.top + area.bottom - height * camera.zoom) / 2 - box.top * camera.zoom;
-  applyCamera();
-}
-
-function centerOn(item) {
-  const area = freeArea();
-  camera.zoom = Math.max(camera.zoom, READABLE_ZOOM);
-  camera.x = (area.left + area.right) / 2 - (item.x + item.width / 2) * camera.zoom;
-  camera.y = (area.top + area.bottom) / 2 - (item.y + item.height / 2) * camera.zoom;
-  applyCamera();
-}
-
-function bringIntoView(item) {
-  const area = freeArea();
-  const left = item.x * camera.zoom + camera.x;
-  const top = item.y * camera.zoom + camera.y;
-  const right = left + item.width * camera.zoom;
-  const bottom = top + item.height * camera.zoom;
-  if (left < area.left) camera.x += area.left - left;
-  else if (right > area.right) camera.x -= right - area.right;
-  if (top < area.top) camera.y += area.top - top;
-  else if (bottom > area.bottom) camera.y -= bottom - area.bottom;
-  applyCamera();
-}
-
-// A view to start from: all of it if that can be read, or the company in the middle if not.
-function overview() {
-  fit();
-  if (camera.zoom < READABLE_ZOOM) centerOn(root);
-}
-
 // --- drawing ----------------------------------------------------------------------------------
 
-function positionNodes() {
-  layOut(root, offsets, rtl);
+const placed = (item) => ({ ...shown.get(item.key), width: item.width, height: item.height });
+
+// Puts every card where `spot` says, and the wires between them.
+function placeCards(spot) {
   nodes.forEach((item) => {
-    const card = cards.get(item.key);
-    card.style.transform = `translate(${item.x}px, ${item.y}px)`;
-    card.style.width = `${item.width}px`;
-    card.style.height = `${item.height}px`;
-    if (!item.parent) return;
-    const path = wirePath(outPoint(item.parent, rtl), inPoint(item, rtl), rtl);
+    const at = spot(item);
+    shown.set(item.key, at);
+    cards.get(item.key).style.transform = `translate(${at.x}px, ${at.y}px)`;
+  });
+  nodes.filter((item) => item.parent).forEach((item) => {
+    const path = wirePath(outPoint(placed(item.parent), rtl), inPoint(placed(item), rtl), rtl);
     wires.get(item.key).forEach((line) => line.setAttribute("d", path));
+  });
+}
+
+function stopSettling() {
+  settling?.stop();
+  settling = null;
+}
+
+// The cards as they stand, while one is being dragged.
+function positionNodes() {
+  stopSettling();
+  layOut(root, offsets, rtl);
+  placeCards((item) => ({ x: item.x, y: item.y }));
+}
+
+// From where cards were to where they belong. New ones come out of their parent, and ones that went
+// away fold back into what is left of theirs.
+function settle(starts, leaving) {
+  const moves = nodes.some((item) => starts.get(item.key).x !== item.x || starts.get(item.key).y !== item.y);
+  if (nodes.length > SETTLE_AT_MOST || (!moves && !leaving.length)) {
+    leaving.forEach(({ card }) => card.remove());
+    placeCards((item) => ({ x: item.x, y: item.y }));
+    return;
+  }
+  placeCards((item) => starts.get(item.key));
+  nodesBox.append(...leaving.map(({ card }) => card));
+  const clear = () => leaving.forEach(({ card }) => card.remove());
+  const run = tween(SETTLE, (t) => {
+    placeCards((item) => {
+      const from = starts.get(item.key);
+      return { x: between(from.x, item.x, t), y: between(from.y, item.y, t) };
+    });
+    leaving.forEach(({ card, from, to }) => {
+      card.style.opacity = String(1 - t);
+      card.style.transform = `translate(${between(from.x, to.x, t)}px, ${between(from.y, to.y, t)}px)`;
+    });
+  }, () => {
+    clear();
+    settling = null;
+  });
+  settling = { stop() { run.cancel(); clear(); } };
+}
+
+// What left since the last drawing, and where each one folds back to.
+function departures(previous, oldNodes) {
+  return oldNodes.filter((item) => !byKey.has(item.key) && cards.has(item.key)).map((item) => {
+    let home = item.parent;
+    while (home && !byKey.has(home.key)) home = home.parent;
+    const card = cards.get(item.key);
+    card.classList.add("is-leaving");
+    return { card, from: previous.get(item.key) ?? item, to: byKey.get(home?.key) ?? item };
   });
 }
 
@@ -186,29 +163,46 @@ function setTabStop() {
 }
 
 export function drawCanvas({ keep, reveal, center, fit: fitAll } = {}) {
-  const kept = byKey.get(keep);
-  const before = kept && { x: kept.x, y: kept.y };
+  stopSettling();
+  const previous = new Map(shown);
+  const oldNodes = nodes;
+  const first = !previous.size;
   const focused = viewport.contains(document.activeElement) ? document.activeElement.closest(".flow-node")?.dataset.key : null;
 
   root = buildGraph();
   layOut(root, offsets, rtl);
   nodes = flatten(root);
   byKey = new Map(nodes.map((item) => [item.key, item]));
+  const leaving = departures(previous, oldNodes);
   cards.clear();
-  nodes.forEach((item) => cards.set(item.key, drawCard(item, { selected: state.selected?.key === item.key, twin: isTwin(item) })));
+  shown.clear();
+  nodes.forEach((item) => {
+    const card = drawCard(item, { selected: state.selected?.key === item.key, twin: isTwin(item) });
+    card.style.width = `${item.width}px`;
+    card.style.height = `${item.height}px`;
+    card.classList.toggle("is-new", !first && !previous.has(item.key));
+    cards.set(item.key, card);
+  });
   nodesBox.replaceChildren(...cards.values());
   drawWires(pathToSelected());
-  positionNodes();
   cut.hidden = true;
   setTabStop();
 
+  // A card that was opened or closed holds still on screen: everything is measured from it.
+  const held = previous.get(keep);
   const anchor = byKey.get(keep);
-  if (before && anchor) {
-    camera.x += (before.x - anchor.x) * camera.zoom;
-    camera.y += (before.y - anchor.y) * camera.zoom;
-    applyCamera();
-  }
-  if (fitAll) overview();
+  const drift = held && anchor ? { x: anchor.x - held.x, y: anchor.y - held.y } : { x: 0, y: 0 };
+  shift(-drift.x * camera.zoom, -drift.y * camera.zoom);
+  const starts = new Map();
+  nodes.forEach((item) => {
+    const old = previous.get(item.key);
+    starts.set(item.key, old ? { x: old.x + drift.x, y: old.y + drift.y }
+      : starts.get(item.parent?.key) ?? { x: item.x, y: item.y });
+  });
+  settle(starts, leaving);
+  drawMap(nodes, state.selected?.key);
+
+  if (fitAll) overview(nodes, root, { animate: !first });
   const target = byKey.get(reveal);
   if (target) (center ? centerOn : bringIntoView)(target);
   cards.get(focused)?.focus({ preventScroll: true });
@@ -224,7 +218,8 @@ function activate(item, event) {
   if (item.kind === "more") {
     showMore(item.group);
     changed({ keep: item.group });
-  } else if (item.kind === "none") toggleNode(item);
+  } else if (item.kind === "add") openAddDepartment(item.branch);
+  else if (item.kind === "none") toggleNode(item);
   else if (item.kind === "company") select(null);
   else if (item.kind === "employee") {
     if (item.canCarry && (event.shiftKey || event.ctrlKey || event.metaKey)) {
@@ -268,11 +263,7 @@ function panning(from) {
   return {
     from,
     begin: () => viewport.classList.add("is-panning"),
-    move(dx, dy) {
-      camera.x = start.x + dx;
-      camera.y = start.y + dy;
-      applyCamera();
-    },
+    move: (dx, dy) => panTo(start.x + dx, start.y + dy),
     end(moved) {
       viewport.classList.remove("is-panning");
       if (!moved && state.selected) select(null);
@@ -317,6 +308,7 @@ function carrying(from, item) {
   const places = landing(carried);
   return {
     from,
+    nearEdgePans: true,
     begin() {
       places.show();
       const card = cards.get(item.key);
@@ -328,6 +320,7 @@ function carrying(from, item) {
     move(dx, dy, event) {
       offsets.set(item.key, { x: start.x + dx / camera.zoom, y: start.y + dy / camera.zoom });
       positionNodes();
+      drawMap(nodes, state.selected?.key);
       places.follow(worldPoint(event));
     },
     end(moved) {
@@ -350,6 +343,7 @@ function wiring(from, start, carried, lifted) {
   const places = landing(carried);
   return {
     from,
+    nearEdgePans: true,
     begin() {
       places.show();
       wiresBox.append(ghost);
@@ -373,7 +367,7 @@ function gestureFor(event, from) {
   if (event.button === 1) return panning(from);
   const item = byKey.get(event.target.closest(".flow-node")?.dataset.key);
   if (!item || item.kind === "hint") return panning(from);
-  if (event.target.closest("[data-toggle],[data-check]") || item.kind === "more") return null;
+  if (event.target.closest("[data-toggle],[data-check]") || item.kind === "more" || item.kind === "add") return null;
   const port = event.target.closest("[data-port]")?.dataset.port;
   if (port === "out") return wiring(from, outPoint(item, rtl), { kind: "connect", branch: item.branch });
   if (port === "in") return wiring(from, outPoint(item.parent, rtl), whatIsCarried(item), item);
@@ -394,6 +388,23 @@ viewport.addEventListener("pointerdown", (event) => {
   gesture = gestureFor(event, from);
 });
 
+// Carrying something to the edge of the canvas moves the canvas, so it can reach anywhere.
+function panNearEdge() {
+  if (!gesture?.last) return;
+  const { last, from } = gesture;
+  const box = viewport.getBoundingClientRect();
+  const toward = (at, low, high) => (at < low + EDGE_ZONE ? EDGE_SPEED : at > high - EDGE_ZONE ? -EDGE_SPEED : 0);
+  const x = toward(last.clientX, box.left, box.right);
+  const y = toward(last.clientY, box.top, box.bottom);
+  if (x || y) {
+    panBy(x, y);
+    gesture.panned.x += x;
+    gesture.panned.y += y;
+    gesture.move(last.clientX - from.x - gesture.panned.x, last.clientY - from.y - gesture.panned.y, last);
+  }
+  requestAnimationFrame(panNearEdge);
+}
+
 function pinching() {
   const [a, b] = [...pressed.values()];
   const box = viewport.getBoundingClientRect();
@@ -412,9 +423,12 @@ window.addEventListener("pointermove", (event) => {
   if (!gesture.moved) {
     if (Math.hypot(dx, dy) < DRAG_FROM) return;
     gesture.moved = true;
+    gesture.panned = { x: 0, y: 0 };
     gesture.begin?.();
+    if (gesture.nearEdgePans) requestAnimationFrame(panNearEdge);
   }
-  gesture.move(dx, dy, event);
+  if (gesture.nearEdgePans) gesture.last = event;
+  gesture.move(dx - gesture.panned.x, dy - gesture.panned.y, event);
 });
 
 function release(event) {
@@ -437,9 +451,7 @@ viewport.addEventListener("wheel", (event) => {
     zoomAt(event.clientX - box.left, event.clientY - box.top, camera.zoom * Math.exp(-event.deltaY * lines * 0.002));
     return;
   }
-  camera.x -= (event.shiftKey ? event.deltaY : event.deltaX) * lines;
-  camera.y -= event.shiftKey ? 0 : event.deltaY * lines;
-  applyCamera();
+  panBy(-(event.shiftKey ? event.deltaY : event.deltaX) * lines, event.shiftKey ? 0 : -event.deltaY * lines);
 }, { passive: false });
 
 // --- the button on a wire: this department stops being in this branch -----------------------------
@@ -503,16 +515,16 @@ nodesBox.addEventListener("keydown", (event) => {
 });
 
 viewport.addEventListener("keydown", (event) => {
-  if (event.key === "+" || event.key === "=") zoomBy(ZOOM_STEP);
-  else if (event.key === "-") zoomBy(1 / ZOOM_STEP);
-  else if (event.key === "0") fit();
+  if (event.key === "+" || event.key === "=") zoomIn();
+  else if (event.key === "-") zoomIn(-1);
+  else if (event.key === "0") fit(nodes);
 });
 
 // --- the controls -----------------------------------------------------------------------------
 
-document.querySelector("[data-zoom-in]").addEventListener("click", () => zoomBy(ZOOM_STEP));
-document.querySelector("[data-zoom-out]").addEventListener("click", () => zoomBy(1 / ZOOM_STEP));
-document.querySelector("[data-zoom-fit]").addEventListener("click", fit);
+document.querySelector("[data-zoom-in]").addEventListener("click", () => zoomIn());
+document.querySelector("[data-zoom-out]").addEventListener("click", () => zoomIn(-1));
+document.querySelector("[data-zoom-fit]").addEventListener("click", () => fit(nodes));
 document.querySelector("[data-tidy]").addEventListener("click", () => {
   offsets.clear();
   saveOffsets();

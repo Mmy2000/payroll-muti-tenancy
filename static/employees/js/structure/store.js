@@ -2,6 +2,7 @@
 // is open and what is selected. The tree and head counts load at once; a department's people load
 // when it is opened, so a large company stays quick.
 import { api } from "../../../core/js/api.js";
+import { toast } from "../../../core/js/ui.js";
 
 export const { words, company, api: routes } = JSON.parse(document.getElementById("structure-config").textContent);
 
@@ -60,7 +61,12 @@ export async function toggleOpen(key, branch, department) {
   state.open.add(key);
   changed({ keep: key });
   if (department !== undefined && !state.people.has(key)) {
-    await loadPeople(key, branch.id, department?.id ?? null);
+    try {
+      await loadPeople(key, branch.id, department?.id ?? null);
+    } catch {
+      state.open.delete(key);
+      toast(words.load_failed, { kind: "error" });
+    }
     changed({ keep: key });
   }
 }
@@ -76,10 +82,11 @@ export function clearChecked() {
   changed();
 }
 
-export async function reveal({ branch, department, person }) {
+// `unassigned` asks for the people of the branch without a department.
+export async function reveal({ branch, department, person, unassigned = false }) {
   state.open.add(`b${branch.id}`);
   let target = { key: `b${branch.id}`, kind: "branch", branch };
-  if (department || person) {
+  if (department || person || unassigned) {
     const key = groupKey(branch.id, department?.id ?? null);
     state.open.add(key);
     if (!state.people.has(key)) await loadPeople(key, branch.id, department?.id ?? null);

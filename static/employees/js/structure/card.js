@@ -1,8 +1,8 @@
 // One card on the canvas.
-import { badge, el, icon } from "./dom.js";
+import { avatar, badge, el, icon } from "./dom.js";
 import { branchById, state, words } from "./store.js";
 
-const GLYPHS = { company: "building-2", branch: "store", department: "users-round", employee: "user", none: "triangle-alert" };
+const GLYPHS = { company: "building-2", branch: "store", department: "users-round", none: "triangle-alert" };
 
 function outputPort(item) {
   if (item.kind === "branch" && item.branch.can_manage_departments) {
@@ -57,19 +57,36 @@ function checkbox(item) {
 }
 
 function placeholder(item) {
-  const card = el(item.kind === "more" ? "button" : "div", `flow-node flow-node-${item.kind}`, item.label);
+  const card = el(item.kind === "hint" ? "div" : "button", `flow-node flow-node-${item.kind}`, item.label);
   card.dataset.key = item.key;
-  if (item.kind === "more") {
+  if (item.kind !== "hint") {
     card.type = "button";
     card.tabIndex = -1;
-    card.append(el("span", "org-count num", String(item.count)));
   }
+  if (item.kind === "more") card.append(el("span", "org-count num", String(item.count)));
+  if (item.kind === "add") card.prepend(icon("plus"));
   card.prepend(inputPort(item));
   return card;
 }
 
+// How much of the level above is here: a thin line along the foot of the card.
+function shareLine(share) {
+  const line = el("span", "flow-share");
+  const fill = el("span");
+  fill.style.width = `${Math.round(share * 100)}%`;
+  line.append(fill);
+  return line;
+}
+
+function mark(item) {
+  if (item.kind === "employee") return avatar(item.label);
+  const tile = el("span", `flow-tile flow-tile-${item.kind}`);
+  tile.append(icon(GLYPHS[item.kind]));
+  return tile;
+}
+
 export function drawCard(item, { selected = false, twin = false } = {}) {
-  if (item.kind === "hint" || item.kind === "more") return placeholder(item);
+  if (["hint", "more", "add"].includes(item.kind)) return placeholder(item);
   const card = el("div", `flow-node flow-node-${item.kind}`);
   card.dataset.key = item.key;
   card.tabIndex = -1;
@@ -83,12 +100,10 @@ export function drawCard(item, { selected = false, twin = false } = {}) {
   card.classList.toggle("is-inactive", Boolean(item.inactive));
   if (item.kind === "employee" && item.canCarry) card.append(checkbox(item));
 
-  const tile = el("span", `flow-tile flow-tile-${item.kind}`);
-  tile.append(icon(GLYPHS[item.kind]));
   const text = el("span", "min-w-0 flex-1");
   text.append(el("span", "org-name font-medium text-slate-900", item.label));
   if (item.sub) text.append(el("span", "org-sub", item.sub));
-  card.append(tile, text);
+  card.append(mark(item), text);
 
   if (item.inactive) card.append(badge(words.inactive));
   if (item.kind === "department") {
@@ -97,6 +112,7 @@ export function drawCard(item, { selected = false, twin = false } = {}) {
   }
   if (item.count !== undefined) card.append(el("span", "org-count num", String(item.count)));
   if (item.open !== undefined) card.append(toggle(item));
+  if (item.share !== undefined) card.append(shareLine(item.share));
   if (item.kind !== "company") card.append(inputPort(item));
   const output = outputPort(item);
   if (output) card.append(output);

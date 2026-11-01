@@ -5,8 +5,8 @@ import { branches, company, groupKey, shown, state, words } from "./store.js";
 
 const PEOPLE_PAGE = 12; // more than this and a department's people open a page at a time
 
-const WIDTHS = [248, 264, 272, 232]; // by depth: company, branch, department, employee
-const HEIGHTS = { company: 76, branch: 76, department: 64, none: 64, employee: 56, more: 40, hint: 40 };
+const WIDTHS = [248, 296, 272, 232]; // by depth: company, branch, department, employee
+const HEIGHTS = { company: 76, branch: 80, department: 68, none: 64, employee: 56, more: 40, hint: 40, add: 40 };
 const COLUMN_GAP = 104;
 const ROW_GAPS = [40, 20, 10, 0]; // between the children of a node at each depth
 
@@ -42,6 +42,7 @@ function departmentNode(branch, department) {
   const open = state.open.has(key);
   return node("department", key, {
     label: department.name, count: department.people, open, branch, department,
+    share: department.people / (branch.people || 1),
     canCarry: branch.can_manage_departments, inactive: !department.is_active,
     children: open ? peopleNodes(key, branch, department.id) : [],
   });
@@ -56,23 +57,26 @@ function unassignedNode(branch) {
   });
 }
 
-function branchNode(branch) {
+function branchNode(branch, total) {
   const key = `b${branch.id}`;
   const open = state.open.has(key);
   const children = open ? branch.departments.filter(shown).map((department) => departmentNode(branch, department)) : [];
   if (open && branch.unassigned) children.push(unassignedNode(branch));
+  if (open && !children.length && branch.can_manage_departments) {
+    children.push(node("add", `${key}:add`, { label: words.add_department, branch }));
+  }
+  const places = `${branch.departments.length} ${words.departments}`;
   return node("branch", key, {
-    label: branch.name, sub: branch.is_head_office ? words.head_office : `${branch.departments.length} ${words.departments}`,
-    count: branch.people, open, branch, inactive: !branch.is_active, children,
+    label: branch.name, sub: branch.is_head_office ? `${words.head_office} · ${places}` : places,
+    count: branch.people, share: branch.people / (total || 1), open, branch,
+    inactive: !branch.is_active, children,
   });
 }
 
 export function buildGraph() {
-  const children = branches().filter(shown).map(branchNode);
-  return node("company", "company", {
-    label: company, sub: `${children.length} ${words.branches}`,
-    count: branches().filter(shown).reduce((total, branch) => total + branch.people, 0), children,
-  });
+  const total = branches().filter(shown).reduce((sum, branch) => sum + branch.people, 0);
+  const children = branches().filter(shown).map((branch) => branchNode(branch, total));
+  return node("company", "company", { label: company, sub: `${children.length} ${words.branches}`, count: total, children });
 }
 
 // --- where everything goes ----------------------------------------------------------------------

@@ -323,6 +323,9 @@ msgstr ""
 msgid "A branch"
 msgstr "فرع"
 
+msgid "A branch's + , or draw its wire to a department"
+msgstr "زر + في الفرع، أو اسحب سلكه إلى قسم"
+
 msgid ""
 "A change applies from the client's next request and is kept in the activity "
 "log."
@@ -944,6 +947,9 @@ msgstr "أرشفة"
 msgid "Archived"
 msgstr "مؤرشف"
 
+msgid "Arrange"
+msgstr "الترتيب"
+
 msgid "As a table"
 msgstr "كجدول"
 
@@ -1125,6 +1131,9 @@ msgstr "أعلى دقيقة: %(n)s"
 
 msgid "Busy this week"
 msgstr "نشط هذا الأسبوع"
+
+msgid "By department"
+msgstr "حسب القسم"
 
 msgid "By hiring date, the last 24 months"
 msgstr "حسب تاريخ التعيين، آخر 24 شهرًا"
@@ -1359,6 +1368,9 @@ msgstr "حذف الإشعارات القديمة"
 
 msgid "Clear"
 msgstr "مسح"
+
+msgid "click"
+msgstr "نقرة"
 
 msgid "client"
 msgstr "العميل"
@@ -1770,12 +1782,14 @@ msgstr "المسودات"
 msgid "Drafts only"
 msgstr "المسودات فقط"
 
-msgid ""
-"Drop a card on a branch or a department to move it. Drag the background to "
-"look around, Ctrl + scroll to zoom."
-msgstr ""
-"أفلت البطاقة على فرع أو قسم لنقلها. اسحب الخلفية للتنقل، واستخدم Ctrl مع "
-"عجلة الفأرة للتكبير."
+msgid "Drag a card"
+msgstr "اسحب البطاقة"
+
+msgid "Drag the background"
+msgstr "اسحب الخلفية"
+
+msgid "Drop a card on a branch or a department"
+msgstr "أفلت البطاقة على فرع أو قسم"
 
 msgid "Due"
 msgstr "مستحق"
@@ -2695,6 +2709,9 @@ msgstr "القيمة"
 msgid "How often"
 msgstr "التكرار"
 
+msgid "How the canvas works"
+msgstr "طريقة استخدام اللوحة"
+
 msgid "Idle a month"
 msgstr "متوقف منذ شهر"
 
@@ -2737,6 +2754,9 @@ msgstr "في الفرع"
 
 msgid "In the footer of every workspace page"
 msgstr "في تذييل كل صفحة في مساحات العمل"
+
+msgid "In these branches"
+msgstr "في هذه الفروع"
 
 msgid "Inactive"
 msgstr "موقوف"
@@ -3128,6 +3148,9 @@ msgstr "الشعارات"
 
 msgid "Longitude"
 msgstr "خط الطول"
+
+msgid "Look around"
+msgstr "التنقل"
 
 msgid "Lowercase letters, digits and hyphens."
 msgstr "حروف إنجليزية صغيرة وأرقام وشرطات."
@@ -3950,9 +3973,6 @@ msgid ""
 msgstr ""
 "فقط لبوابة على خادم آخر: الصق مفتاحها. على هذا الخادم يُنشأ المفتاح "
 "تلقائيًا. يُحفظ مشفرًا ولا يُعرض أبدًا."
-
-msgid "Only here"
-msgstr "هنا فقط"
 
 msgid "Only the last bracket may have no upper limit."
 msgstr "الشريحة الأخيرة فقط يمكن أن تكون بلا حد أعلى."
@@ -4903,6 +4923,9 @@ msgstr "اذكر السبب."
 msgid "Scan the code with the phone"
 msgstr "امسح الرمز بالهاتف"
 
+msgid "scroll"
+msgstr "عجلة الفأرة"
+
 msgid "Search"
 msgstr "بحث"
 
@@ -4953,6 +4976,9 @@ msgid ""
 "Select a branch, a department or an employee to see what you can do with "
 "them."
 msgstr "اختر فرعاً أو قسماً أو موظفاً لترى ما يمكنك فعله."
+
+msgid "Select several"
+msgstr "تحديد عدة موظفين"
 
 msgid "selected"
 msgstr "محدد"
@@ -5611,6 +5637,9 @@ msgstr "لا توجد أقسام في هذا الفرع بعد."
 msgid "This corrects"
 msgstr "هذا يصحّح"
 
+msgid "This could not load. Try again."
+msgstr "تعذر التحميل. حاول مرة أخرى."
+
 msgid "This department isn't in the employee's branch."
 msgstr "هذا القسم ليس في فرع الموظف."
 
@@ -5872,6 +5901,9 @@ msgstr "أيام التجربة"
 
 msgid "Trial ends on"
 msgstr "نهاية الفترة التجريبية"
+
+msgid "Try again"
+msgstr "حاول مرة أخرى"
 
 msgid "Tuesday"
 msgstr "الثلاثاء"
@@ -6422,6 +6454,9 @@ msgstr ""
 msgid ""
 "ZKTeco devices sending punches to the system (ADMS), linked to employees."
 msgstr "أجهزة ZKTeco ترسل البصمات إلى النظام (ADMS)، مربوطة بالموظفين."
+
+msgid "Zoom"
+msgstr "التكبير"
 
 msgid "Zoom in"
 msgstr "تكبير"

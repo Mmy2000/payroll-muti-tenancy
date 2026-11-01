@@ -193,6 +193,7 @@
 
 @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes toast-in { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes flow-in { from { opacity: 0; } }
 @keyframes pop { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
 
 @layer base {
@@ -446,13 +447,14 @@
   .flow-stats { @apply flex items-center gap-3.5 text-xs text-slate-500; }
   .flow-bar .segment { @apply px-2.5; }
   .flow-stat { @apply flex items-center gap-1.5; }
+  .flow-stat.is-warn { @apply text-amber-700; }
+  .flow-stat.is-warn dd { @apply text-amber-700; }
   .flow-stat dd { @apply font-semibold text-slate-800; }
-  .flow-search { @apply relative w-full sm:w-56; }
+  .flow-search { @apply relative w-full sm:w-72; }
   .flow-results { @apply absolute start-0 top-full mt-1.5 max-h-96 w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-slate-200 bg-surface p-1 shadow-pop; }
-  .flow-result { @apply flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-start text-sm text-slate-700 hover:bg-slate-100; }
-  .flow-result > svg { @apply shrink-0 text-slate-400; }
+  .flow-result { @apply flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-start text-sm text-slate-700 outline-none hover:bg-slate-100 focus:bg-slate-100; }
   .flow-body { @apply relative min-h-0 flex-1; }
-  .flow-body[data-view="list"] { @apply grid items-start gap-5 overflow-y-auto p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_19rem]; }
+  .flow-body[data-view="list"] { @apply grid content-start items-start gap-5 overflow-y-auto p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_19rem]; }
   .flow-canvas-view { @apply absolute inset-0; }
   .flow-canvas { @apply absolute inset-0 cursor-grab touch-none overflow-clip bg-canvas outline-none select-none;
     isolation: isolate; background-image: radial-gradient(circle, var(--color-slate-300) 1px, transparent 1.2px); }
@@ -460,14 +462,16 @@
   .flow-world { @apply absolute top-0 left-0 origin-top-left; }
   .flow-wires { @apply pointer-events-none absolute top-0 left-0 size-px overflow-visible; }
   .flow-wire { @apply fill-none stroke-slate-300; stroke-width: 2; }
-  .flow-wire.is-lit { @apply stroke-brand-500; }
+  .flow-wire.is-lit { @apply stroke-brand-500; stroke-width: 2.5; }
   .flow-wire.is-ghost { stroke-dasharray: 6 5; }
   .flow-wire.is-lifted { @apply opacity-20; }
   .flow-wire-reach { @apply cursor-pointer fill-none stroke-transparent; pointer-events: stroke; stroke-width: 18; }
   .flow-wire-reach:hover { @apply stroke-brand-500/15; }
   .flow-cut { @apply absolute top-0 left-0 z-10 grid size-7 place-items-center rounded-full border border-slate-200 bg-surface text-red-600 shadow-lift hover:bg-red-50; }
-  .flow-node { @apply absolute top-0 left-0 flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-200 bg-surface px-3 text-sm text-slate-700 shadow-lift outline-none transition-[border-color,box-shadow,opacity]; }
-  .flow-node:hover { @apply border-slate-300; }
+  .flow-node { @apply absolute top-0 left-0 flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-200 bg-surface px-3 pb-0.5 text-sm text-slate-700 shadow-lift outline-none transition-[border-color,box-shadow,opacity]; }
+  .flow-node:hover { @apply border-slate-300 shadow-pop; }
+  .flow-node.is-new { animation: flow-in 0.2s ease-out both; } /* opacity only: a transform would displace the card */
+  .flow-node.is-leaving { @apply pointer-events-none; }
   .flow-node:focus-visible { @apply ring-2 ring-brand-500/60; }
   .flow-node.is-selected { @apply border-brand-500 ring-2 ring-brand-500/25; }
   .flow-node.is-twin { @apply border-dashed border-brand-500; }
@@ -475,8 +479,8 @@
   .flow-node.is-carried { @apply z-10 cursor-grabbing shadow-pop; }
   .flow-node-company { @apply border-brand-500/40; }
   .flow-node-employee { @apply gap-2 rounded-[10px] px-2.5 shadow-card; }
-  .flow-node-more, .flow-node-hint { @apply justify-center rounded-[10px] border-dashed bg-transparent text-xs text-slate-500 shadow-none; }
-  .flow-node-more { @apply gap-2 hover:bg-surface hover:text-slate-800; }
+  .flow-node-more, .flow-node-hint, .flow-node-add { @apply justify-center pb-0 rounded-[10px] border-dashed bg-transparent text-xs text-slate-500 shadow-none; }
+  .flow-node-more, .flow-node-add { @apply gap-2 hover:bg-surface hover:text-slate-800; }
   .flow-node-hint { @apply cursor-grab; }
   .is-carrying .flow-node:not(.can-drop, .is-carried) { @apply opacity-40; }
   .flow-node.can-drop { @apply border-dashed border-brand-500; }
@@ -497,7 +501,34 @@
   .flow-tools { @apply absolute start-3 bottom-3 z-10 flex items-center gap-0.5 rounded-xl border border-slate-200 bg-surface p-1 shadow-lift; }
   .flow-tool { @apply grid size-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
   .flow-zoom { @apply w-11 text-center text-xs font-medium text-slate-600; }
-  .flow-help { @apply pointer-events-none absolute inset-x-0 bottom-4 mx-auto hidden w-fit rounded-md bg-canvas/85 px-2 py-0.5 text-center text-xs text-slate-500 xl:block; }
+  .flow-filters { @apply absolute start-3 top-3 z-10 flex items-center gap-1 rounded-xl border border-slate-200 bg-surface p-1 shadow-lift; }
+  .flow-body[data-view="list"] .flow-filters { @apply static col-span-full w-fit shadow-card; }
+  .flow-status { @apply absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 text-sm text-slate-500; }
+  .flow-map { @apply absolute end-3 bottom-3 z-10 cursor-pointer touch-none rounded-xl border border-slate-200 bg-surface shadow-lift max-md:hidden; }
+  .flow-map-cards { @apply fill-slate-300; }
+  .flow-map-selected { @apply fill-brand-500; }
+  .flow-map-frame { @apply fill-brand-500/10 stroke-brand-500; stroke-width: 1; }
+  .flow-help { @apply m-auto w-96 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-surface p-4 text-slate-700 shadow-pop; }
+  .flow-help::backdrop { @apply bg-black/20; }
+  .flow-help dl > div { @apply flex items-baseline justify-between gap-4; }
+  .flow-help dt { @apply text-slate-500; }
+  .flow-help dd { @apply text-end font-medium text-slate-800; }
+  .flow-facts { @apply grid grid-cols-3 gap-2; }
+  .flow-fact { @apply rounded-lg bg-slate-50 px-2.5 py-2; }
+  .flow-fact dd { @apply text-base leading-6 font-semibold text-slate-900; }
+  .flow-fact dt { @apply text-[11px] leading-4 text-slate-500; }
+  .flow-section { @apply text-xs font-medium text-slate-500; }
+  .flow-place { @apply block w-full rounded-lg px-2 py-1.5 text-start text-sm text-slate-700 enabled:hover:bg-slate-100 disabled:font-medium; }
+  .flow-bar-track { @apply mt-1 block h-1 overflow-hidden rounded-full bg-slate-100; }
+  .flow-bar-fill { @apply block h-full min-w-1 rounded-full bg-brand-500; }
+  .flow-place.is-warn .flow-bar-fill { @apply bg-amber-500; }
+  .flow-faces { @apply flex -space-x-1 rtl:space-x-reverse; }
+  .flow-faces > .flow-avatar { @apply ring-2 ring-surface; }
+  .flow-avatar { @apply grid size-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700; }
+  .flow-result-glyph { @apply grid size-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500; }
+  .flow-share { @apply absolute inset-x-3 bottom-1.5 h-[3px] overflow-hidden rounded-full bg-slate-100; }
+  .flow-share > span { @apply block h-full rounded-full bg-brand-500/70; }
+  .org-inspector.is-opening { @apply animate-pop; }
   .flow-body[data-view="canvas"] .org-inspector { @apply absolute end-3 top-3 z-20 max-h-[calc(100%-1.5rem)] w-80 overflow-y-auto shadow-pop max-md:inset-x-2 max-md:top-auto max-md:bottom-2 max-md:max-h-[55%] max-md:w-auto; }
   .flow-body[data-view="canvas"] .org-inspector[data-empty] { @apply hidden; }
   .org-tree-wrap { @apply overflow-y-auto; }

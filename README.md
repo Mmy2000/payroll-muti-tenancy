@@ -245,7 +245,8 @@ phones (`apps/employees/api/structure.py`, `services/structure.py`,
 opened, so a large company stays quick.
 
 Drag the background to look around, Ctrl + scroll to zoom, and a card to arrange it; each browser
-remembers its own arrangement until **Tidy up**. Dropping a card on a place it can go opens the
+remembers its own arrangement until **Tidy up**. The map in the corner jumps anywhere, and the **?**
+lists the gestures. Dropping a card on a place it can go opens the
 move: moving someone or a department is dated and goes on the assignments, and every move is also
 a button in the details panel. A branch's **+** adds a department, or draws a wire to one to place
 it there too. A department's wire end pulls it to another branch, which takes its people there with

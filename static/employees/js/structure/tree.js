@@ -1,6 +1,6 @@
 // The list view of the company structure page: the same company as an indented tree, for phones and
 // for working from the keyboard (WAI-ARIA tree pattern).
-import { badge, el, icon } from "./dom.js";
+import { avatar, badge, el, icon } from "./dom.js";
 import { dropAllowed, dropOn, peopleToCarry } from "./moves.js";
 import { branchById, branches, departmentIn, groupKey, select, shown, state, toggleChecked, toggleOpen, words } from "./store.js";
 
@@ -37,8 +37,11 @@ function row({ key, kind, label, sub, count, canOpen, opened, data, draggable, b
     item.append(box);
   }
 
-  const glyph = el("span", `org-glyph org-glyph-${kind}`);
-  glyph.append(icon({ branch: "store", department: "users-round", employee: "user", none: "triangle-alert" }[kind]));
+  let glyph = avatar(label);
+  if (kind !== "employee") {
+    glyph = el("span", `org-glyph org-glyph-${kind}`);
+    glyph.append(icon({ branch: "store", department: "users-round", none: "triangle-alert" }[kind]));
+  }
   const text = el("span", "min-w-0 flex-1 truncate");
   text.append(el("span", "org-name", label));
   if (sub) text.append(el("span", "org-sub", sub));
