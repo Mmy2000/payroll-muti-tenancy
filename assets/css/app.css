@@ -437,6 +437,43 @@
   .cmdk-item[aria-selected="true"] { @apply bg-slate-100 text-slate-900; }
 }
 
+/* The company structure page (employees/structure.html, static/employees/js/structure.js). */
+@layer components {
+  .org-stats { @apply grid grid-cols-2 gap-3 lg:grid-cols-4; }
+  .org-stat { @apply flex items-center gap-3 rounded-[14px] border border-slate-200/70 bg-surface px-4 py-3 shadow-card; }
+  .org-stat dd { @apply text-xl leading-6 font-semibold tracking-tight text-slate-900; }
+  .org-stat dt { @apply text-xs text-slate-500; }
+  .org-layout { @apply grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19rem]; }
+  .org-inspector { @apply lg:sticky lg:top-20; }
+  .org-toolbar { @apply flex flex-wrap items-center gap-3 border-b border-slate-100 p-3; }
+  .org-tree-wrap { @apply max-h-[calc(100vh-19rem)] min-h-80 overflow-y-auto; }
+  .org-group { @apply ms-[1.15rem] border-s border-slate-200/80 ps-2; }
+  .org-row { @apply flex min-h-10 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-sm text-slate-700
+                    outline-none transition-colors hover:bg-slate-100/80 focus-visible:ring-2 focus-visible:ring-brand-500/40; }
+  .org-row[aria-selected="true"] { @apply bg-brand-50 text-brand-700 hover:bg-brand-50; }
+  .org-row.is-dragged { @apply opacity-40; }
+  .org-row.is-drop { @apply bg-brand-50 ring-2 ring-brand-500/60; }
+  .org-row-branch { @apply font-medium text-slate-900; }
+  .org-grip { @apply -ms-0.5 grid w-3 shrink-0 cursor-grab place-items-center text-slate-300 opacity-0 transition-opacity; }
+  .org-row:hover .org-grip, .org-row:focus-visible .org-grip { @apply opacity-100; }
+  .org-toggle { @apply grid size-6 shrink-0 place-items-center rounded text-slate-400 transition-transform hover:text-slate-700; }
+  .org-toggle:not(.is-open) { transform: rotate(-90deg); }
+  [dir="rtl"] .org-toggle:not(.is-open) { transform: rotate(90deg); }
+  .org-glyph { @apply grid size-7 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500; }
+  .org-glyph-branch { @apply bg-brand-50 text-brand-700; }
+  .org-glyph-none { @apply bg-amber-50 text-amber-700; }
+  .org-name { @apply block truncate; }
+  .org-sub { @apply block truncate text-xs font-normal text-slate-500; }
+  .org-count { @apply min-w-7 shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-center text-xs font-medium text-slate-600; }
+  .org-hint { @apply px-3 py-2 text-sm text-slate-500; }
+  .org-selection { @apply flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-4 py-2.5; }
+  .org-backdrop { @apply fixed inset-0 z-[45] bg-black/40 backdrop-blur-[2px]; }
+  .org-panel { @apply fixed inset-y-0 end-0 z-[45] w-[min(27rem,100vw)] translate-x-full border-s border-slate-200 bg-surface
+                      text-slate-800 shadow-pop transition-transform duration-200 motion-reduce:transition-none; }
+  [dir="rtl"] .org-panel { @apply -translate-x-full; }
+  .org-panel.is-open, [dir="rtl"] .org-panel.is-open { @apply translate-x-0; }
+}
+
 /* Sign-in pages (registration/login.html, console/login.html, static/core/js/login.js). */
 @keyframes bell-badge-new { 40% { transform: scale(1.35); } }
 @keyframes login-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -690,6 +727,18 @@ input[type="checkbox"]:indeterminate { background-color: var(--color-brand-300);
 input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { input[type="checkbox"] { transition: none; } }
+/* Picking rows of a list: a box, since the row isn't being switched on. */
+input[type="checkbox"].org-check {
+  width: 1rem; height: 1rem; flex-shrink: 0; border-radius: 0.3rem; background-size: auto;
+  background: var(--color-surface); box-shadow: inset 0 0 0 1.5px var(--color-slate-300);
+}
+input[type="checkbox"].org-check:hover:not(:disabled) {
+  background: var(--color-surface); box-shadow: inset 0 0 0 1.5px var(--color-slate-400);
+}
+input[type="checkbox"].org-check:checked {
+  background: var(--color-brand-600) center / 0.8rem no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  box-shadow: none;
+}
 
 /* Shown only on paper (e.g. a signature column on a payroll). */
 @media screen { [data-print-only] { display: none !important; } }

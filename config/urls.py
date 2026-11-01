@@ -12,6 +12,7 @@ from apps.compensation.web import views as compensation
 from apps.core import media
 from apps.devices import iclock
 from apps.devices.web import views as devices
+from apps.employees.web import structure
 from apps.employees.web import views as employees
 from apps.evaluations.web import views as evaluations
 from apps.iam.web import views as iam
@@ -45,6 +46,7 @@ urlpatterns = [
     path("departments/", org.departments, name="departments"),
     path("departments/new/", org.department_new, name="department-new"),
     path("departments/<int:pk>/", org.department_edit, name="department-edit"),
+    path("people/structure/", structure.structure, name="structure"),
     path("positions/", org.positions, name="positions"),
     path("positions/new/", org.position_new, name="position-new"),
     path("positions/<int:pk>/", org.position_edit, name="position-edit"),

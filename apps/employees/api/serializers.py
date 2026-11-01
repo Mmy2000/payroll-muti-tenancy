@@ -159,6 +159,34 @@ class RehireSerializer(AssignmentWriteSerializer):
     restore_login = serializers.BooleanField(default=False)
 
 
+class MovePeopleSerializer(serializers.Serializer):
+    employee_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False,
+                                         max_length=2000)
+    branch_id = serializers.IntegerField()
+    department_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    effective_from = serializers.DateField()
+    note = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+
+
+class MoveDepartmentSerializer(serializers.Serializer):
+    department_id = serializers.IntegerField()
+    from_branch_id = serializers.IntegerField()
+    branch_id = serializers.IntegerField()
+    effective_from = serializers.DateField()
+
+
+class AddDepartmentSerializer(serializers.Serializer):
+    department_id = serializers.IntegerField()
+    branch_id = serializers.IntegerField()
+
+
+class RemoveDepartmentSerializer(serializers.Serializer):
+    department_id = serializers.IntegerField()
+    from_branch_id = serializers.IntegerField()
+    move_to = serializers.IntegerField(required=False, allow_null=True, default=None)
+    effective_from = serializers.DateField()
+
+
 class LeaveSerializer(serializers.Serializer):
     left_on = serializers.DateField()
     reason = serializers.CharField(max_length=300, allow_blank=True, default="")

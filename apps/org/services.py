@@ -15,7 +15,7 @@ from apps.core.media import replace_file
 from .models import Branch, Department, DepartmentBranch, Position, TenantProfile
 from .permissions import BRANCH_MANAGE, DEPARTMENT_MANAGE, POSITION_MANAGE
 from .selectors import next_department_code
-from .validators import check_department, check_position
+from .validators import check_department, check_position, department_in_use
 
 
 @dataclass(frozen=True)
@@ -206,3 +206,21 @@ def set_position_active(position_id: int, active: bool, *, actor=None) -> Positi
     position.is_active = active
     position.save(update_fields=["is_active", "updated_at"])
     return position
+
+
+def add_department_branch(department: Department, branch_id: int) -> None:
+    """The department also operates in this branch. Trusted callers: they checked who asks."""
+    if department.placements.filter(branch_id=branch_id).exists():
+        return
+    if not Branch.objects.filter(pk=branch_id, is_active=True).exists():
+        raise ValidationError(_("Please correct the highlighted fields."),
+                              fields={"branch_id": [_("Choose an active branch.")]})
+    DepartmentBranch.objects.create(department=department, branch_id=branch_id)
+
+
+def remove_department_branch(department: Department, branch_id: int) -> None:
+    """The department stops operating in this branch, once nobody works there in it."""
+    if department_in_use(department, {branch_id}):
+        raise ValidationError(_("Please correct the highlighted fields."), fields={
+            "branches": [_("Employees work there in this department: move them first.")]})
+    department.placements.filter(branch_id=branch_id).delete()

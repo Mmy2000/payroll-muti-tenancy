@@ -1,5 +1,6 @@
 from rest_framework.routers import SimpleRouter
 
+from .structure import StructureViewSet
 from .views import (
     AssignmentChangeViewSet,
     EmployeeViewSet,
@@ -9,6 +10,7 @@ from .views import (
 )
 
 router = SimpleRouter()
+router.register("structure", StructureViewSet, basename="structure")
 router.register("employees", EmployeeViewSet, basename="employee")
 router.register("pay-changes", PayChangeViewSet, basename="pay-change")
 router.register("assignment-changes", AssignmentChangeViewSet, basename="assignment-change")

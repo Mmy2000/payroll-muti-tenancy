@@ -1,0 +1,123 @@
+{% extends "layouts/app.html" %}
+{% load i18n static ui authz %}
+{% block title %}{% translate "Company structure" %}{% endblock %}
+{% block page_header %}
+{% can "org.department.manage" as can_add_department %}{% can "employees.salary.manage" as can_add_employee %}
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div class="min-w-0">
+    <h1 class="page-title">{% translate "Company structure" %}</h1>
+    <p class="mt-1 text-sm text-slate-500">{% translate "Branches, their departments and the people in them. Drag to reorganise, or select something to see what you can do." %}</p>
+  </div>
+  <div class="flex shrink-0 flex-wrap gap-2">
+    {% if can_add_department %}<a href="{% url 'department-new' %}" class="btn btn-secondary">{% icon "plus" "size-4" %}{% translate "New department" %}</a>{% endif %}
+    {% if can_add_employee %}<a href="{% url 'employee-new' %}" class="btn btn-primary">{% icon "plus" "size-4" %}{% translate "New employee" %}</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{{ config|json_script:"structure-config" }}
+<div class="space-y-5" data-structure>
+  <dl class="org-stats">
+    <div class="org-stat"><span class="stat-icon">{% icon "store" "size-[18px]" %}</span><div><dd class="num" data-stat="branches">—</dd><dt>{% translate "Branches" %}</dt></div></div>
+    <div class="org-stat"><span class="stat-icon">{% icon "users-round" "size-[18px]" %}</span><div><dd class="num" data-stat="departments">—</dd><dt>{% translate "Departments" %}</dt></div></div>
+    <div class="org-stat"><span class="stat-icon">{% icon "user" "size-[18px]" %}</span><div><dd class="num" data-stat="people">—</dd><dt>{% translate "Employees" %}</dt></div></div>
+    <div class="org-stat"><span class="stat-icon">{% icon "triangle-alert" "size-[18px]" %}</span><div><dd class="num" data-stat="unassigned">—</dd><dt>{% translate "No department" %}</dt></div></div>
+  </dl>
+
+  <div class="org-layout">
+    <section class="card min-w-0 overflow-hidden" aria-label="{% translate 'Company structure' %}">
+      <div class="org-toolbar">
+        <label class="relative min-w-full flex-1 sm:min-w-56">
+          <span class="pointer-events-none absolute inset-y-0 start-3 grid place-items-center text-slate-400">{% icon "search" "size-4" %}</span>
+          <input type="search" class="form-input ps-9" data-search placeholder="{% translate 'Find an employee, a department or a branch' %}" aria-label="{% translate 'Search' %}" autocomplete="off">
+        </label>
+        <label class="me-auto flex shrink-0 items-center gap-2 text-sm text-slate-600 sm:me-0"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-show-inactive>{% translate "Show inactive" %}</label>
+        <button type="button" class="btn btn-ghost" data-expand-all title="{% translate 'Open everything' %}" aria-label="{% translate 'Open everything' %}">{% icon "maximize-2" "size-4" %}</button>
+        <button type="button" class="btn btn-ghost" data-collapse-all title="{% translate 'Close everything' %}" aria-label="{% translate 'Close everything' %}">{% icon "minimize-2" "size-4" %}</button>
+      </div>
+      <div class="org-tree-wrap" data-tree-wrap>
+        <div class="p-2" data-tree role="tree" aria-label="{% translate 'Company structure' %}"></div>
+      </div>
+      <div class="org-selection" data-selection hidden>
+        <span class="text-sm font-medium text-slate-800" data-selection-count></span>
+        <div class="flex gap-2">
+          <button type="button" class="btn btn-ghost" data-selection-clear></button>
+          <button type="button" class="btn btn-primary" data-selection-move>{% icon "arrow-left-right" "size-4" %}<span data-selection-move-label></span></button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card org-inspector" data-inspector aria-live="polite"></aside>
+  </div>
+</div>
+
+{# The panel for a move. Not a <dialog>: the dropdowns open on the page body, behind a modal one. #}
+<div class="org-backdrop" data-panel-backdrop hidden></div>
+<section class="org-panel" data-panel role="dialog" aria-modal="true" aria-labelledby="org-panel-title" hidden>
+  <form class="flex h-full flex-col" data-panel-form novalidate>
+    <header class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+      <div class="min-w-0">
+        <h2 id="org-panel-title" class="text-lg font-semibold tracking-tight text-slate-900" data-panel-title></h2>
+        <p class="mt-1 text-sm text-slate-500" data-panel-summary></p>
+      </div>
+      <button type="button" class="btn btn-ghost -me-2 shrink-0" data-panel-close aria-label="{% translate 'Close' %}">✕</button>
+    </header>
+    <div class="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+      <div class="hidden rounded-lg border border-red-200 bg-red-50/70 px-3.5 py-3 text-sm text-red-700" data-panel-error role="alert"></div>
+      <p class="rounded-lg bg-amber-50 px-3.5 py-3 text-sm text-amber-800" data-panel-note hidden></p>
+      <div data-field="add_department">
+        <label class="form-label is-required" for="p-add-department">{% translate "Department" %}</label>
+        <select id="p-add-department" name="add_department_id" class="form-input">
+          <option value="">—</option>
+          {% for department in all_departments %}<option value="{{ department.pk }}" data-parent="{{ department.parent_ids }}">{{ department.name }}</option>{% endfor %}
+        </select>
+        <p class="form-error" data-error-for="department_id"></p>
+      </div>
+      <div data-field="branch">
+        <label class="form-label is-required" for="p-branch">{% translate "Branch" %}</label>
+        <select id="p-branch" name="branch_id" class="form-input">
+          <option value="">—</option>
+          {% for branch in branches %}<option value="{{ branch.pk }}">{{ branch.name }}</option>{% endfor %}
+        </select>
+        <p class="form-error" data-error-for="branch_id"></p>
+      </div>
+      <div data-field="department">
+        <label class="form-label" for="p-department" data-department-label>{% translate "Department" %}</label>
+        <select id="p-department" name="department_id" class="form-input" data-depends-on="branch_id">
+          <option value="">{% translate "No department" %}</option>
+          {% for department in departments %}<option value="{{ department.pk }}" data-parent="{{ department.parent_ids }}">{{ department.name }}</option>{% endfor %}
+        </select>
+        <p class="form-error" data-error-for="department_id"></p>
+      </div>
+      <div data-field="date">
+        <label class="form-label is-required" for="p-date">{% translate "From" %}</label>
+        <input id="p-date" type="date" name="effective_from" class="form-input" value="{{ today|date:'Y-m-d' }}" required>
+        <p class="mt-1 text-xs text-slate-500">{% translate "Earlier days keep where they were." %}</p>
+        <p class="form-error" data-error-for="effective_from"></p>
+      </div>
+      <div data-field="note">
+        <label class="form-label" for="p-note">{% translate "Reason" %}</label>
+        <input id="p-note" name="note" class="form-input" maxlength="300">
+      </div>
+    </div>
+    <footer class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
+      <button type="button" class="btn btn-secondary" data-panel-close>{% translate "Cancel" %}</button>
+      <button type="submit" class="btn btn-primary">{% icon "check" "size-4" %}{% translate "Save" %}</button>
+    </footer>
+  </form>
+</section>
+
+{# Icons for the script: it only clones these. #}
+<template data-icon="store">{% icon "store" "size-4" %}</template>
+<template data-icon="users-round">{% icon "users-round" "size-4" %}</template>
+<template data-icon="user">{% icon "user" "size-4" %}</template>
+<template data-icon="chevron-down">{% icon "chevron-down" "size-4" %}</template>
+<template data-icon="grip-vertical">{% icon "grip-vertical" "size-4" %}</template>
+<template data-icon="arrow-left-right">{% icon "arrow-left-right" "size-4" %}</template>
+<template data-icon="unlink">{% icon "unlink" "size-4" %}</template>
+<template data-icon="pencil">{% icon "pencil" "size-4" %}</template>
+<template data-icon="plus">{% icon "plus" "size-4" %}</template>
+<template data-icon="eye">{% icon "eye" "size-4" %}</template>
+<template data-icon="triangle-alert">{% icon "triangle-alert" "size-4" %}</template>
+<script type="module" src="{% static 'employees/js/structure.js' %}"></script>
+{% endblock %}

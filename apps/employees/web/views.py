@@ -70,12 +70,19 @@ def _choices(request) -> dict:
     }
 
 
+def _chosen(request, name: str) -> int | None:
+    value = request.GET.get(name, "")
+    return int(value) if value.isdigit() else None
+
+
 @permission_required(MANAGE)
 def employee_new(request):
     if not request.actor.can(SALARY_MANAGE):
         raise Http404  # a new employee starts with their pay
     return render(request, "employees/employee_form.html", {
         **_choices(request), "employee": None, "next_code": selectors.next_code(),
+        "chosen_branch": _chosen(request, "branch"),
+        "chosen_department": _chosen(request, "department"),
         "new_pay": Compensation(),  # the form starts from the model's defaults
         "today": timezone.localdate(), "endpoint": reverse("employee-list"), "method": "POST",
     })

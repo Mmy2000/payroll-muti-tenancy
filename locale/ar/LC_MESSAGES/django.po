@@ -270,6 +270,9 @@ msgstr[5] "%(n)s مستخدم"
 msgid "%(name)s already has %(item)s over some of these days."
 msgstr "%(name)s لديه %(item)s بالفعل في بعض هذه الأيام."
 
+msgid "%(name)s already moved after this date."
+msgstr "%(name)s انتقل بالفعل بعد هذا التاريخ."
+
 msgid "%(name)s has no pay on that day."
 msgstr "لا يوجد أجر مسجل لـ %(name)s في ذلك اليوم."
 
@@ -515,6 +518,12 @@ msgstr "إضافة شريحة"
 msgid "Add a bracket"
 msgstr "إضافة شريحة"
 
+msgid "Add a department"
+msgstr "إضافة قسم"
+
+msgid "Add a department to this branch"
+msgstr "إضافة قسم إلى هذا الفرع"
+
 msgid "Add a device"
 msgstr "إضافة جهاز"
 
@@ -676,6 +685,9 @@ msgstr ""
 
 msgid "Already linked to the user %(username)s."
 msgstr "مربوط بالفعل بالمستخدم %(username)s."
+
+msgid "Also in"
+msgstr "موجود أيضاً في"
 
 msgid "Also set the weekly days off (otherwise each keeps their own)"
 msgstr "حدد أيضًا أيام الراحة الأسبوعية (وإلا يحتفظ كل موظف بأيامه)"
@@ -1081,6 +1093,13 @@ msgstr "الفرع أو القسم"
 msgid "Branches"
 msgstr "الفروع"
 
+msgid ""
+"Branches, their departments and the people in them. Drag to reorganise, or "
+"select something to see what you can do."
+msgstr ""
+"الفروع وأقسامها والموظفون فيها. اسحب لإعادة التنظيم، أو اختر عنصراً لترى ما "
+"يمكنك فعله."
+
 msgid "Brand"
 msgstr "العلامة التجارية"
 
@@ -1273,6 +1292,12 @@ msgstr "اختر موظفًا من فرع الجهاز."
 msgid "Choose an Excel file."
 msgstr "اختر ملف إكسل."
 
+msgid "Choose another branch."
+msgstr "اختر فرعاً آخر."
+
+msgid "Choose another department."
+msgstr "اختر قسماً آخر."
+
 msgid "Choose at least one branch for each role."
 msgstr "اختر فرعاً واحداً على الأقل لكل دور."
 
@@ -1308,6 +1333,9 @@ msgstr "اختر طريقة حساب الأجر."
 
 msgid "Choose incentive or penalty."
 msgstr "اختر حافزًا أو جزاءً."
+
+msgid "Choose today or an earlier day."
+msgstr "اختر اليوم أو يوماً سابقاً."
 
 msgid "Choose what happened that day."
 msgstr "اختر ما حدث في ذلك اليوم."
@@ -1369,6 +1397,12 @@ msgstr "العملاء المستخدمون"
 msgid "Clock times from an Excel file."
 msgstr "أوقات الحضور من ملف إكسل."
 
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Close everything"
+msgstr "إغلاق الكل"
+
 msgid "Close leavers' logins and apply dated assignments"
 msgstr "إغلاق دخول من تركوا العمل وتطبيق التعيينات المؤرخة"
 
@@ -1404,6 +1438,9 @@ msgstr "إعدادات الشركة"
 
 msgid "Company settings changed"
 msgstr "تعديل إعدادات الشركة"
+
+msgid "Company structure"
+msgstr "الهيكل التنظيمي"
 
 msgid "Compare features"
 msgstr "مقارنة الخصائص"
@@ -1806,6 +1843,9 @@ msgstr ""
 "الأيام السابقة تحتفظ بمواعيدها، والأيام التي يغطيها مسير معتمد لا تتغير. "
 "تبقى سياسات التأخير والإضافي كما هي لكل موظف."
 
+msgid "Earlier days keep where they were."
+msgstr "تبقى الأيام السابقة كما كانت."
+
 msgid "Earlier than the time they came: the next morning (a night shift)."
 msgstr "إذا كان قبل وقت الحضور: فهو صباح اليوم التالي (وردية ليلية)."
 
@@ -1847,6 +1887,12 @@ msgstr "تعديل دور"
 
 msgid "Edit tax table"
 msgstr "تعديل جدول الضريبة"
+
+msgid "Edit the branch"
+msgstr "تعديل الفرع"
+
+msgid "Edit the department"
+msgstr "تعديل القسم"
 
 msgid "Edit user"
 msgstr "تعديل مستخدم"
@@ -1892,6 +1938,12 @@ msgid ""
 " the run."
 msgstr ""
 "الموظفون الموجودون في مسير آخر لنفس الأيام يُستبعدون ويُذكرون في المسير."
+
+msgid "Employees here who move with it:"
+msgstr "الموظفون هنا الذين سينتقلون معه:"
+
+msgid "Employees here who need a new department:"
+msgstr "الموظفون هنا الذين يحتاجون إلى قسم جديد:"
 
 msgid "Employees present each day"
 msgstr "الموظفون الحاضرون كل يوم"
@@ -2266,6 +2318,9 @@ msgstr "أنثى"
 
 msgid "Filters"
 msgstr "التصفية"
+
+msgid "Find an employee, a department or a branch"
+msgstr "ابحث عن موظف أو قسم أو فرع"
 
 msgid "Fingerprint device"
 msgstr "جهاز البصمة"
@@ -3223,8 +3278,23 @@ msgstr "أقصى عدد فروع"
 msgid "Most users"
 msgstr "أقصى عدد مستخدمين"
 
+msgid "Move"
+msgstr "نقل"
+
+msgid "Move employees"
+msgstr "نقل الموظفين"
+
 msgid "Move its clients to"
 msgstr "نقل عملائها إلى"
+
+msgid "Move the department"
+msgstr "نقل القسم"
+
+msgid "Move the selected"
+msgstr "نقل المحددين"
+
+msgid "Move to another branch"
+msgstr "نقل إلى فرع آخر"
 
 msgid "Must be after the day they left."
 msgstr "يجب أن يكون بعد يوم ترك العمل."
@@ -3582,6 +3652,9 @@ msgstr ""
 msgid "Nobody can sign in. The data is kept."
 msgstr "لا يمكن لأحد الدخول. البيانات محفوظة."
 
+msgid "Nobody here yet."
+msgstr "لا يوجد أحد هنا بعد."
+
 msgid "Nobody is in this batch."
 msgstr "لا يوجد أحد في هذه الدفعة."
 
@@ -3692,6 +3765,9 @@ msgstr "لا يوجد شيء هنا"
 
 msgid "Nothing in this period."
 msgstr "لا شيء في هذه الفترة."
+
+msgid "Nothing matches your search."
+msgstr "لا توجد نتائج مطابقة."
 
 msgid "Nothing new"
 msgstr "لا جديد"
@@ -3866,6 +3942,9 @@ msgstr ""
 "فقط لبوابة على خادم آخر: الصق مفتاحها. على هذا الخادم يُنشأ المفتاح "
 "تلقائيًا. يُحفظ مشفرًا ولا يُعرض أبدًا."
 
+msgid "Only here"
+msgstr "هنا فقط"
+
 msgid "Only the last bracket may have no upper limit."
 msgstr "الشريحة الأخيرة فقط يمكن أن تكون بلا حد أعلى."
 
@@ -3884,8 +3963,14 @@ msgstr "فتح"
 msgid "open"
 msgstr "مفتوح"
 
+msgid "Open everything"
+msgstr "فتح الكل"
+
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+msgid "Open the employee's page"
+msgstr "فتح صفحة الموظف"
 
 msgid "Open the workspace"
 msgstr "فتح مساحة العمل"
@@ -4380,7 +4465,7 @@ msgid "Position name"
 msgstr "اسم الوظيفة"
 
 msgid "Positions"
-msgstr "المواقع"
+msgstr "الوظائف"
 
 msgid ""
 "Positions name the jobs employees hold, and keep a history of who held what."
@@ -4560,8 +4645,14 @@ msgstr "إزالة"
 msgid "Remove from my shortcuts"
 msgstr "إزالة من اختصاراتي"
 
+msgid "Remove from this branch"
+msgstr "إزالة من هذا الفرع"
+
 msgid "Remove the current logo"
 msgstr "حذف الشعار الحالي"
+
+msgid "Remove the department from this branch"
+msgstr "إزالة القسم من هذا الفرع"
 
 msgid "Remove the entry: the clock counts again"
 msgstr "حذف الإدخال: تعود أوقات البصمة للاحتساب"
@@ -4849,6 +4940,14 @@ msgstr ""
 "عرض الشاشة يأتي أولاً. عند تفعيل أي خطوة يُفعَّل معها ما تحتاج إليه، وإلا "
 "فلن يجد الشخص ما يفتحه."
 
+msgid ""
+"Select a branch, a department or an employee to see what you can do with "
+"them."
+msgstr "اختر فرعاً أو قسماً أو موظفاً لترى ما يمكنك فعله."
+
+msgid "selected"
+msgstr "محدد"
+
 msgid "Selected branches"
 msgstr "فروع محددة"
 
@@ -4948,6 +5047,9 @@ msgstr "عرض الكل"
 
 msgid "Show everyone"
 msgstr "عرض الكل"
+
+msgid "Show inactive"
+msgstr "إظهار غير النشط"
 
 msgid "Show password"
 msgstr "إظهار كلمة المرور"
@@ -5570,6 +5672,14 @@ msgstr "هذا ليس ملف إكسل (.xlsx)."
 
 msgid "This is the batch's only employee: delete the draft instead."
 msgstr "هذا هو الموظف الوحيد في الدفعة: احذف المسودة بدلًا من ذلك."
+
+msgid "This is the department's only branch."
+msgstr "هذا هو الفرع الوحيد للقسم."
+
+msgid ""
+"This is the department's only branch. Move it to another branch, or "
+"deactivate it."
+msgstr "هذا هو الفرع الوحيد للقسم. انقله إلى فرع آخر أو أوقفه."
 
 msgid "This loan is no longer being repaid."
 msgstr "هذا القرض لم يعد قيد السداد."

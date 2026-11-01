@@ -195,7 +195,7 @@ def _move_start(employee: Employee, hired_on: date) -> None:
     row.save(update_fields=["effective_from", "updated_at"])
 
 
-def _follow_assignment(employee: Employee) -> None:
+def follow_assignment(employee: Employee) -> None:
     """The card shows the row in effect today."""
     row = in_effect(employee.assignments.all(), timezone.localdate())
     if row is None:
@@ -214,7 +214,7 @@ def apply_due_assignments() -> int:
     due = (Employee.objects.filter(
         assignments__effective_from__range=(today - timedelta(days=7), today)).distinct())
     for employee in due:
-        _follow_assignment(employee)
+        follow_assignment(employee)
     return len(due)
 
 
@@ -242,7 +242,7 @@ def change_assignment(employee_id: int, data: AssignmentInput, *,
         if errors:
             raise invalid_fields(errors)
         row = _new_assignment(employee, data, actor)
-        _follow_assignment(employee)
+        follow_assignment(employee)
     return row
 
 
@@ -264,7 +264,7 @@ def delete_assignment(record_id: int, *, actor=None) -> None:
                                 "be removed. Change the values from a later date instead."),
                               code="EMPLOYEES_FIRST_RECORD")
         record.delete()
-        _follow_assignment(employee)
+        follow_assignment(employee)
 
 
 def _prefixed(prefix: str, errors: dict) -> dict:
@@ -424,7 +424,7 @@ def rehire(employee_id: int, data: AssignmentInput, *, restore_login: bool = Fal
     employee.updated_by = getattr(actor, "user", None)
     employee.save(update_fields=["hired_on", "left_on", "leave_reason", "updated_by",
                                  "updated_at"])
-    _follow_assignment(employee)
+    follow_assignment(employee)
     if restore_login:
         _open_login(employee, actor)
     return employee

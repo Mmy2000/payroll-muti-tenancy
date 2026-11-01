@@ -236,6 +236,15 @@ server and document-design pages):
 - The Django admin stays at `/django-admin/` for emergencies; `manage.py create_tenant` still
   works from the shell.
 
+### The company structure page
+
+`/people/structure/` shows branches, their departments and the people in them as a tree
+(`apps/employees/api/structure.py`, `services/structure.py`, `static/employees/js/structure.js`).
+Head counts load at once, and a department's people when it is opened, so a large company stays
+quick. Moving someone or a department is dated and goes on the assignments, by dragging or from
+the side panel. Moving a department takes its people in that branch with it; removing it from a
+branch asks for their new department. The tree and the moves follow the member's branches.
+
 ### Real-time search and the pickers
 
 - **Search and filters** answer as you type (`static/core/js/live_filter.js`): any

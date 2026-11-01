@@ -9,19 +9,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-from django.db.models import Max, Q
+from django.db.models import Count, Max, Q
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.errors import NotFound, ValidationError
 from apps.core.history import in_effect
 from apps.iam.limits import is_app_login
+from apps.org.models import Branch, DepartmentBranch
+from apps.org.permissions import DEPARTMENT_MANAGE
 from apps.org.selectors import branch_choices as active_branch_choices
 from apps.org.selectors import visible_departments
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .models import Employee
-from .permissions import VIEW
+from .permissions import MANAGE, VIEW
 
 EMPLOYEE, DEPARTMENT, BRANCH = "employee", "department", "branch"
 KINDS = (EMPLOYEE, DEPARTMENT, BRANCH)
@@ -200,9 +203,96 @@ def resolve_group(group: Group, *, on: date, actor=None, permission: str) -> lis
 
 
 def department_has_employees(department, branch_ids=None) -> bool:
-    people = Employee.objects.filter(department=department)
+    """Whether anyone still working is in it. Someone who left keeps it on their record."""
+    people = Employee.objects.filter(department=department).exclude(
+        left_on__lt=timezone.localdate())
     return (people if branch_ids is None else people.filter(branch_id__in=branch_ids)).exists()
 
 
 def has_employees(branch) -> bool:
     return Employee.objects.filter(branch=branch).exists()
+
+
+# --- the company structure page ---------------------------------------------------------------
+
+
+def working_in(branch_id: int, department_id: int | None):
+    """Who works in this branch and department now (None: in no department)."""
+    return Employee.objects.filter(branch_id=branch_id, department_id=department_id).exclude(
+        left_on__lt=timezone.localdate())
+
+
+def _head_counts(actor) -> dict:
+    rows = visible_employees(actor).exclude(left_on__lt=timezone.localdate()).values(
+        "branch_id", "department_id").annotate(people=Count("pk")).order_by()
+    return {(row["branch_id"], row["department_id"]): row["people"] for row in rows}
+
+
+def _department_node(placement, counts, can_edit_url: bool) -> dict:
+    department = placement.department
+    return {"id": department.pk, "code": department.code, "name": department.name,
+            "is_active": department.is_active,
+            "people": counts.get((placement.branch_id, department.pk), 0),
+            "edit_url": reverse("department-edit", args=[department.pk]) if can_edit_url else ""}
+
+
+def structure_tree(actor) -> dict:
+    """The branches the member sees, each with its departments and how many people are in them.
+    The people themselves come when a node is opened: a company can have thousands."""
+    allowed = actor.branch_ids(VIEW)
+    branches = Branch.objects.order_by("code")
+    branches = branches if allowed is None else branches.filter(pk__in=allowed)
+    placements = DepartmentBranch.objects.select_related("department").order_by("department__code")
+    counts = _head_counts(actor)
+    in_branch: dict[int, list] = {}
+    every_branch: dict[int, list] = {}
+    for placement in placements:
+        in_branch.setdefault(placement.branch_id, []).append(placement)
+        every_branch.setdefault(placement.department_id, []).append(placement.branch_id)
+    nodes = []
+    for branch in branches:
+        can_structure = actor.can(DEPARTMENT_MANAGE, branch=branch.pk)
+        departments = [
+            {**_department_node(row, counts, can_structure),
+             "branch_ids": every_branch[row.department_id]}
+            for row in in_branch.get(branch.pk, [])]
+        nodes.append({
+            "id": branch.pk, "code": branch.code, "name": branch.name,
+            "is_active": branch.is_active, "is_head_office": branch.is_head_office,
+            "people": sum(n for (place, _d), n in counts.items() if place == branch.pk),
+            "unassigned": counts.get((branch.pk, None), 0), "departments": departments,
+            "can_manage_people": actor.can(MANAGE, branch=branch.pk),
+            "can_manage_departments": can_structure,
+            "edit_url": (reverse("branch-edit", args=[branch.pk])
+                         if actor.can("org.branch.manage", branch=branch.pk) else "")})
+    return {"branches": nodes, "can_add_department": actor.holds_everywhere(DEPARTMENT_MANAGE),
+            "can_add_employee": actor.can("employees.salary.manage"),
+            "urls": {"new_department": reverse("department-new"),
+                     "new_employee": reverse("employee-new")}}
+
+
+def _person(employee: Employee) -> dict:
+    return {"id": employee.pk, "code": employee.code, "name": employee.name,
+            "job_title": employee.job_title, "branch_id": employee.branch_id,
+            "department_id": employee.department_id,
+            "url": reverse("employee", args=[employee.pk])}
+
+
+def structure_people(actor, branch_id: int | None, department_id: int | None) -> list[dict]:
+    if branch_id is None:
+        return []
+    return [_person(employee) for employee in (
+        visible_employees(actor).filter(branch_id=branch_id, department_id=department_id)
+        .exclude(left_on__lt=timezone.localdate()).order_by("name"))]
+
+
+def structure_search(actor, text: str, *, limit: int = 30) -> list[dict]:
+    """Working employees by name, code or job, to find them in the tree."""
+    if not text:
+        return []
+    match = Q(name__icontains=text) | Q(job_title__icontains=text)
+    if text.isdigit():
+        match |= Q(code=int(text))
+    return [_person(employee) for employee in (
+        visible_employees(actor).filter(match).exclude(left_on__lt=timezone.localdate())
+        .order_by("name")[:limit])]
