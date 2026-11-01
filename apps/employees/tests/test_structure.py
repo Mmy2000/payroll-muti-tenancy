@@ -14,7 +14,7 @@ from apps.employees.services import employees, structure
 from apps.iam.authz import build_actor
 from apps.iam.models import Membership
 from apps.org import services as org
-from apps.org.models import Branch, Department
+from apps.org.models import Branch, Department, TenantProfile
 from conftest import login
 
 pytestmark = pytest.mark.django_db
@@ -74,6 +74,14 @@ def test_people_who_left_are_not_counted(tenant_a, company):
         tree = selectors.structure_tree(_owner())
         assert _branch(tree, company["head"])["people"] == 1
         assert selectors.structure_people(_owner(), company["head"].pk, company["sales"].pk) == []
+
+
+def test_the_canvas_shows_people_a_page_at_a_time_as_the_admin_chose(tenant_a, company):
+    with tenant_context(tenant_a.id):
+        TenantProfile.objects.update(page_size=50)
+    client = login(tenant_a, language="en")
+    page = client.get(reverse("structure"), HTTP_HOST=f"{tenant_a.slug}.localhost")
+    assert page.context["config"]["page_size"] == 50
 
 
 def test_only_who_manages_all_its_branches_is_offered_a_departments_form(tenant_a, company,

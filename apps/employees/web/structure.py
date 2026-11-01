@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.iam.authz import permission_required
-from apps.org.selectors import active_departments
+from apps.org.selectors import active_departments, tenant_profile
 
 from .. import selectors
 from ..permissions import MANAGE, VIEW
@@ -60,6 +60,7 @@ def structure(request):
         "config": {
             "words": _words(),
             "company": request.tenant.name,
+            "page_size": tenant_profile().page_size,
             "api": {"tree": reverse("structure-list"), "people": reverse("structure-people"),
                     "search": reverse("structure-search"),
                     "move_people": reverse("structure-move-people"),

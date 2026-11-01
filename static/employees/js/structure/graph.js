@@ -1,9 +1,7 @@
 // The canvas's nodes: what to show from the store as a tree of nodes, and where each one goes. The
 // positions are worked out, not stored. What a person drags is kept as an offset from the tidy place,
 // which carries the node's children along and survives opening and closing things.
-import { branches, company, groupKey, shown, state, words } from "./store.js";
-
-const PEOPLE_PAGE = 12; // more than this and a department's people open a page at a time
+import { branches, company, groupKey, pageSize, shown, state, words } from "./store.js";
 
 const WIDTHS = [248, 296, 272, 232]; // by depth: company, branch, department, employee
 const HEIGHTS = { company: 76, branch: 80, department: 68, none: 64, employee: 56, more: 40, hint: 40, add: 40 };
@@ -15,7 +13,7 @@ function node(kind, key, fields = {}) {
 }
 
 export function showMore(key) {
-  state.pageOf.set(key, (state.pageOf.get(key) ?? PEOPLE_PAGE) + PEOPLE_PAGE);
+  state.pageOf.set(key, (state.pageOf.get(key) ?? pageSize) + pageSize);
 }
 
 function hint(key, label) {
@@ -26,7 +24,7 @@ function peopleNodes(key, branch, departmentId) {
   const people = state.people.get(key);
   if (!people) return [hint(key, words.loading)];
   if (!people.length) return [hint(key, words.nobody)];
-  const limit = state.pageOf.get(key) ?? PEOPLE_PAGE;
+  const limit = state.pageOf.get(key) ?? pageSize;
   const nodes = people.slice(0, limit).map((person) => node("employee", `p${person.id}`, {
     label: person.name, sub: [person.code, person.job_title].filter(Boolean).join(" · "),
     branch, person, departmentId, canCarry: branch.can_manage_people,

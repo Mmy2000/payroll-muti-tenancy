@@ -4,7 +4,7 @@
 import { api } from "../../../core/js/api.js";
 import { toast } from "../../../core/js/ui.js";
 
-export const { words, company, api: routes } = JSON.parse(document.getElementById("structure-config").textContent);
+export const { words, company, page_size: pageSize, api: routes } = JSON.parse(document.getElementById("structure-config").textContent);
 
 export const state = {
   tree: null,
