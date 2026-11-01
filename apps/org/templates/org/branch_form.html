@@ -36,14 +36,9 @@
           <label class="form-label" for="f-address">{% translate "Address" %}</label>
           <textarea id="f-address" name="address" rows="2" class="form-input">{{ branch.address|default:'' }}</textarea>
         </div>
-        <div class="grid grid-cols-1 gap-4 sm:col-span-4 sm:grid-cols-3">
-          <div><label class="form-label" for="f-lat">{% translate "Latitude" %}</label>
-            <input id="f-lat" name="latitude" class="form-input num text-start" inputmode="decimal" data-empty="null" value="{{ branch.latitude|default_if_none:'' }}"><p class="form-error" data-error-for="latitude"></p></div>
-          <div><label class="form-label" for="f-lng">{% translate "Longitude" %}</label>
-            <input id="f-lng" name="longitude" class="form-input num text-start" inputmode="decimal" data-empty="null" value="{{ branch.longitude|default_if_none:'' }}"><p class="form-error" data-error-for="longitude"></p></div>
-          <div><label class="form-label is-required" for="f-radius">{% translate "Radius (metres)" %}</label>
-            <input id="f-radius" name="radius_m" class="form-input num text-start" inputmode="numeric" value="{{ branch.radius_m|default:200 }}"><p class="form-error" data-error-for="radius_m"></p></div>
-          <p class="text-xs text-slate-500 sm:col-span-3">{% translate "Where the branch is: with the geofence on, punches from the mobile app are only accepted within this distance of it." %}</p>
+        <div class="sm:col-span-4">
+          <h3 class="mb-3 text-sm font-semibold text-slate-900">{% translate "Branch location" %}</h3>
+          {% include "components/location_picker.html" with latitude=branch.latitude longitude=branch.longitude radius=branch.radius_m %}
         </div>
         {% if can_choose_head_office %}
         <label class="flex items-center gap-3 sm:col-span-2">

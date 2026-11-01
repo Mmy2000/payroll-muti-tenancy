@@ -1,0 +1,60 @@
+{% load i18n l10n static ui %}{# A place and a zone around it (static/core/js/location_picker.js). `latitude`, `longitude` and `radius` are the current values; the fields below are what the form sends. #}
+<div class="space-y-3" data-location-picker
+     data-leaflet-js="{% static 'vendor/leaflet/leaflet.js' %}" data-leaflet-css="{% static 'vendor/leaflet/leaflet.css' %}"
+     data-map-failed="{% translate 'The map could not load. You can still enter the coordinates by hand.' %}"
+     data-searching="{% translate 'Searching…' %}" data-locating="{% translate 'Finding your location…' %}"
+     data-nothing-found="{% translate 'No place found. Try a fuller address, or click the map.' %}"
+     data-search-failed="{% translate 'The search is not available right now. Click the map instead.' %}"
+     data-short-link="{% translate 'This short link cannot be read. Open it, then paste the full address from the browser.' %}"
+     data-location-refused="{% translate 'Your location is not available. Allow it in the browser, or find the place on the map.' %}"
+     data-drag-pin="{% translate 'Drag to adjust' %}">
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="relative min-w-52 flex-1">
+      <span class="pointer-events-none absolute inset-y-0 start-3 grid place-items-center text-slate-400">{% icon "search" "size-4" %}</span>
+      <input type="search" class="form-input ps-9" data-loc-search placeholder="{% translate 'Search for an address, or paste a map link' %}" aria-label="{% translate 'Search for an address, or paste a map link' %}" autocomplete="off">
+      <div class="loc-results" data-loc-results hidden></div>
+    </div>
+    <button type="button" class="btn btn-secondary" data-loc-find>{% translate "Find" %}</button>
+    <button type="button" class="btn btn-secondary" data-loc-here>{% icon "locate-fixed" "size-4" %}{% translate "Use my location" %}</button>
+  </div>
+  <p class="text-sm text-amber-700" data-loc-note role="status" hidden></p>
+  <div class="relative">
+    <div class="loc-map" data-loc-map dir="ltr"></div>
+    <p class="loc-hint" data-loc-hint>{% icon "map-pin" "size-4" %}{% translate "Click the map to place the branch, then drag the pin to adjust." %}</p>
+    <button type="button" class="loc-clear" data-loc-clear hidden>{% icon "trash-2" "size-3.5" %}{% translate "Remove the location" %}</button>
+  </div>
+  <p class="form-error" data-error-for="latitude"></p>
+  <p class="form-error" data-error-for="longitude"></p>
+
+  <div class="loc-radius">
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <label class="form-label mb-0" for="f-radius-slider">{% translate "Attendance zone" %}</label>
+      <div class="flex flex-wrap items-center gap-1">
+        <button type="button" class="loc-preset num" data-loc-preset="50" aria-pressed="false">50</button>
+        <button type="button" class="loc-preset num" data-loc-preset="100" aria-pressed="false">100</button>
+        <button type="button" class="loc-preset num" data-loc-preset="200" aria-pressed="false">200</button>
+        <button type="button" class="loc-preset num" data-loc-preset="500" aria-pressed="false">500</button>
+        <button type="button" class="loc-preset num" data-loc-preset="1000" aria-pressed="false">1000</button>
+      </div>
+    </div>
+    <div class="mt-2 flex items-center gap-3">
+      <input id="f-radius-slider" type="range" class="loc-slider" min="20" max="1000" step="10" value="{{ radius|default:200 }}" data-loc-slider dir="ltr">
+      <div class="relative w-28 shrink-0">
+        <input id="f-radius" name="radius_m" class="form-input num pe-10 text-start" inputmode="numeric" value="{{ radius|default:200 }}" data-loc-radius aria-label="{% translate 'Radius (metres)' %}">
+        <span class="pointer-events-none absolute inset-y-0 end-3 grid place-items-center text-xs text-slate-500">{% translate "m" %}</span>
+      </div>
+    </div>
+    <p class="form-error" data-error-for="radius_m"></p>
+    <p class="mt-2 text-xs text-slate-500">{% translate "Where the branch is: with the geofence on, punches from the mobile app are only accepted within this distance of it." %}</p>
+  </div>
+
+  <details class="text-sm" data-loc-manual>
+    <summary class="cursor-pointer text-slate-500 hover:text-slate-800">{% translate "Enter the coordinates by hand" %}</summary>
+    <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div><label class="form-label" for="f-lat">{% translate "Latitude" %}</label>
+        <input id="f-lat" name="latitude" class="form-input num text-start" inputmode="decimal" data-empty="null" value="{{ latitude|default_if_none:''|unlocalize }}" data-loc-lat></div>
+      <div><label class="form-label" for="f-lng">{% translate "Longitude" %}</label>
+        <input id="f-lng" name="longitude" class="form-input num text-start" inputmode="decimal" data-empty="null" value="{{ longitude|default_if_none:''|unlocalize }}" data-loc-lng></div>
+    </div>
+  </details>
+</div>

@@ -1,6 +1,7 @@
 // Copies third-party browser assets into static/ (run: npm run assets):
 //  - self-hosted fonts (Inter, IBM Plex Sans Arabic)
 //  - Tom Select (searchable selects), as a classic script exposing window.TomSelect
+//  - Leaflet (maps), loaded by location_picker.js for a page that has one
 //  - the Lucide icons the UI uses, bundled into apps/core/ui_icons.json for {% icon %}
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -28,6 +29,14 @@ const vendor = copy([
   ["tom-select/LICENSE", "LICENSE"],
 ], join(root, "static", "vendor", "tom-select"));
 
+const leaflet = copy([
+  ["leaflet/dist/leaflet.js", "leaflet.js"],
+  ["leaflet/dist/leaflet.css", "leaflet.css"],
+  ["leaflet/LICENSE", "LICENSE"],
+], join(root, "static", "vendor", "leaflet")) + copy(
+  ["layers.png", "layers-2x.png", "marker-icon.png"].map((name) => [`leaflet/dist/images/${name}`, name]),
+  join(root, "static", "vendor", "leaflet", "images"));
+
 const icons = [
   "layout-dashboard", "store", "gem", "layers", "coins", "arrow-left-right", "users", "truck",
   "settings", "log-out", "languages", "menu", "x", "chevron-down", "circle-alert",
@@ -46,7 +55,7 @@ const icons = [
   "calendar", "calendar-days", "calendar-x", "calendar-clock", "fingerprint", "map-pin", "timer",
   "alarm-clock", "hand-coins", "piggy-bank", "badge-percent", "file-spreadsheet", "user-check",
   "user-x", "users-round", "briefcase", "award", "gavel", "smartphone", "toggle-right", "unlink",
-  "minus", "maximize", "workflow", "wand-sparkles",
+  "minus", "maximize", "workflow", "wand-sparkles", "locate-fixed",
 ];
 const bundle = {};
 for (const name of icons) {

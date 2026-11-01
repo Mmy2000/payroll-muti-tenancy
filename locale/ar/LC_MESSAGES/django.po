@@ -1017,6 +1017,9 @@ msgstr "استيراد الحضور"
 msgid "Attendance totals per employee"
 msgstr "إجمالي الحضور لكل موظف"
 
+msgid "Attendance zone"
+msgstr "نطاق الحضور"
+
 msgid ""
 "Attendance, leave, loans, incentives and payroll, always in step, with every"
 " change on record."
@@ -1098,6 +1101,9 @@ msgstr "الفرع"
 
 msgid "Branch code"
 msgstr "كود الفرع"
+
+msgid "Branch location"
+msgstr "موقع الفرع"
 
 msgid "Branch of a department"
 msgstr "فرع القسم"
@@ -1380,6 +1386,9 @@ msgstr "مسح"
 
 msgid "click"
 msgstr "نقرة"
+
+msgid "Click the map to place the branch, then drag the pin to adjust."
+msgstr "اضغط على الخريطة لتحديد الفرع، ثم اسحب العلامة لضبط الموقع."
 
 msgid "client"
 msgstr "العميل"
@@ -1803,6 +1812,9 @@ msgstr "اسحب البطاقة"
 msgid "Drag the background"
 msgstr "اسحب الخلفية"
 
+msgid "Drag to adjust"
+msgstr "اسحب للضبط"
+
 msgid "Drop a card on a branch or a department"
 msgstr "أفلت البطاقة على فرع أو قسم"
 
@@ -2144,6 +2156,9 @@ msgstr "أدخل عدد ساعات أكبر من 0 وحتى 24."
 msgid "Enter leave requests"
 msgstr "إدخال طلبات الإجازة"
 
+msgid "Enter the coordinates by hand"
+msgstr "إدخال الإحداثيات يدوياً"
+
 msgid "Enter the date the change starts."
 msgstr "أدخل تاريخ بدء التغيير."
 
@@ -2351,8 +2366,14 @@ msgstr "أنثى"
 msgid "Filters"
 msgstr "التصفية"
 
+msgid "Find"
+msgstr "بحث"
+
 msgid "Find an employee, a department or a branch"
 msgstr "ابحث عن موظف أو قسم أو فرع"
+
+msgid "Finding your location…"
+msgstr "جارٍ تحديد موقعك…"
 
 msgid "Fingerprint device"
 msgstr "جهاز البصمة"
@@ -3179,6 +3200,9 @@ msgstr "حروف إنجليزية صغيرة وأرقام وشرطات. لا ي�
 msgid "Lowest insured salary"
 msgstr "أدنى أجر تأميني"
 
+msgid "m"
+msgstr "م"
+
 msgid "Made for you when the service is switched on."
 msgstr "يُنشأ تلقائيًا عند تشغيل الخدمة."
 
@@ -3660,6 +3684,9 @@ msgstr "لا توجد بنود راتب بعد"
 
 msgid "No payroll runs here"
 msgstr "لا توجد مسيرات رواتب هنا"
+
+msgid "No place found. Try a fuller address, or click the map."
+msgstr "لم يُعثر على مكان. جرّب عنواناً أكمل أو اضغط على الخريطة."
 
 msgid "No policies yet"
 msgstr "لا توجد لوائح بعد"
@@ -4728,6 +4755,9 @@ msgstr "إزالة القسم من هذا الفرع"
 msgid "Remove the entry: the clock counts again"
 msgstr "حذف الإدخال: تعود أوقات البصمة للاحتساب"
 
+msgid "Remove the location"
+msgstr "إزالة الموقع"
+
 msgid "Remove this change"
 msgstr "حذف هذا التغيير"
 
@@ -4976,6 +5006,9 @@ msgstr "عجلة الفأرة"
 
 msgid "Search"
 msgstr "بحث"
+
+msgid "Search for an address, or paste a map link"
+msgstr "ابحث عن عنوان أو الصق رابط خريطة"
 
 msgid "Searching…"
 msgstr "جارٍ البحث…"
@@ -5505,6 +5538,9 @@ msgstr ""
 msgid "The main address cannot be removed."
 msgstr "لا يمكن حذف العنوان الرئيسي."
 
+msgid "The map could not load. You can still enter the coordinates by hand."
+msgstr "تعذر تحميل الخريطة. يمكنك إدخال الإحداثيات يدوياً."
+
 msgid "The message with each payslip"
 msgstr "الرسالة مع كل قسيمة"
 
@@ -5585,6 +5621,9 @@ msgstr "نفس الطلب ينتظر الجهاز بالفعل."
 
 msgid "The same request is still being processed."
 msgstr "الطلب نفسه ما زال قيد التنفيذ."
+
+msgid "The search is not available right now. Click the map instead."
+msgstr "البحث غير متاح الآن. اضغط على الخريطة بدلاً من ذلك."
 
 msgid ""
 "The service that sends payslips from each client's own number. Everything is"
@@ -5845,6 +5884,12 @@ msgid ""
 "This serial number is already registered, here or with another company."
 msgstr "هذا الرقم التسلسلي مسجل بالفعل، هنا أو لدى شركة أخرى."
 
+msgid ""
+"This short link cannot be read. Open it, then paste the full address from "
+"the browser."
+msgstr ""
+"لا يمكن قراءة هذا الرابط المختصر. افتحه ثم الصق العنوان الكامل من المتصفح."
+
 msgid "This table has no columns to print."
 msgstr "لا توجد أعمدة للطباعة في هذا الجدول."
 
@@ -6058,6 +6103,9 @@ msgstr "الاستخدام"
 
 msgid "Use digits only."
 msgstr "استخدم أرقامًا فقط."
+
+msgid "Use my location"
+msgstr "استخدام موقعي"
 
 msgid "Use Print and choose “Save as PDF” instead, or try again in a minute."
 msgstr ""
@@ -6468,6 +6516,11 @@ msgstr "تم رفض طلب الاجازة"
 
 msgid "Your leave was cancelled"
 msgstr "تم الغاء الاجازة"
+
+msgid ""
+"Your location is not available. Allow it in the browser, or find the place "
+"on the map."
+msgstr "موقعك غير متاح. اسمح به في المتصفح أو حدد المكان على الخريطة."
 
 msgid "Your name, logo and colour on every screen."
 msgstr "اسمك وشعارك ولونك على كل الشاشات."

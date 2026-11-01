@@ -552,6 +552,14 @@
   .org-count { @apply min-w-7 shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-center text-xs font-medium text-slate-600; }
   .org-hint { @apply px-3 py-2 text-sm text-slate-500; }
   .org-selection { @apply fixed inset-x-0 bottom-4 z-30 mx-auto flex w-fit max-w-[calc(100vw-2rem)] flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-2 shadow-pop; }
+  /* A place on a map (static/core/js/location_picker.js). */
+  .loc-map { @apply h-72 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100; isolation: isolate; }
+  .loc-hint { @apply pointer-events-none absolute inset-x-3 top-3 z-10 mx-auto flex w-fit max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-lg bg-surface/95 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-lift; }
+  .loc-clear { @apply absolute end-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-lg bg-surface/95 px-2.5 py-1.5 text-xs font-medium text-red-600 shadow-lift hover:bg-surface; }
+  .loc-results { @apply absolute inset-x-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-surface p-1 shadow-pop; }
+  .loc-result { @apply block w-full rounded-lg px-2.5 py-2 text-start text-sm text-slate-700 hover:bg-slate-100; }
+  .loc-radius { @apply rounded-xl border border-slate-200/80 p-4; }
+  .loc-preset { @apply rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 aria-pressed:bg-brand-50 aria-pressed:text-brand-700; }
   /* The form modal (static/core/js/form_modal.js), over everything but dropdowns and calendars. */
   .modal-backdrop { @apply fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]; }
   .modal-box { @apply fixed inset-0 z-50 m-auto flex h-fit max-h-[calc(100dvh-3rem)] w-[min(58rem,calc(100vw-2rem))] animate-pop flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-surface shadow-pop max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-0; }
@@ -818,6 +826,33 @@ input[type="checkbox"]:indeterminate { background-color: var(--color-brand-300);
 input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.5; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { input[type="checkbox"] { transition: none; } }
+/* The map's own controls, in the app's colours. Leaflet's stylesheet has no layer, so neither do these. */
+.loc-map .leaflet-container, .loc-map.leaflet-container { font: inherit; background: var(--color-slate-100); cursor: crosshair; }
+.loc-map .leaflet-grab { cursor: crosshair; }
+.loc-map .leaflet-dragging .leaflet-grab, .loc-map .leaflet-marker-draggable { cursor: grab; }
+.loc-map .leaflet-bar { border: 1px solid var(--color-slate-200); border-radius: 0.6rem; box-shadow: var(--shadow-lift); overflow: hidden; }
+.loc-map .leaflet-bar a { background: var(--color-surface); color: var(--color-slate-700); border-color: var(--color-slate-200); }
+.loc-map .leaflet-bar a:hover { background: var(--color-slate-100); }
+.loc-map .leaflet-control-attribution { background: color-mix(in srgb, var(--color-surface) 80%, transparent); color: var(--color-slate-500); }
+.loc-map .leaflet-control-attribution a { color: inherit; }
+.loc-pin { color: var(--color-brand-600); filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.35)); }
+.loc-pin path { fill: currentColor; stroke: white; stroke-width: 2; }
+.loc-pin circle { fill: white; }
+.loc-zone { stroke: var(--color-brand-500); stroke-width: 2; fill: var(--color-brand-500); fill-opacity: 0.14; }
+[data-theme="dark"] .loc-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) saturate(0.55) brightness(0.95) contrast(0.9); }
+.loc-slider {
+  --fill: 0%;
+  flex: 1; min-width: 0; height: 0.375rem; border-radius: 999px; appearance: none; cursor: pointer;
+  background: linear-gradient(to right, var(--color-brand-500) var(--fill), var(--color-slate-200) var(--fill));
+}
+.loc-slider::-webkit-slider-thumb {
+  appearance: none; width: 1.125rem; height: 1.125rem; border-radius: 50%;
+  background: var(--color-surface); border: 2px solid var(--color-brand-500); box-shadow: var(--shadow-xs);
+}
+.loc-slider::-moz-range-thumb {
+  width: 0.875rem; height: 0.875rem; border-radius: 50%;
+  background: var(--color-surface); border: 2px solid var(--color-brand-500);
+}
 /* A page's form inside the modal. Outside the layers, to win over the page's own grid utilities. */
 .modal-body form[data-api-form] { display: block; }
 .modal-body form[data-api-form] > :not(.modal-actions) { padding: 0.25rem 0.5rem; }

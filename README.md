@@ -262,6 +262,13 @@ reloads; `data-form-modal="follow"` goes on to where the form leads, and `"stay"
 page, which hears `form-modal:saved`. Unsaved changes are never closed away silently. A test keeps
 every link to a `-new` or `-edit` page on the modal.
 
+### Placing a branch on a map
+
+The branch form picks its location on a map (`templates/components/location_picker.html`,
+`static/core/js/location_picker.js`): search, paste a map link, use the device's location or click,
+then drag the pin and size the attendance zone. It still sends plain coordinates and a radius, which
+can be typed in, so it works without the map too. See ADR-109 for what goes to OpenStreetMap.
+
 ### Sample data
 
 `manage.py create_sample` builds a whole company in a client of its own, `nile`, to try every screen
