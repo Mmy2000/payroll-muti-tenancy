@@ -72,6 +72,11 @@ def seed_pay_setup() -> None:
     for code, name, kind, basis, taxable in PAY_ITEMS:
         save_pay_item(PayItemInput(code=code, name=name, kind=kind, basis=basis,
                                    taxable=taxable))
+    seed_pay_rules()
+
+
+def seed_pay_rules() -> None:
+    """Lateness, overtime, tax, insurance and the public holidays."""
     policies.save_lateness_policy(policies.BandedPolicyInput(
         name="Standard lateness", minutes=10,
         bands=[Band(11, 30, D("0.5")), Band(31, 60, D(1)), Band(61, 120, D(2))]))

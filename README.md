@@ -262,6 +262,14 @@ reloads; `data-form-modal="follow"` goes on to where the form leads, and `"stay"
 page, which hears `form-modal:saved`. Unsaved changes are never closed away silently. A test keeps
 every link to a `-new` or `-edit` page on the modal.
 
+### Sample data
+
+`manage.py create_sample` builds a whole company in a client of its own, `nile`, to try every screen
+on: 120 employees across branches and departments (one of each closed), every kind of pay, three
+months of clock times, leave in every state, allowances, loans, and payroll paid, approved and in
+draft (`apps/platform/console/sample.py`). `--people`, `--months` and `--slug` change it. It only
+runs with `DEBUG` on, leaves the demo clients alone, and prints who to sign in as.
+
 ### Real-time search and the pickers
 
 - **Search and filters** answer as you type (`static/core/js/live_filter.js`): any

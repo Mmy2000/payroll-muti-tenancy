@@ -20,7 +20,7 @@ from apps.iam.limits import is_app_login
 from apps.org.models import Branch, DepartmentBranch
 from apps.org.permissions import DEPARTMENT_MANAGE
 from apps.org.selectors import branch_choices as active_branch_choices
-from apps.org.selectors import visible_departments
+from apps.org.selectors import covers_branches, visible_departments
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
 from .models import Employee, StructureChange, StructureChangeKind, StructureChangeState
@@ -251,9 +251,9 @@ def structure_tree(actor) -> dict:
         every_branch.setdefault(placement.department_id, []).append(placement.branch_id)
     nodes = []
     for branch in branches:
-        can_structure = actor.can(DEPARTMENT_MANAGE, branch=branch.pk)
         departments = [
-            {**_department_node(row, counts, can_structure),
+            {**_department_node(row, counts, covers_branches(actor, every_branch[row.department_id],
+                                                             DEPARTMENT_MANAGE)),
              "branch_ids": every_branch[row.department_id]}
             for row in in_branch.get(branch.pk, [])]
         nodes.append({
@@ -262,7 +262,7 @@ def structure_tree(actor) -> dict:
             "people": sum(n for (place, _d), n in counts.items() if place == branch.pk),
             "unassigned": counts.get((branch.pk, None), 0), "departments": departments,
             "can_manage_people": actor.can(MANAGE, branch=branch.pk),
-            "can_manage_departments": can_structure,
+            "can_manage_departments": actor.can(DEPARTMENT_MANAGE, branch=branch.pk),
             "edit_url": (reverse("branch-edit", args=[branch.pk])
                          if actor.can("org.branch.manage", branch=branch.pk) else "")})
     return {"branches": nodes, "can_add_department": actor.holds_everywhere(DEPARTMENT_MANAGE),

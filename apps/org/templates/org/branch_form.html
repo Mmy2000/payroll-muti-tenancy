@@ -75,7 +75,7 @@
       <span class="num w-10 text-slate-500">{{ department.code }}</span>
       <span class="min-w-0 flex-1 truncate font-medium text-slate-900">{{ department.name }}</span>
       {% if not department.is_active %}<span class="badge badge-neutral">{% translate "Inactive" %}</span>{% endif %}
-      {% if can_manage_departments %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'department-edit' department.pk %}">{% translate "Edit" %}</a>{% endif %}
+      {% if department.can_edit %}<a data-form-modal class="btn btn-ghost text-xs" href="{% url 'department-edit' department.pk %}">{% translate "Edit" %}</a>{% endif %}
     </li>
     {% endfor %}
   </ul>

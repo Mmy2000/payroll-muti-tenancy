@@ -18,11 +18,19 @@ def branches(request):
         "can_create": request.actor.holds_everywhere(permissions.BRANCH_MANAGE)})
 
 
+def _with_can_edit(actor, departments) -> list:
+    """Each department, saying whether this member may open its form."""
+    for department in departments:
+        department.can_edit = selectors.covers(actor, department, permissions.DEPARTMENT_MANAGE)
+    return departments
+
+
 def _branch_form(request, branch=None):
     next_code = selectors.next_branch_code()
     return render(request, "org/branch_form.html", {
         "branch": branch,
-        "departments": selectors.branch_departments(branch) if branch else [],
+        "departments": (_with_can_edit(request.actor, list(selectors.branch_departments(branch)))
+                        if branch else []),
         "in_use": branch is not None and branch_in_use(branch),
         "can_choose_head_office": request.actor.holds_everywhere(permissions.BRANCH_MANAGE),
         "next_code": next_code,
@@ -53,9 +61,7 @@ def departments(request):
                       search_label=_("Department name"), date_field="",
                       branch_field=selectors.in_branches)
     page = found.page(found.apply(selectors.visible_departments(request.actor)))
-    for department in page.object_list:
-        department.can_edit = selectors.covers(request.actor, department,
-                                               permissions.DEPARTMENT_MANAGE)
+    _with_can_edit(request.actor, page.object_list)
     return render(request, "org/departments.html", {"filters": found, "page": page})
 
 

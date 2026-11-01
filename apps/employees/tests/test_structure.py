@@ -76,6 +76,23 @@ def test_people_who_left_are_not_counted(tenant_a, company):
         assert selectors.structure_people(_owner(), company["head"].pk, company["sales"].pk) == []
 
 
+def test_only_who_manages_all_its_branches_is_offered_a_departments_form(tenant_a, company,
+                                                                          make_member):
+    member = make_member(tenant_a, "local", "manager", branches=[company["head"]])
+    with tenant_context(tenant_a.id):
+        tree = selectors.structure_tree(_actor(member))
+    head = _branch(tree, company["head"])
+    by_name = {node["name"]: node for node in head["departments"]}
+    assert by_name["Sales"]["edit_url"] == ""  # also in Alexandria
+    assert by_name["Stores"]["edit_url"] != ""  # only here
+    page = login(tenant_a, "local", language="en").get(
+        reverse("branch-edit", args=[company["head"].pk]), HTTP_HOST=f"{tenant_a.slug}.localhost")
+    html = page.content.decode()
+    assert page.status_code == 200
+    assert reverse("department-edit", args=[company["stores"].pk]) in html
+    assert reverse("department-edit", args=[company["sales"].pk]) not in html
+
+
 def test_a_branch_limited_member_sees_their_branch(tenant_a, company, make_member):
     member = make_member(tenant_a, "local", "manager", branches=[company["head"]])
     with tenant_context(tenant_a.id):

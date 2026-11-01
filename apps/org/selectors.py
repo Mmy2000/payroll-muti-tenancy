@@ -67,10 +67,14 @@ def in_branches(departments, branch_ids):
     return departments.filter(placements__branch_id__in=branch_ids).distinct()
 
 
+def covers_branches(actor, branch_ids, permission: str) -> bool:
+    allowed = actor.branch_ids(permission)
+    return allowed is None or set(branch_ids) <= allowed
+
+
 def covers(actor, department: Department, permission: str) -> bool:
     """A change to a department touches all its branches, so it takes all of them."""
-    allowed = actor.branch_ids(permission)
-    return allowed is None or set(department.branch_ids) <= allowed
+    return covers_branches(actor, department.branch_ids, permission)
 
 
 def branches_for_department(allowed, department: Department | None):
