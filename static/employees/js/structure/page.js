@@ -4,6 +4,7 @@
 import { api } from "../../../core/js/api.js";
 import { drawCanvas } from "./canvas.js";
 import { avatar, el, icon } from "./dom.js";
+import { drawHistory } from "./history.js";
 import { drawInspector } from "./inspector.js";
 import { openMovePeople } from "./moves.js";
 import { branchById, branches, changed, clearChecked, departmentIn, onChange, refresh, reveal, routes, shown, state, words } from "./store.js";
@@ -54,6 +55,7 @@ function draw(hints) {
   drawStats();
   drawSelection();
   drawInspector();
+  drawHistory();
   if (view === "canvas") drawCanvas(hints);
   else drawTree(hints);
 }

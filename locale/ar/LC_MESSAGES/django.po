@@ -575,6 +575,12 @@ msgstr "أضف فريقك واحدًا تلو الآخر، أو استوردهم
 msgid "added"
 msgstr "أضاف"
 
+msgid "Added %(name)s to %(place)s"
+msgstr "إضافة %(name)s إلى %(place)s"
+
+msgid "Added a department to a branch"
+msgstr "إضافة قسم إلى فرع"
+
 msgid "Added to pay"
 msgstr "يُضاف إلى الأجر"
 
@@ -949,6 +955,9 @@ msgstr "مؤرشف"
 
 msgid "Arrange"
 msgstr "الترتيب"
+
+msgid "Arranged the cards"
+msgstr "ترتيب البطاقات"
 
 msgid "As a table"
 msgstr "كجدول"
@@ -1754,6 +1763,9 @@ msgstr "تم حذف النطاق."
 
 msgid "Done"
 msgstr "تم"
+
+msgid "Done again"
+msgstr "تمت الإعادة"
 
 msgid "Download as a PDF file"
 msgstr "تنزيل كملف PDF"
@@ -3328,6 +3340,18 @@ msgstr "نقل المحددين"
 msgid "Move to another branch"
 msgstr "نقل إلى فرع آخر"
 
+msgid "Moved %(count)s employees to %(place)s"
+msgstr "نقل %(count)s موظفين إلى %(place)s"
+
+msgid "Moved %(name)s to %(place)s"
+msgstr "نقل %(name)s إلى %(place)s"
+
+msgid "Moved a department"
+msgstr "نقل قسم"
+
+msgid "Moved employees"
+msgstr "نقل موظفين"
+
 msgid "Must be after the day they left."
 msgstr "يجب أن يكون بعد يوم ترك العمل."
 
@@ -3812,6 +3836,12 @@ msgstr "لم يُحفظ شيء بعد"
 
 msgid "Nothing sent yet"
 msgstr "لم يُرسل شيء بعد"
+
+msgid "Nothing to redo"
+msgstr "لا يوجد ما يمكن إعادته"
+
+msgid "Nothing to undo"
+msgstr "لا يوجد ما يمكن التراجع عنه"
 
 msgid "nothing waiting"
 msgstr "لا شيء في الانتظار"
@@ -4647,6 +4677,9 @@ msgstr "تسجيل الصرف"
 msgid "Recovered"
 msgstr "مُسترد"
 
+msgid "Redo"
+msgstr "إعادة"
+
 msgid "Reference"
 msgstr "المرجع"
 
@@ -4694,6 +4727,12 @@ msgstr "أزل هذا الدور من المستخدمين أولًا."
 
 msgid "removed"
 msgstr "تم الحذف"
+
+msgid "Removed %(name)s from %(place)s"
+msgstr "إزالة %(name)s من %(place)s"
+
+msgid "Removed a department from a branch"
+msgstr "إزالة قسم من فرع"
 
 msgid "Removed from your shortcuts."
 msgstr "تمت الإزالة من اختصاراتك."
@@ -5634,6 +5673,9 @@ msgstr "لا يوجد في هذا الفرع قسم نشط بهذا الكود."
 msgid "This branch has no departments yet."
 msgstr "لا توجد أقسام في هذا الفرع بعد."
 
+msgid "This changed afterwards, so it can no longer be undone."
+msgstr "تغيّر هذا لاحقاً، لذا لم يعد التراجع عنه ممكناً."
+
 msgid "This corrects"
 msgstr "هذا يصحّح"
 
@@ -5914,8 +5956,14 @@ msgstr "النوع"
 msgid "Type to search…"
 msgstr "اكتب للبحث…"
 
+msgid "Undo"
+msgstr "تراجع"
+
 msgid "Undo: still working here"
 msgstr "تراجع: ما زال يعمل هنا"
+
+msgid "Undone"
+msgstr "تم التراجع"
 
 msgid "Unexcused absence"
 msgstr "غياب بدون إذن"

@@ -126,6 +126,35 @@ class EmployeeAssignment(EffectiveDatedModel):
         ]
 
 
+class StructureChangeKind(models.TextChoices):
+    MOVE_PEOPLE = "move_people", _("Moved employees")
+    MOVE_DEPARTMENT = "move_department", _("Moved a department")
+    ADD_DEPARTMENT = "add_department", _("Added a department to a branch")
+    REMOVE_DEPARTMENT = "remove_department", _("Removed a department from a branch")
+
+
+class StructureChangeState(models.TextChoices):
+    DONE = "done", _("Done")
+    UNDONE = "undone", _("Undone")
+
+
+class StructureChange(TenantScopedModel):
+    """One change on the company structure page, as the member who made it can undo and redo it:
+    the before and after of everything it touched (services/structure_history.py). `created_by`
+    is whose it is. `details` keeps the names as they were, for its label."""
+
+    kind = models.CharField(max_length=20, choices=StructureChangeKind.choices)
+    state = models.CharField(max_length=10, choices=StructureChangeState.choices,
+                             default=StructureChangeState.DONE)
+    details = models.JSONField(default=dict)
+    rows = models.JSONField(default=list)
+    placements = models.JSONField(default=list)
+
+    class Meta:
+        indexes = [models.Index(fields=["tenant", "created_by", "state", "-id"],
+                                name="employees_change_stack_idx")]
+
+
 class WageType(models.TextChoices):
     FIXED = "fixed", _("Fixed salary")
     DAILY = "daily", _("Daily wage")

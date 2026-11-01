@@ -175,6 +175,10 @@ class MoveDepartmentSerializer(serializers.Serializer):
     effective_from = serializers.DateField()
 
 
+class StructureChangeSerializer(serializers.Serializer):
+    change_id = serializers.IntegerField()
+
+
 class AddDepartmentSerializer(serializers.Serializer):
     department_id = serializers.IntegerField()
     branch_id = serializers.IntegerField()

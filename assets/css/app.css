@@ -499,7 +499,7 @@
   .flow-port-add { @apply -end-3 grid size-6 cursor-crosshair place-items-center border-slate-300 text-slate-500 hover:border-brand-500 hover:text-brand-600; }
   .flow-port-add > svg { @apply size-3.5; }
   .flow-tools { @apply absolute start-3 bottom-3 z-10 flex items-center gap-0.5 rounded-xl border border-slate-200 bg-surface p-1 shadow-lift; }
-  .flow-tool { @apply grid size-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900; }
+  .flow-tool { @apply grid size-8 place-items-center rounded-lg text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-35; }
   .flow-zoom { @apply w-11 text-center text-xs font-medium text-slate-600; }
   .flow-filters { @apply absolute start-3 top-3 z-10 flex items-center gap-1 rounded-xl border border-slate-200 bg-surface p-1 shadow-lift; }
   .flow-body[data-view="list"] .flow-filters { @apply static col-span-full w-fit shadow-card; }

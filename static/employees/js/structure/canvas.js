@@ -5,6 +5,7 @@
 import { bringIntoView, camera, centerOn, fit, overview, panBy, panTo, rtl, shift, zoomAt, zoomIn } from "./camera.js";
 import { el, icon } from "./dom.js";
 import { drawCard } from "./card.js";
+import { recordArrangement } from "./history.js";
 import { buildGraph, flatten, inPoint, layOut, outPoint, showMore, wirePath } from "./graph.js";
 import { drawMap } from "./minimap.js";
 import { between, tween } from "./motion.js";
@@ -52,6 +53,18 @@ function saveOffsets() {
   } catch {
     // the arrangement just lasts until the page closes
   }
+}
+
+// `before` and the cards as they are now become one step of undo.
+function arranged(before) {
+  const after = new Map(offsets);
+  const putBack = (spots) => () => {
+    offsets.clear();
+    spots.forEach((spot, key) => offsets.set(key, spot));
+    saveOffsets();
+    changed();
+  };
+  recordArrangement({ undo: putBack(before), redo: putBack(after) });
 }
 
 // --- drawing ----------------------------------------------------------------------------------
@@ -302,6 +315,7 @@ function whatIsCarried(item) {
 }
 
 function carrying(from, item) {
+  const everything = new Map(offsets);
   const before = offsets.get(item.key);
   const start = before ?? { x: 0, y: 0 };
   const carried = whatIsCarried(item);
@@ -329,6 +343,8 @@ function carrying(from, item) {
       if (places.target || item.kind === "employee") { // it goes back: the move decides where it ends up
         if (before) offsets.set(item.key, before);
         else offsets.delete(item.key);
+      } else {
+        arranged(everything);
       }
       saveOffsets();
       drawCanvas();
@@ -526,7 +542,9 @@ document.querySelector("[data-zoom-in]").addEventListener("click", () => zoomIn(
 document.querySelector("[data-zoom-out]").addEventListener("click", () => zoomIn(-1));
 document.querySelector("[data-zoom-fit]").addEventListener("click", () => fit(nodes));
 document.querySelector("[data-tidy]").addEventListener("click", () => {
+  const everything = new Map(offsets);
   offsets.clear();
   saveOffsets();
+  if (everything.size) arranged(everything);
   drawCanvas({ fit: true });
 });

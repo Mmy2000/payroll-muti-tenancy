@@ -4,6 +4,7 @@
 import { api, ApiError } from "../../../core/js/api.js";
 import { filterOptions } from "../../../core/js/selects.js";
 import { toast } from "../../../core/js/ui.js";
+import { forgetRedo } from "./history.js";
 import { branchById, refresh, routes, state, words } from "./store.js";
 
 const panel = document.querySelector("[data-panel]");
@@ -76,6 +77,7 @@ form.addEventListener("submit", async (event) => {
     await submitting();
     closePanel();
     toast(words.saved);
+    forgetRedo();
     await refresh();
   } catch (error) {
     showError(error);

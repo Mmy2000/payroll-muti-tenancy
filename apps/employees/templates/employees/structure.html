@@ -30,6 +30,9 @@
   <div class="flow-body" data-body data-view="canvas">
     <div class="flow-status" data-status hidden></div>
     <div class="flow-filters">
+      <button type="button" class="flow-tool" data-undo disabled>{% icon "undo-2" "size-4 rtl:-scale-x-100" %}</button>
+      <button type="button" class="flow-tool" data-redo disabled>{% icon "redo-2" "size-4 rtl:-scale-x-100" %}</button>
+      <span class="h-5 w-px bg-slate-200" aria-hidden="true"></span>
       <label class="flex items-center gap-2 px-1.5 text-sm text-slate-600"><input type="checkbox" class="size-4 rounded border-slate-300 accent-brand-600" data-show-inactive>{% translate "Show inactive" %}</label>
       <span class="h-5 w-px bg-slate-200" aria-hidden="true"></span>
       <button type="button" class="flow-tool" data-expand-all title="{% translate 'Open everything' %}" aria-label="{% translate 'Open everything' %}">{% icon "maximize-2" "size-4" %}</button>
@@ -66,6 +69,8 @@
           <div><dt>{% translate "Move" %}</dt><dd>{% translate "Drop a card on a branch or a department" %}</dd></div>
           <div><dt>{% translate "Add a department" %}</dt><dd>{% translate "A branch's + , or draw its wire to a department" %}</dd></div>
           <div><dt>{% translate "Select several" %}</dt><dd><kbd class="kbd">Shift</kbd> + {% translate "click" %}</dd></div>
+          <div><dt>{% translate "Undo" %}</dt><dd><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Z</kbd></dd></div>
+          <div><dt>{% translate "Redo" %}</dt><dd><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Y</kbd></dd></div>
           <div><dt>{% translate "Search" %}</dt><dd><kbd class="kbd">/</kbd></dd></div>
           <div><dt>{% translate "Fit everything on screen" %}</dt><dd><kbd class="kbd">0</kbd></dd></div>
         </dl>

@@ -20,6 +20,9 @@ def _words() -> dict:
         "no_department": _("No department"), "head_office": _("Head office"),
         "inactive": _("Inactive"), "employees": _("Employees"), "departments": _("Departments"),
         "branches": _("Branches"), "close": _("Close"), "show_more": _("Show more"),
+        "undo": _("Undo"), "redo": _("Redo"), "undone": _("Undone"), "redone": _("Done again"),
+        "nothing_to_undo": _("Nothing to undo"), "nothing_to_redo": _("Nothing to redo"),
+        "arranged": _("Arranged the cards"),
         "code": _("Code"), "job": _("Job"), "also_in": _("Also in"),
         "by_department": _("By department"), "in_branches": _("In these branches"),
         "try_again": _("Try again"), "load_failed": _("This could not load. Try again."),
@@ -62,5 +65,6 @@ def structure(request):
                     "move_people": reverse("structure-move-people"),
                     "move_department": reverse("structure-move-department"),
                     "add_department": reverse("structure-add-department"),
-                    "remove_department": reverse("structure-remove-department")}},
+                    "remove_department": reverse("structure-remove-department"),
+                    "undo": reverse("structure-undo"), "redo": reverse("structure-redo")}},
     })

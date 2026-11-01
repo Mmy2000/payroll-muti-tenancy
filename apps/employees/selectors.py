@@ -23,7 +23,7 @@ from apps.org.selectors import branch_choices as active_branch_choices
 from apps.org.selectors import visible_departments
 from apps.policies.models import LatenessPolicy, OvertimePolicy
 
-from .models import Employee
+from .models import Employee, StructureChange, StructureChangeKind, StructureChangeState
 from .permissions import MANAGE, VIEW
 
 EMPLOYEE, DEPARTMENT, BRANCH = "employee", "department", "branch"
@@ -267,8 +267,30 @@ def structure_tree(actor) -> dict:
                          if actor.can("org.branch.manage", branch=branch.pk) else "")})
     return {"branches": nodes, "can_add_department": actor.holds_everywhere(DEPARTMENT_MANAGE),
             "can_add_employee": actor.can("employees.salary.manage"),
+            "history": structure_history(actor),
             "urls": {"new_department": reverse("department-new"),
                      "new_employee": reverse("employee-new")}}
+
+
+def change_label(change: StructureChange) -> str:
+    """What the change did, in the reader's language, with the names as they were."""
+    details = change.details
+    if change.kind == StructureChangeKind.MOVE_PEOPLE and details.get("count", 1) > 1:
+        return _("Moved %(count)s employees to %(place)s") % details
+    if change.kind == StructureChangeKind.ADD_DEPARTMENT:
+        return _("Added %(name)s to %(place)s") % details
+    if change.kind == StructureChangeKind.REMOVE_DEPARTMENT:
+        return _("Removed %(name)s from %(place)s") % details
+    return _("Moved %(name)s to %(place)s") % details
+
+
+def structure_history(actor) -> dict:
+    """The member's own changes, each list with the next one to take first."""
+    mine = StructureChange.objects.filter(created_by=actor.user)
+    done = mine.filter(state=StructureChangeState.DONE).order_by("-pk")
+    undone = mine.filter(state=StructureChangeState.UNDONE).order_by("pk")
+    return {side: [{"id": change.pk, "label": change_label(change)} for change in changes]
+            for side, changes in (("undo", done), ("redo", undone))}
 
 
 def _person(employee: Employee) -> dict:

@@ -8,12 +8,13 @@ from apps.org.permissions import DEPARTMENT_MANAGE
 
 from .. import selectors
 from ..permissions import MANAGE, VIEW
-from ..services import structure
+from ..services import structure, structure_history
 from .serializers import (
     AddDepartmentSerializer,
     MoveDepartmentSerializer,
     MovePeopleSerializer,
     RemoveDepartmentSerializer,
+    StructureChangeSerializer,
 )
 
 
@@ -33,7 +34,7 @@ class StructureViewSet(viewsets.GenericViewSet):
     required_permissions = {
         "list": VIEW, "people": VIEW, "search": VIEW, "move_people": MANAGE,
         "move_department": DEPARTMENT_MANAGE, "add_department": DEPARTMENT_MANAGE,
-        "remove_department": DEPARTMENT_MANAGE,
+        "remove_department": DEPARTMENT_MANAGE, "undo": VIEW, "redo": VIEW,
     }
 
     def list(self, request):
@@ -79,3 +80,14 @@ class StructureViewSet(viewsets.GenericViewSet):
                                             data["move_to"], data["effective_from"],
                                             actor=request.actor)
         return Response({"moved": moved})
+
+    # What the change needs is checked against it, in the service: it can be any of the above.
+    @action(detail=False, methods=["post"])
+    def undo(self, request):
+        data = _valid(StructureChangeSerializer, request.data)
+        return Response(structure_history.undo(data["change_id"], actor=request.actor))
+
+    @action(detail=False, methods=["post"])
+    def redo(self, request):
+        data = _valid(StructureChangeSerializer, request.data)
+        return Response(structure_history.redo(data["change_id"], actor=request.actor))

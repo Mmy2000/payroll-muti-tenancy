@@ -30,6 +30,7 @@ its code cites Gweb's decisions. The ones that apply here:
 | [ADR-105](ADR-105-one-app-structure.md) | One structure for every app | Accepted | 2026-10-31 |
 | [ADR-106](ADR-106-assignments-and-scope.md) | Dated assignments, company-wide permissions, leaving ends access | Accepted | 2026-11-01 |
 | [ADR-107](ADR-107-department-across-branches.md) | A department operates in several branches | Accepted | 2026-11-01 |
+| [ADR-108](ADR-108-structure-undo.md) | Undo and redo on the company structure page | Accepted | 2026-11-01 |
 
 ## When to write one
 

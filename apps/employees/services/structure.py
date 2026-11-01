@@ -12,15 +12,16 @@ from django.utils.translation import gettext as _
 
 from apps.core import locks
 from apps.core.errors import DomainError, NotFound, invalid_fields
-from apps.org.models import Department
+from apps.org.models import Branch, Department
 from apps.org.permissions import DEPARTMENT_MANAGE
 from apps.org.services import add_department_branch, remove_department_branch
 
-from ..models import Employee, EmployeeAssignment
+from ..models import Employee, EmployeeAssignment, StructureChangeKind
 from ..permissions import MANAGE
 from ..selectors import visible_employees, working_in
 from ..validators import check_placement
 from .employees import follow_assignment
+from .structure_history import Recording
 
 
 def _place(employee: Employee, branch_id: int, department_id: int | None, day: date, note: str,
@@ -44,6 +45,13 @@ def _place(employee: Employee, branch_id: int, department_id: int | None, day: d
                   "job_title": employee.job_title, "position_id": employee.position_id,
                   "created_by": getattr(actor, "user", None)})
     follow_assignment(employee)
+
+
+def _place_name(branch_id: int, department_id: int | None = None) -> str:
+    names = [Branch.objects.get(pk=branch_id).name]
+    if department_id is not None:
+        names.insert(0, Department.objects.get(pk=department_id).name)
+    return " · ".join(names)
 
 
 def _require_people(actor, *branch_ids) -> None:
@@ -84,8 +92,13 @@ def move_people(employee_ids: list[int], branch_id: int, department_id: int | No
     if len(people) != len(set(employee_ids)):
         raise NotFound(_("Not found."))
     _require_people(actor, branch_id, *{person.branch_id for person in people})
+    recording = Recording(actor, StructureChangeKind.MOVE_PEOPLE, count=len(people),
+                          name=people[0].name if people else "",
+                          place=_place_name(branch_id, department_id))
+    recording.watch_people(people, day)
     for person in people:
         _place(person, branch_id, department_id, day, note, actor)
+    recording.save()
     return len(people)
 
 
@@ -103,10 +116,16 @@ def move_department(department_id: int, from_branch_id: int, to_branch_id: int, 
                   .order_by("pk"))
     if people:
         _require_people(actor, from_branch_id, to_branch_id)
+    recording = Recording(actor, StructureChangeKind.MOVE_DEPARTMENT, name=department.name,
+                          place=_place_name(to_branch_id))
+    recording.watch_people(people, day)
+    recording.watch_placement(department_id, from_branch_id)
+    recording.watch_placement(department_id, to_branch_id)
     add_department_branch(department, to_branch_id)
     for person in people:
         _place(person, to_branch_id, department_id, day, "", actor)
     remove_department_branch(department, from_branch_id)
+    recording.save()
     return len(people)
 
 
@@ -128,14 +147,24 @@ def remove_department(department_id: int, branch_id: int, move_to: int | None, d
                   .order_by("pk"))
     if people:
         _require_people(actor, branch_id)
+    recording = Recording(actor, StructureChangeKind.REMOVE_DEPARTMENT, name=department.name,
+                          place=_place_name(branch_id))
+    recording.watch_people(people, day)
+    recording.watch_placement(department_id, branch_id)
     for person in people:
         _place(person, branch_id, move_to, day, "", actor)
     remove_department_branch(department, branch_id)
+    recording.save()
     return len(people)
 
 
+@transaction.atomic
 def add_department(department_id: int, branch_id: int, *, actor=None) -> None:
     """The department starts operating in another branch."""
     department = _department(department_id)
     _require_departments(actor, branch_id)
+    recording = Recording(actor, StructureChangeKind.ADD_DEPARTMENT, name=department.name,
+                          place=_place_name(branch_id))
+    recording.watch_placement(department_id, branch_id)
     add_department_branch(department, branch_id)
+    recording.save()
