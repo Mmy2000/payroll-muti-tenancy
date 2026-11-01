@@ -2829,7 +2829,7 @@ msgid "Job cancelled."
 msgstr "أُلغيت المهمة."
 
 msgid "Job title"
-msgstr "الوظيفة"
+msgstr "المسمى الوظيفي"
 
 msgid "Jobs"
 msgstr "المهام"
